@@ -38,9 +38,9 @@ class DiscountDB(Base):
 Base.metadata.create_all(bind=engine)
 
 # --- Inicializar FastAPI ---
-app = FastAPI(title="MaxShop - Club de Descuentos & Pagos", version="4.1.0")
+app = FastAPI(title="MaxShop - Club de Descuentos & Pagos", version="5.0.0")
 
-# --- Interfaz Comercial con Logo e Identidad de Colores Corporativos ---
+# --- Interfaz Comercial Avanzada ---
 @app.get("/", response_class=HTMLResponse)
 def read_root():
     return """
@@ -61,11 +61,10 @@ def read_root():
     </head>
     <body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
         
-        <!-- Barra de Navegación con Logotipo Corporativo -->
+        <!-- Barra de Navegación -->
         <header class="border-b border-slate-800/80 bg-[#040914]/90 backdrop-blur-md sticky top-0 z-50">
             <div class="max-w-6xl mx-auto px-4 py-3.5 flex justify-between items-center">
                 
-                <!-- Logo Corporativo Personalizado -->
                 <div class="flex items-center space-x-3 cursor-pointer" onclick="switchSection('home')">
                     <div class="w-11 h-11 rounded-2xl brand-gradient flex items-center justify-center shadow-lg shadow-emerald-500/20 transform hover:scale-105 transition">
                         <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -81,13 +80,12 @@ def read_root():
                     </div>
                 </div>
                 
-                <!-- Menú de Opciones -->
                 <nav class="hidden md:flex items-center space-x-1 text-xs">
                     <button onclick="switchSection('home')" id="navHome" class="px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20 transition">Inicio</button>
                     <button onclick="switchSection('catalog')" id="navCatalog" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition">Comercios & Ofertas</button>
+                    <button onclick="switchSection('banks')" id="navBanks" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition">Promos Bancarias</button>
                     <button onclick="switchSection('register')" id="navRegister" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition">Asociarme / Comercios</button>
                     <button onclick="switchSection('pay')" id="navPay" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition">Caja & Pago QR</button>
-                    <button onclick="switchSection('contact')" id="navContact" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition">Contacto</button>
                 </nav>
             </div>
         </header>
@@ -103,50 +101,31 @@ def read_root():
                         <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">Ecosistema Financiero y Comercial</span>
                         <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">Ahorrá inteligentemente con tu membresía <span class="brand-text-gradient">MaxShop</span></h2>
                         <p class="text-slate-300 text-sm md:text-base leading-relaxed">
-                            Olvidate de los cupones en papel. Pagá escaneando un código QR en caja o desde tu dispositivo de forma instantánea. Descuentos automáticos en indumentaria, tecnología, hogar y farmacias.
+                            Acumulá los beneficios de MaxShop con tus tarjetas bancarias favoritas. Pagá escaneando códigos QR de forma instantánea con Mercado Pago.
                         </p>
                         <div class="flex flex-wrap gap-3 pt-2">
                             <button onclick="switchSection('register')" class="brand-gradient hover:opacity-90 text-slate-950 font-extrabold px-6 py-3.5 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">Quiero ser Socio</button>
-                            <button onclick="switchSection('catalog')" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3.5 rounded-xl text-sm border border-slate-700 transition">Ver Ofertas Vigentes</button>
+                            <button onclick="switchSection('banks')" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3.5 rounded-xl text-sm border border-slate-700 transition">Ver Promos Bancarias</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Marcas y Medios de Pago Aliados -->
+                <!-- Alianzas Bancarias -->
                 <div class="space-y-3">
-                    <p class="text-[11px] uppercase tracking-wider text-slate-400 font-bold text-center">Bancos y Medios de Pago Asociados con Beneficios Acumulables</p>
+                    <p class="text-[11px] uppercase tracking-wider text-slate-400 font-bold text-center">Entidades Financieras Asociadas (Promociones Acumulables)</p>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-200 font-bold text-xs border-slate-800">
-                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> <span>Visa & Mastercard</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> <span>Galicia Visual + 20%</span>
                         </div>
                         <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-200 font-bold text-xs border-slate-800">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> <span>Banco Galicia / Macro</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> <span>Santander / MODO</span>
                         </div>
                         <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-200 font-bold text-xs border-slate-800">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> <span>Modo & Mercado Pago</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> <span>Macro Clientes Selecta</span>
                         </div>
                         <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-200 font-bold text-xs border-slate-800">
-                            <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> <span>BBVA / Santander</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> <span>BBVA Francés Go</span>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Cómo Funciona -->
-                <div class="grid md:grid-cols-3 gap-6 pt-4">
-                    <div class="glass-card p-6 rounded-2xl space-y-3 border-emerald-500/20">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-lg">1</div>
-                        <h3 class="font-bold text-base text-white">Registro Exprés</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">Te registrás con tu correo en segundos y activas tu membresía de manera inmediata.</p>
-                    </div>
-                    <div class="glass-card p-6 rounded-2xl space-y-3 border-cyan-500/20">
-                        <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold text-lg">2</div>
-                        <h3 class="font-bold text-base text-white">Elegís el Comercio</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">Navegá por nuestra red de marcas adheridas en diversos rubros comerciales.</p>
-                    </div>
-                    <div class="glass-card p-6 rounded-2xl space-y-3 border-blue-500/20">
-                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg">3</div>
-                        <h3 class="font-bold text-base text-white">Pago QR Inteligente</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">Escaneás el código QR en caja: el descuento se aplica solo y pagás menos al instante.</p>
                     </div>
                 </div>
             </section>
@@ -154,101 +133,106 @@ def read_root():
             <!-- SECCIÓN CATÁLOGO DE OFERTAS -->
             <section id="secCatalog" class="hidden space-y-6">
                 <div>
-                    <h2 class="text-2xl font-bold text-white">Catálogo de Ofertas y Comercios</h2>
-                    <p class="text-xs text-slate-400">Descubrí los rubros y locales adheridos a la red MaxShop.</p>
+                    <h2 class="text-2xl font-bold text-white">Catálogo de Comercios Aliados</h2>
+                    <p class="text-xs text-slate-400">Seleccioná un local para aplicar tu beneficio directamente en caja.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Indumentaria -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="catalogGrid">
+                    <!-- Se llena dinámicamente o por defecto -->
                     <div class="glass-card rounded-2xl overflow-hidden shadow-lg border-indigo-500/20">
                         <div class="h-36 bg-gradient-to-tr from-indigo-950 to-slate-900 p-4 flex flex-col justify-between">
                             <span class="bg-indigo-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full w-max">25% OFF</span>
-                            <span class="text-xl font-bold text-white">🧥 Indumentaria & Moda</span>
+                            <span class="text-xl font-bold text-white">🧥 Zoot & Marken</span>
                         </div>
                         <div class="p-4 space-y-2">
-                            <h3 class="font-bold text-sm text-white">Zoot & Marken Store</h3>
-                            <p class="text-xs text-slate-400">Descuento exclusivo en temporada vigente.</p>
-                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition border border-slate-800">Usar Beneficio</button>
+                            <h3 class="font-bold text-sm text-white">Indumentaria & Moda</h3>
+                            <p class="text-xs text-slate-400">ID Comercio: <span class="text-indigo-400 font-bold">1</span></p>
+                            <button onclick="selectMerchantForPay(1)" class="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition border border-slate-800">Usar en Caja ➔</button>
                         </div>
                     </div>
-
-                    <!-- Electro -->
                     <div class="glass-card rounded-2xl overflow-hidden shadow-lg border-cyan-500/20">
                         <div class="h-36 bg-gradient-to-tr from-cyan-950 to-slate-900 p-4 flex flex-col justify-between">
                             <span class="bg-cyan-500 text-slate-950 text-[10px] font-bold px-2.5 py-1 rounded-full w-max">15% OFF</span>
-                            <span class="text-xl font-bold text-white">⚡ Electro & Tecnología</span>
+                            <span class="text-xl font-bold text-white">⚡ TecnoHouse</span>
                         </div>
                         <div class="p-4 space-y-2">
-                            <h3 class="font-bold text-sm text-white">TecnoHouse Digital</h3>
-                            <p class="text-xs text-slate-400">Smart TVs y audio en cuotas sin interés.</p>
-                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition border border-slate-800">Usar Beneficio</button>
-                        </div>
-                    </div>
-
-                    <!-- Farmacia -->
-                    <div class="glass-card rounded-2xl overflow-hidden shadow-lg border-emerald-500/20">
-                        <div class="h-36 bg-gradient-to-tr from-emerald-950 to-slate-900 p-4 flex flex-col justify-between">
-                            <span class="bg-emerald-500 text-slate-950 text-[10px] font-bold px-2.5 py-1 rounded-full w-max">20% OFF</span>
-                            <span class="text-xl font-bold text-white">💊 Farmacia & Perfumería</span>
-                        </div>
-                        <div class="p-4 space-y-2">
-                            <h3 class="font-bold text-sm text-white">Red FarmaSalud</h3>
-                            <p class="text-xs text-slate-400">Rebajas en medicamentos y perfumería selecta.</p>
-                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition border border-slate-800">Usar Beneficio</button>
-                        </div>
-                    </div>
-
-                    <!-- Muebles -->
-                    <div class="glass-card rounded-2xl overflow-hidden shadow-lg border-amber-500/20">
-                        <div class="h-36 bg-gradient-to-tr from-amber-950 to-slate-900 p-4 flex flex-col justify-between">
-                            <span class="bg-amber-500 text-slate-950 text-[10px] font-bold px-2.5 py-1 rounded-full w-max">30% OFF</span>
-                            <span class="text-xl font-bold text-white">🛋️ Muebles & Hogar</span>
-                        </div>
-                        <div class="p-4 space-y-2">
-                            <h3 class="font-bold text-sm text-white">Habitat Design</h3>
-                            <p class="text-xs text-slate-400">Renová tus espacios con diseño moderno.</p>
-                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition border border-slate-800">Usar Beneficio</button>
+                            <h3 class="font-bold text-sm text-white">Electro & Tecnología</h3>
+                            <p class="text-xs text-slate-400">ID Comercio: <span class="text-cyan-400 font-bold">2</span></p>
+                            <button onclick="selectMerchantForPay(2)" class="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition border border-slate-800">Usar en Caja ➔</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- SECCIÓN REGISTRO -->
+            <!-- SECCIÓN PROMOS BANCARIAS -->
+            <section id="secBanks" class="hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Promociones Bancarias Integradas</h2>
+                    <p class="text-xs text-slate-400">Aprovechá las alianzas vigentes de las principales entidades financieras combinadas con MaxShop.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="glass-card p-6 rounded-2xl space-y-3 border-blue-500/30">
+                        <span class="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-blue-500/20">Banco Galicia</span>
+                        <h3 class="text-lg font-bold text-white">Jueves de Supermercados & Moda</h3>
+                        <p class="text-xs text-slate-400">30% de ahorro pagando con tarjetas Visa Débito y Crédito a través de MODO.</p>
+                        <div class="text-[11px] text-blue-400 font-semibold pt-2">✨ Acumulable con Club MaxShop</div>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl space-y-3 border-red-500/30">
+                        <span class="bg-red-500/10 text-red-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-red-500/20">Banco Santander</span>
+                        <h3 class="text-lg font-bold text-white">Especial Shopping & Style</h3>
+                        <p class="text-xs text-slate-400">Hasta 6 cuotas sin interés y 25% OFF en shoppings adheridos seleccionados.</p>
+                        <div class="text-[11px] text-red-400 font-semibold pt-2">✨ Válido todos los días</div>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl space-y-3 border-amber-500/30">
+                        <span class="bg-amber-500/10 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-500/20">Banco Macro</span>
+                        <h3 class="text-lg font-bold text-white">Plan Vto Cero en Combustible y Farmacias</h3>
+                        <p class="text-xs text-slate-400">20% de reintegro automático con cartera general usando QR directo.</p>
+                        <div class="text-[11px] text-amber-400 font-semibold pt-2">✨ Beneficio exclusivo socios Pro</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN REGISTRO (CON SUSCRIPCIÓN OCULTA Y MERCADO PAGO) -->
             <section id="secRegister" class="hidden space-y-6">
                 <div class="max-w-2xl mx-auto space-y-6">
                     <div class="text-center space-y-2">
-                        <h2 class="text-2xl font-bold text-white">Centro de Altas y Registros</h2>
-                        <p class="text-xs text-slate-400">Sumate como socio o integrá tu comercio al club.</p>
+                        <h2 class="text-2xl font-bold text-white">Centro de Altas y Membresías</h2>
+                        <p class="text-xs text-slate-400">Unite a la red de socios o sumá tu comercio de forma automatizada.</p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 bg-[#0b1326] p-1.5 rounded-2xl border border-slate-800 text-xs font-semibold">
-                        <button onclick="switchRegSub('user')" id="btnSubUser" class="py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold transition">1. Asociarme (Cliente)</button>
+                        <button onclick="switchRegSub('user')" id="btnSubUser" class="py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold transition">1. Socio (Cliente)</button>
                         <button onclick="switchRegSub('merchant')" id="btnSubMerchant" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">2. Integrar Comercio</button>
                     </div>
 
                     <!-- Usuario -->
                     <div id="formUserBox" class="glass-card rounded-2xl p-6 shadow-xl space-y-4">
-                        <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider">Registro Rápido de Socio</h3>
+                        <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider">Alta Automática de Socio</h3>
                         <form id="userForm" class="space-y-3">
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Correo Electrónico</label>
                                 <input type="email" id="userEmail" required placeholder="tu_correo@email.com" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
                             </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Estado de Membresía</label>
-                                <select id="userStatus" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
-                                    <option value="active">Activa (Con beneficios plenos)</option>
-                                    <option value="inactive">Inactiva</option>
-                                </select>
+                            
+                            <!-- Membresía Costo Oculto hasta activar -->
+                            <div id="userPaymentWrapper" class="hidden p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/30 space-y-3">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-slate-300 font-semibold">Membresía Mensual Socio Club:</span>
+                                    <span class="text-emerald-400 font-bold text-sm">$1,500 / mes</span>
+                                </div>
+                                <a href="https://mpago.la/12kwFZe" target="_blank" class="block w-full text-center bg-[#009ee3] hover:opacity-90 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-blue-500/20">
+                                    Pagar Suscripción en Mercado Pago ➔
+                                </a>
                             </div>
-                            <button type="submit" class="w-full brand-gradient hover:opacity-90 text-slate-950 font-extrabold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">Obtener Membresía Gratis</button>
+
+                            <button type="submit" id="btnUserSubmit" class="w-full brand-gradient hover:opacity-90 text-slate-950 font-extrabold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">Continuar y Activar Membresía</button>
                         </form>
                         <div id="userResult" class="mt-4 hidden"></div>
                     </div>
 
-                    <!-- Comercio -->
+                    <!-- Comercio (Con Costo Oculto de Publicidad $5000) -->
                     <div id="formMerchantBox" class="hidden glass-card rounded-2xl p-6 shadow-xl space-y-4">
-                        <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-wider">Integración de Comercio y Descuentos</h3>
+                        <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-wider">Alta de Comercio y Publicidad</h3>
                         <form id="merchantForm" class="space-y-3">
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
@@ -260,21 +244,29 @@ def read_root():
                                     <input type="text" id="mercCat" required placeholder="Ej: Indumentaria" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 transition">
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-400 mb-1">ID Comercio</label>
-                                    <input type="number" id="discMerchantId" required placeholder="Ej: 1" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 transition">
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">% Descuento a Ofrecer</label>
+                                    <input type="number" step="0.1" id="discPercentage" required placeholder="Ej: 20" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 transition">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-400 mb-1">% Descuento</label>
-                                    <input type="number" step="0.1" id="discPercentage" required placeholder="Ej: 25" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 transition">
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Título Promo</label>
+                                    <input type="text" id="discTitle" required placeholder="Ej: 20% Club MaxShop" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 transition">
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Título de la Promo</label>
-                                <input type="text" id="discTitle" required placeholder="Ej: 25% Club MaxShop" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-cyan-500 transition">
+
+                            <!-- Costo Oculto Publicidad Mensual Comercio -->
+                            <div id="merchantPaymentWrapper" class="hidden p-4 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-3">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-slate-300 font-semibold">Costo por Publicidad en Red:</span>
+                                    <span class="text-cyan-400 font-bold text-sm">$5,000 / mes</span>
+                                </div>
+                                <a href="https://mpago.la/12kwFZe" target="_blank" class="block w-full text-center bg-[#009ee3] hover:opacity-90 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-blue-500/20">
+                                    Abonar Publicidad en Mercado Pago ➔
+                                </a>
                             </div>
-                            <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-90 text-slate-950 font-extrabold py-3 rounded-xl text-sm transition shadow-lg shadow-cyan-500/20">Registrar Comercio y Descuento</button>
+
+                            <button type="submit" id="btnMerchantSubmit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-90 text-slate-950 font-extrabold py-3 rounded-xl text-sm transition shadow-lg shadow-cyan-500/20">Generar Comercio Automáticamente</button>
                         </form>
                         <div id="merchantResult" class="mt-4 hidden"></div>
                     </div>
@@ -287,7 +279,7 @@ def read_root():
                     <div class="absolute -top-3 right-6 bg-emerald-500 text-slate-950 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Caja Inteligente QR</div>
                     <div class="space-y-2 mb-6">
                         <h2 class="text-xl font-bold text-white">Simulador de Pago en Caja</h2>
-                        <p class="text-xs text-slate-400">Ingresá tu correo y los datos de la compra para validar el descuento automático.</p>
+                        <p class="text-xs text-slate-400">Ingresá tu correo y seleccioná el comercio. El ID se autocompleta.</p>
                     </div>
 
                     <form id="paymentForm" class="space-y-4">
@@ -297,8 +289,12 @@ def read_root():
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">ID del Comercio</label>
-                                <input type="number" id="payMerchant" required placeholder="Ej: 1" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Comercio Adherido</label>
+                                <select id="payMerchantSelect" onchange="document.getElementById('payMerchant').value = this.value;" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
+                                    <option value="1">Zoot & Marken (ID 1)</option>
+                                    <option value="2">TecnoHouse (ID 2)</option>
+                                </select>
+                                <input type="hidden" id="payMerchant" value="1">
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Monto Total ($)</label>
@@ -312,47 +308,36 @@ def read_root():
                 </div>
             </section>
 
-            <!-- SECCIÓN CONTACTO -->
-            <section id="secContact" class="hidden space-y-6">
-                <div class="max-w-xl mx-auto glass-card rounded-2xl p-8 space-y-6 text-center border-emerald-500/20">
-                    <h2 class="text-2xl font-bold text-white">Canales de Comunicación y Soporte</h2>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        ¿Tenés dudas sobre tu membresía o querés sumar tu cadena de comercios? Estamos para ayudarte.
-                    </p>
-                    <div class="grid grid-cols-2 gap-4 pt-2">
-                        <div class="bg-[#040914] p-4 rounded-xl border border-slate-800">
-                            <span class="text-emerald-400 font-bold block mb-1 text-sm">💬 WhatsApp Comercial</span>
-                            <span class="text-xs text-slate-300">+54 9 11 5555-MAXSHOP</span>
-                        </div>
-                        <div class="bg-[#040914] p-4 rounded-xl border border-slate-800">
-                            <span class="text-cyan-400 font-bold block mb-1 text-sm">✉️ Soporte Empresas</span>
-                            <span class="text-xs text-slate-300">empresas@maxshop.com</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
         </main>
 
         <!-- Footer -->
         <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
-            <p>MaxShop Corporation • Club de Beneficios, Descuentos & Pagos Inteligentes</p>
+            <p>MaxShop Corporation • Pagos procesados de forma segura mediante Mercado Pago</p>
         </footer>
 
-        <!-- JavaScript Dinámico -->
+        <!-- JavaScript Dinámico Automatizado -->
         <script>
             function switchSection(sectionId) {
-                const sections = ['home', 'catalog', 'register', 'pay', 'contact'];
+                const sections = ['home', 'catalog', 'banks', 'register', 'pay'];
                 sections.forEach(s => {
-                    document.getElementById('sec' + s.charAt(0).toUpperCase() + s.slice(1)).classList.add('hidden');
+                    const el = document.getElementById('sec' + s.charAt(0).toUpperCase() + s.slice(1));
+                    if(el) el.classList.add('hidden');
                     const navBtn = document.getElementById('nav' + s.charAt(0).toUpperCase() + s.slice(1));
                     if(navBtn) navBtn.className = "px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition";
                 });
 
-                document.getElementById('sec' + sectionId.charAt(0).toUpperCase() + sectionId.slice(1)).classList.remove('hidden');
+                const targetSec = document.getElementById('sec' + sectionId.charAt(0).toUpperCase() + sectionId.slice(1));
+                if(targetSec) targetSec.classList.remove('hidden');
+                
                 const activeNav = document.getElementById('nav' + sectionId.charAt(0).toUpperCase() + sectionId.slice(1));
                 if(activeNav) activeNav.className = "px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20 transition";
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function selectMerchantForPay(id) {
+                document.getElementById('payMerchant').value = id;
+                document.getElementById('payMerchantSelect').value = id;
+                switchSection('pay');
             }
 
             function switchRegSub(type) {
@@ -374,17 +359,25 @@ def read_root():
                 }
             }
 
+            // Registro de Socio con revelado de costo y link de Mercado Pago
             document.getElementById('userForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('userEmail').value;
-                const status = document.getElementById('userStatus').value;
+                const wrapper = document.getElementById('userPaymentWrapper');
+                const btn = document.getElementById('btnUserSubmit');
                 const resDiv = document.getElementById('userResult');
 
+                if(wrapper.classList.contains('hidden')) {
+                    wrapper.classList.remove('hidden');
+                    btn.textContent = "Confirmar Registro en Sistema";
+                    return;
+                }
+
                 resDiv.classList.remove('hidden');
-                resDiv.innerHTML = `<div class="p-3 rounded-xl bg-[#040914] text-xs text-slate-400 animate-pulse">Procesando membresía...</div>`;
+                resDiv.innerHTML = `<div class="p-3 rounded-xl bg-[#040914] text-xs text-slate-400 animate-pulse">Registrando socio automáticamente...</div>`;
 
                 try {
-                    const response = await fetch(`/users/?email=${encodeURIComponent(email)}&subscription_status=${status}`, { method: 'POST' });
+                    const response = await fetch(`/users/?email=${encodeURIComponent(email)}&subscription_status=active`, { method: 'POST' });
                     const data = await response.json();
                     
                     if(data.error) {
@@ -392,10 +385,10 @@ def read_root():
                     } else {
                         resDiv.innerHTML = `
                             <div class="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/30 space-y-2">
-                                <span class="font-bold text-emerald-400 text-xs">✨ ¡Membresía Activada con Éxito!</span>
-                                <p class="text-xs text-slate-300">Socio: <strong class="text-white">${data.email}</strong></p>
+                                <span class="font-bold text-emerald-400 text-xs">✨ ¡Socio Registrado con Éxito!</span>
+                                <p class="text-xs text-slate-300">Email: <strong class="text-white">${data.email}</strong></p>
                                 <div class="pt-2 border-t border-emerald-500/20 text-[11px] text-emerald-300 flex justify-between items-center">
-                                    <span>Ya podés usar tus descuentos en caja.</span>
+                                    <span>Membresía lista para operar en caja.</span>
                                     <button onclick="switchSection('pay')" class="underline font-bold">Ir a Pagar ➔</button>
                                 </div>
                             </div>`;
@@ -405,36 +398,51 @@ def read_root():
                 }
             });
 
+            // Registro de Comercio con revelado de costo publicitario ($5000) y link de Mercado Pago
             document.getElementById('merchantForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const name = document.getElementById('mercName').value;
                 const cat = document.getElementById('mercCat').value;
-                const mId = document.getElementById('discMerchantId').value;
                 const perc = document.getElementById('discPercentage').value;
                 const title = document.getElementById('discTitle').value;
+                const wrapper = document.getElementById('merchantPaymentWrapper');
+                const btn = document.getElementById('btnMerchantSubmit');
                 const resDiv = document.getElementById('merchantResult');
 
+                if(wrapper.classList.contains('hidden')) {
+                    wrapper.classList.remove('hidden');
+                    btn.textContent = "Finalizar Alta y Publicar";
+                    return;
+                }
+
                 resDiv.classList.remove('hidden');
-                resDiv.innerHTML = `<div class="p-3 rounded-xl bg-[#040914] text-xs text-slate-400 animate-pulse">Integrando comercio...</div>`;
+                resDiv.innerHTML = `<div class="p-3 rounded-xl bg-[#040914] text-xs text-slate-400 animate-pulse">Generando comercio y descuento automáticamente...</div>`;
 
                 try {
-                    await fetch(`/merchants/?name=${encodeURIComponent(name)}&category=${encodeURIComponent(cat)}`, { method: 'POST' });
-                    await fetch(`/discounts/?title=${encodeURIComponent(title)}&percentage=${perc}&merchant_id=${mId}`, { method: 'POST' });
-
-                    resDiv.innerHTML = `
-                        <div class="p-4 rounded-xl bg-cyan-950/40 border border-cyan-500/30 space-y-2">
-                            <span class="font-bold text-cyan-400 text-xs">🏢 ¡Comercio Integrado a la Red!</span>
-                            <p class="text-xs text-slate-300">${name} (${cat}) - <strong class="text-cyan-400">${perc}% OFF</strong></p>
-                            <div class="pt-2 border-t border-cyan-500/20 text-[11px] text-cyan-300 flex justify-between items-center">
-                                <span>Listo para recibir pagos con descuento.</span>
-                                <button onclick="switchSection('pay')" class="underline font-bold">Probar Caja ➔</button>
-                            </div>
-                        </div>`;
+                    // 1. Crear Comercio Automático
+                    const mRes = await fetch(`/merchants/?name=${encodeURIComponent(name)}&category=${encodeURIComponent(cat)}`, { method: 'POST' });
+                    const mData = await mRes.json();
+                    
+                    if(mData.merchant_id) {
+                        // 2. Crear Descuento Automático asociado al ID generado
+                        await fetch(`/discounts/?title=${encodeURIComponent(title)}&percentage=${perc}&merchant_id=${mData.merchant_id}`, { method: 'POST' });
+                        
+                        resDiv.innerHTML = `
+                            <div class="p-4 rounded-xl bg-cyan-950/40 border border-cyan-500/30 space-y-2">
+                                <span class="font-bold text-cyan-400 text-xs">🏢 ¡Comercio Integrado Automáticamente!</span>
+                                <p class="text-xs text-slate-300">${name} (${cat}) - <strong class="text-cyan-400">${perc}% OFF</strong> (ID asignado: ${mData.merchant_id})</p>
+                                <div class="pt-2 border-t border-cyan-500/20 text-[11px] text-cyan-300 flex justify-between items-center">
+                                    <span>Ya publicate tus beneficios en la red.</span>
+                                    <button onclick="switchSection('pay')" class="underline font-bold">Probar Caja ➔</button>
+                                </div>
+                            </div>`;
+                    }
                 } catch (err) {
                     resDiv.innerHTML = `<div class="p-3 rounded-xl bg-red-950/40 border border-red-800 text-xs text-red-300">❌ Error al registrar comercio.</div>`;
                 }
             });
 
+            // Pago en Caja
             document.getElementById('paymentForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('payEmail').value;
@@ -487,9 +495,9 @@ def read_root():
     </html>
     """
 
-# --- Rutas de la API (Backend intacto) ---
+# --- Rutas de la API (Backend con auto-generación de IDs) ---
 @app.post("/users/")
-def create_user(email: str, subscription_status: str = "inactive"):
+def create_user(email: str, subscription_status: str = "active"):
     db = SessionLocal()
     try:
         existing_user = db.query(UserDB).filter(UserDB.email == email).first()
