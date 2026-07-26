@@ -41,7 +41,7 @@ class DiscountDB(Base):
 Base.metadata.create_all(bind=engine)
 
 # --- Inicializar FastAPI ---
-app = FastAPI(title="MaxShop - Club de Descuentos & Dinámica en Vivo", version="8.0.0")
+app = FastAPI(title="MaxShop - Club de Descuentos & Dinámica en Vivo", version="8.1.0")
 
 # --- Interfaz Comercial Optimizada ---
 @app.get("/", response_class=HTMLResponse)
@@ -61,7 +61,7 @@ def read_root():
             .brand-text-gradient { background: linear-gradient(135deg, #34d399 0%, #22d3ee 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
             .glass-card { background: rgba(11, 19, 38, 0.9); backdrop-filter: blur(16px); border: 1px solid rgba(30, 58, 138, 0.4); }
             @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
-            .animate-marquee { display: flex; width: 200%; animation: marquee 25s linear infinite; }
+            .animate-marquee { display: flex; width: 200%; animation: marquee 30s linear infinite; }
         </style>
     </head>
     <body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
@@ -116,11 +116,11 @@ def read_root():
             </div>
         </header>
 
-        <!-- Contenido Principal -->
-        <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow space-y-10">
+        <!-- Contenido Principal con Desplazamiento Vertical Extensible -->
+        <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow space-y-12">
             
             <!-- SECCIÓN INICIO -->
-            <section id="secHome" class="space-y-8">
+            <section id="secHome" class="space-y-10">
                 <div class="glass-card rounded-3xl p-6 md:p-10 relative overflow-hidden shadow-2xl border-emerald-500/20 grid md:grid-cols-2 gap-6 items-center">
                     <div class="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
                     <div class="space-y-4 relative z-10">
@@ -139,22 +139,28 @@ def read_root():
                     </div>
                 </div>
 
-                <!-- Carrusel de Fotos en Movimiento para Separar Cuadros -->
-                <div class="overflow-hidden py-2 bg-slate-950/60 border-y border-slate-800 relative">
-                    <div class="animate-marquee flex space-x-6 items-center">
-                        <div class="flex items-center space-x-6 shrink-0">
-                            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
-                            <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
-                            <img src="https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
-                            <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
-                            <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
-                        </div>
-                        <div class="flex items-center space-x-6 shrink-0">
-                            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
-                            <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
-                            <img src="https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
-                            <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
-                            <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
+                <!-- Carrusel de Fotos en Movimiento (Grandes y Dinámicas) -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center px-1">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Experiencias y Tendencias MaxShop</h3>
+                        <span class="text-[10px] text-emerald-400">Deslizamiento Continuo</span>
+                    </div>
+                    <div class="overflow-hidden py-3 bg-slate-950/80 border-y border-slate-800/80 relative rounded-2xl">
+                        <div class="animate-marquee flex space-x-6 items-center">
+                            <div class="flex items-center space-x-6 shrink-0">
+                                <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=600&q=80" class="w-64 h-32 object-cover rounded-2xl border border-slate-800 shadow-xl">
+                                <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80" class="w-64 h-32 object-cover rounded-2xl border border-slate-800 shadow-xl">
+                                <img src="https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=600&q=80" class="w-64 h-32 object-cover rounded-2xl border border-slate-800 shadow-xl">
+                                <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80" class="w-64 h-32 object-cover rounded-2xl border border-slate-800 shadow-xl">
+                                <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=600&q=80" class="w-64 h-32 object-cover rounded-2xl border border-slate-800 shadow-xl">
+                            </div>
+                            <div class="flex items-center space-x-6 shrink-0">
+                                <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=600&q=80" class="w-64 h-32 object-cover rounded-2xl border border-slate-800 shadow-xl">
+                                <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80" class="w-64 h-32 object-cover rounded-2xl border border-slate-800 shadow-xl">
+                                <img src="https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=600&q=80" class="w-64 h-32 object-cover rounded-2xl border border-slate-800 shadow-xl">
+                                <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80" class="w-64 h-32 object-cover rounded-2xl border border-slate-800 shadow-xl">
+                                <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=600&q=80" class="w-64 h-32 object-cover rounded-2xl border border-slate-800 shadow-xl">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -168,7 +174,7 @@ def read_root():
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="realMerchantsContainer">
-                    <div class="glass-card p-6 rounded-2xl text-center text-slate-400 text-xs">Cargando comercios adheridos...</div>
+                    <div class="col-span-3 text-center text-slate-400 text-xs py-8 glass-card rounded-2xl">Cargando comercios adheridos...</div>
                 </div>
             </section>
 
@@ -216,7 +222,7 @@ def read_root():
 
                     <div class="grid grid-cols-2 gap-2 bg-[#0b1326] p-1.5 rounded-2xl border border-slate-800 text-xs font-semibold">
                         <button onclick="switchRegSub('user')" id="btnSubUser" class="py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold transition">1. Socio ($5.000)</button>
-                        <button onclick="switchRegSub('merchant')" id="btnSubMerchant" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">2. Sumar mi Comercio</button>
+                        <button onclick="switchRegSub('merchant')" id="btnSubMerchant" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">2. Comercio Adherido ($5.000)</button>
                     </div>
 
                     <!-- Formulario Socio -->
@@ -245,7 +251,7 @@ def read_root():
 
                     <!-- Formulario Comercio -->
                     <div id="formMerchantBox" class="hidden glass-card rounded-2xl p-6 shadow-xl space-y-4">
-                        <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-wider">Carga de Comercio Adherido</h3>
+                        <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-wider">Carga de Comercio Adherido (Membresía Activa)</h3>
                         <form id="merchantForm" class="space-y-3">
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
@@ -268,7 +274,7 @@ def read_root():
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">URL de Imagen / Foto del Local o Producto</label>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">URL de Imagen (Foto del local o producto)</label>
                                 <input type="url" id="mercImg" required placeholder="https://images.unsplash.com/photo-..." class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-cyan-500">
                             </div>
                             <div class="grid grid-cols-2 gap-2">
@@ -285,11 +291,11 @@ def read_root():
 
                             <div id="merchantPaymentWrapper" class="hidden p-4 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-3">
                                 <div class="flex justify-between items-center text-xs">
-                                    <span class="text-slate-300 font-semibold">Costo Publicidad Mensual:</span>
+                                    <span class="text-slate-300 font-semibold">Membresía Mensual Comercio:</span>
                                     <span class="text-cyan-400 font-bold text-sm">$5,000 / mes</span>
                                 </div>
                                 <a href="https://mpago.la/12kwFZe" target="_blank" class="block w-full text-center bg-[#009ee3] hover:opacity-90 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg">
-                                    Abonar Publicidad en Mercado Pago ➔
+                                    Abonar Membresía en Mercado Pago ➔
                                 </a>
                             </div>
 
@@ -355,7 +361,7 @@ def read_root():
                     const selectPay = document.getElementById('payMerchantSelect');
                     
                     if(loadedMerchants.length === 0) {
-                        catalogContainer.innerHTML = `<div class="col-span-3 text-center text-slate-400 text-xs py-8">Aún no hay comercios adheridos cargados. ¡Sumá tu comercio en Registrarse!</div>`;
+                        catalogContainer.innerHTML = `<div class="col-span-3 text-center text-slate-400 text-xs py-10 glass-card rounded-2xl">Aún no hay comercios adheridos cargados. ¡Sumá tu comercio en Registrarse!</div>`;
                         selectPay.innerHTML = `<option value="">No hay comercios disponibles</option>`;
                         return;
                     }
@@ -365,8 +371,8 @@ def read_root():
 
                     loadedMerchants.forEach((m) => {
                         catalogContainer.innerHTML += `
-                            <div class="glass-card rounded-2xl overflow-hidden shadow-lg border-emerald-500/20">
-                                <img src="${m.image_url || 'https://images.unsplash.com/photo-1556742049-0a67d553c299?auto=format&fit=crop&w=600&q=80'}" alt="${m.name}" class="w-full h-36 object-cover">
+                            <div class="glass-card rounded-2xl overflow-hidden shadow-lg border-emerald-500/20 flex flex-col justify-between">
+                                <img src="${m.image_url || 'https://images.unsplash.com/photo-1556742049-0a67d553c299?auto=format&fit=crop&w=600&q=80'}" alt="${m.name}" class="w-full h-40 object-cover">
                                 <div class="p-4 space-y-2">
                                     <span class="bg-emerald-500 text-slate-950 text-[9px] font-bold px-2 py-0.5 rounded-full">${m.percentage}% OFF</span>
                                     <h3 class="font-bold text-sm text-white">${m.name}</h3>
@@ -383,6 +389,7 @@ def read_root():
                     }
                 } catch(e) {
                     console.error("Error cargando comercios:", e);
+                    document.getElementById('realMerchantsContainer').innerHTML = `<div class="col-span-3 text-center text-red-400 text-xs py-8">Error al conectar con la base de datos de comercios.</div>`;
                 }
             }
 
