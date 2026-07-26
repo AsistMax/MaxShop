@@ -42,7 +42,7 @@ class DiscountDB(Base):
 Base.metadata.create_all(bind=engine)
 
 # --- Inicializar FastAPI ---
-app = FastAPI(title="MaxShop Pro - Versión Desplazamiento Total", version="11.1.0")
+app = FastAPI(title="MaxShop Club de Descuentos%", version="11.2.0")
 
 # --- Interfaz Principal ---
 @app.get("/", response_class=HTMLResponse)
@@ -53,7 +53,7 @@ def read_root():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>MaxShop Pro | ¡Descuentos de Locos!! & Seguros AsistMax</title>
+        <title>MaxShop | Club de Descuentos % & Seguros AsistMax</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <style>
@@ -63,7 +63,6 @@ def read_root():
             .glass-card { background: rgba(11, 19, 38, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(30, 58, 138, 0.4); }
             @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
             .animate-marquee { display: flex; width: 200%; animation: marquee 35s linear infinite; }
-            /* Deslizamiento lateral suave para celulares */
             .swipe-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
             .swipe-container::-webkit-scrollbar { display: none; }
             .swipe-item { flex: 0 0 100%; scroll-snap-align: start; }
@@ -77,20 +76,20 @@ def read_root():
                 <div class="flex items-center space-x-4">
                     <span class="flex items-center space-x-1 text-emerald-400 font-bold">🟢 <span>Dólar Blue:</span> <strong class="text-white">$1.220 / $1.240</strong></span>
                     <span class="hidden md:inline text-slate-600">|</span>
-                    <span class="hidden md:inline text-slate-300">Inflación: <strong class="text-emerald-400">2.8%</strong></span>
+                    <span class="hidden md:inline text-slate-300">Club de Descuentos Activo: <strong class="text-emerald-400">¡Hasta 50% OFF!</strong></span>
                 </div>
                 <div class="flex items-center space-x-3 text-amber-400 font-bold">
-                    <span>⚡ AsistMax Seguro Financiero: Póliza hasta $20M Activa</span>
+                    <span>⚡ Alianza AsistMax: Póliza hasta $20M</span>
                 </div>
             </div>
         </div>
 
-        <!-- Navegación y Control Superior con Flechas Antirretorno -->
+        <!-- Cabecera y Navegación Principal -->
         <header class="border-b border-slate-800/80 bg-[#030712]/95 backdrop-blur-md sticky top-0 z-50">
             <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
                 
                 <div class="flex items-center space-x-3">
-                    <!-- Botones de flecha para evitar que el botón del celular cierre la app -->
+                    <!-- Botones de historial para evitar cierre accidental en celulares -->
                     <div class="flex items-center space-x-1 bg-slate-900 border border-slate-800 rounded-xl p-1 shadow-md">
                         <button onclick="goBackSection()" class="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition" title="Sección Anterior">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -100,15 +99,19 @@ def read_root():
                         </button>
                     </div>
 
-                    <div class="flex items-center space-x-2 cursor-pointer" onclick="switchSection('home')">
-                        <div class="w-9 h-9 rounded-2xl brand-gradient flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                            <svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <!-- LOGO Y NOMBRE PRINCIPAL: MAXSHOP CLUB DE DESCUENTOS -->
+                    <div class="flex items-center space-x-2.5 cursor-pointer" onclick="switchSection('home')">
+                        <div class="w-10 h-10 rounded-2xl brand-gradient flex items-center justify-center shadow-lg shadow-emerald-500/20 font-black text-slate-950 text-base">
+                            M%
                         </div>
-                        <h1 class="font-extrabold text-sm text-white hidden sm:block">Max<span class="text-emerald-400">Shop</span></h1>
+                        <div>
+                            <h1 class="font-extrabold text-sm text-white tracking-wide">Max<span class="text-emerald-400">Shop</span></h1>
+                            <span class="text-[9px] text-emerald-300 tracking-wider uppercase font-bold block -mt-1">Club de Descuentos %</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Menú y Acceso -->
+                <!-- Menú de Navegación -->
                 <div class="flex items-center space-x-2">
                     <nav class="hidden md:flex items-center space-x-1 text-xs">
                         <button onclick="switchSection('home')" id="navHome" class="px-3 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20 transition">Inicio</button>
@@ -127,49 +130,49 @@ def read_root():
             </div>
         </header>
 
-        <!-- Contenedor Principal Deslizable Vertical y Horizontal -->
+        <!-- Contenedor Principal -->
         <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow space-y-16">
             
-            <!-- SECCIÓN INICIO (Deslizable a los lados) -->
+            <!-- SECCIÓN INICIO -->
             <section id="secHome" class="space-y-10">
                 <div class="swipe-container rounded-3xl overflow-hidden glass-card shadow-2xl border-emerald-500/20">
                     <!-- Slide 1 -->
                     <div class="swipe-item p-6 md:p-10 grid md:grid-cols-2 gap-6 items-center">
                         <div class="space-y-4">
-                            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-3 py-1 rounded-full uppercase">Red Federal MaxShop</span>
-                            <h2 class="text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">Desplázate y descubre <span class="locos-gradient font-black">¡Descuentos de Locos!!</span></h2>
+                            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-3 py-1 rounded-full uppercase">MaxShop Club de Descuentos %</span>
+                            <h2 class="text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">Ahorra en grande con <span class="locos-gradient font-black">¡Descuentos de Locos!!</span></h2>
                             <p class="text-slate-300 text-xs md:text-sm leading-relaxed">
-                                Navega verticalmente o desliza hacia los costados para explorar comercios, tecnología, indumentaria, hogar, moda y mucho más.
+                                El club de beneficios líder para potenciar tu poder adquisitivo en supermercados, tecnología, indumentaria, hogar y gastronomía.
                             </p>
                             <div class="flex flex-wrap gap-3 pt-2">
                                 <button onclick="switchSection('catalog')" class="brand-gradient hover:opacity-90 text-slate-950 font-extrabold px-5 py-3 rounded-xl text-xs transition shadow-lg">Ver Descuentos de Locos</button>
                                 <button onclick="switchSection('insurance')" class="bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold px-5 py-3 rounded-xl text-xs transition">Seguros AsistMax ($20M)</button>
                             </div>
                         </div>
-                        <div class="rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
-                            <img src="https://images.unsplash.com/photo-1556742049-0a67d553c299?auto=format&fit=crop&w=800&q=80" alt="MaxShop" class="w-full h-52 md:h-64 object-cover">
+                        <div class="rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 p-2 flex items-center justify-center">
+                            <img src="https://images.unsplash.com/photo-1556742049-0a67d553c299?auto=format&fit=crop&w=800&q=80" alt="MaxShop Club de Descuentos" class="w-full h-52 md:h-64 object-cover rounded-xl">
                         </div>
                     </div>
                     <!-- Slide 2 -->
                     <div class="swipe-item p-6 md:p-10 grid md:grid-cols-2 gap-6 items-center bg-slate-950/60">
                         <div class="space-y-4">
                             <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-3 py-1 rounded-full uppercase">Alianza Estratégica AsistMax</span>
-                            <h2 class="text-2xl md:text-4xl font-extrabold text-white">Asistencia Financiera y de Sepelio</h2>
+                            <h2 class="text-2xl md:text-4xl font-extrabold text-white">Protección y Seguros AsistMax</h2>
                             <p class="text-slate-300 text-xs md:text-sm leading-relaxed">
-                                Obtén cobertura de hasta $20.000.000 en tu póliza con solo activar tu membresía en la red. Protección integral para ti y tu familia.
+                                Como socio activo de MaxShop, accede a coberturas financieras y de sepelio de hasta $20.000.000 con nuestro socio estratégico AsistMax.
                             </p>
-                            <a href="https://sistema-seguros.onrender.com/" target="_blank" class="inline-block bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-6 py-3 rounded-xl text-xs transition">Contratar en AsistMax ➔</a>
+                            <a href="https://sistema-seguros.onrender.com/" target="_blank" class="inline-block bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-6 py-3 rounded-xl text-xs transition">Cotizar en AsistMax ➔</a>
                         </div>
                         <div class="rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
-                            <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80" alt="Seguros" class="w-full h-52 md:h-64 object-cover">
+                            <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80" alt="Seguros AsistMax" class="w-full h-52 md:h-64 object-cover">
                         </div>
                     </div>
                 </div>
 
-                <!-- Carrusel de Marcas, Canales, Compras y Tecnología -->
+                <!-- Carrusel de Marcas y Comercios -->
                 <div class="space-y-3">
                     <div class="flex justify-between items-center px-1">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Tecnología, Moda, Hogar & Canales Aliados</h3>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Comercios Aliados & Rubros Destacados</h3>
                         <span class="text-[10px] text-emerald-400">Deslizamiento Continuo</span>
                     </div>
                     <div class="overflow-hidden py-3 bg-slate-950/80 border-y border-slate-800/80 relative rounded-2xl">
@@ -191,12 +194,12 @@ def read_root():
                 </div>
             </section>
 
-            <!-- SECCIÓN: ¡DESCUENTOS DE LOCOS!! (Comercios y Ofertas) -->
+            <!-- SECCIÓN: ¡DESCUENTOS DE LOCOS!! -->
             <section id="secCatalog" class="hidden space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h2 class="text-3xl font-black locos-gradient tracking-wide">¡Descuentos de Locos!!</h2>
-                        <p class="text-xs text-slate-400">Supermercados, tecnología, indumentaria, farmacias, hogar y gastronomía.</p>
+                        <p class="text-xs text-slate-400">Club de Beneficios MaxShop: Supermercados, tecnología, indumentaria, farmacias, hogar y gastronomía.</p>
                     </div>
                     <div class="flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs">
                         <button onclick="changePage(-1)" class="text-slate-400 hover:text-white font-bold px-2 py-0.5 bg-slate-800 rounded-lg">◀ Regresar</button>
@@ -207,18 +210,18 @@ def read_root():
 
                 <!-- Filtros Rubro -->
                 <div class="flex flex-wrap gap-2 text-xs">
-                    <button onclick="filterCategory('all')" class="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-bold">Todos</button>
-                    <button onclick="filterCategory('Supermercados')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">Supermercados</button>
-                    <button onclick="filterCategory('Tecnología')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">Tecnología</button>
-                    <button onclick="filterCategory('Moda e Indumentaria')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">Moda e Indumentaria</button>
-                    <button onclick="filterCategory('Hogar')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">Hogar</button>
-                    <button onclick="filterCategory('Farmacias')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">Farmacias</button>
-                    <button onclick="filterCategory('Gastronomía')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">Gastronomía</button>
+                    <button onclick="filterCategory('all')" id="catBtnAll" class="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-bold transition">Todos</button>
+                    <button onclick="filterCategory('Supermercados')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:border-emerald-500/50 transition">Supermercados</button>
+                    <button onclick="filterCategory('Tecnología')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:border-emerald-500/50 transition">Tecnología</button>
+                    <button onclick="filterCategory('Moda e Indumentaria')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:border-emerald-500/50 transition">Moda e Indumentaria</button>
+                    <button onclick="filterCategory('Hogar')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:border-emerald-500/50 transition">Hogar</button>
+                    <button onclick="filterCategory('Farmacias')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:border-emerald-500/50 transition">Farmacias</button>
+                    <button onclick="filterCategory('Gastronomía')" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:border-emerald-500/50 transition">Gastronomía</button>
                 </div>
 
                 <!-- Grid de Comercios -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="realMerchantsContainer">
-                    <div class="col-span-3 text-center text-slate-400 text-xs py-10 glass-card rounded-2xl">Cargando descuentos...</div>
+                    <div class="col-span-3 text-center text-slate-400 text-xs py-10 glass-card rounded-2xl animate-pulse">Cargando descuentos de MaxShop...</div>
                 </div>
             </section>
 
@@ -228,44 +231,44 @@ def read_root():
                     <div class="flex items-center space-x-4">
                         <div class="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-400 font-black text-xl">🛡️</div>
                         <div>
-                            <h2 class="text-2xl font-bold text-white">AsistMax Seguro Financiero</h2>
-                            <p class="text-xs text-slate-400">Asistencia integral en vida y sepelio de hasta $20.000.000 de póliza.</p>
+                            <h2 class="text-2xl font-bold text-white">Seguros & Asistencia AsistMax</h2>
+                            <p class="text-xs text-slate-400">Protección financiera integral y sepelio de hasta $20.000.000 de póliza.</p>
                         </div>
                     </div>
                     <p class="text-xs text-slate-300 leading-relaxed">
-                        Como socio activo de MaxShop Pro, tienes acceso preferencial a los planes de protección financiera más avanzados del mercado provistos por nuestro socio estratégico **AsistMax**.
+                        Como socio activo de **MaxShop Club de Descuentos %**, tienes acceso preferencial a los planes de protección más avanzados del mercado provistos por nuestro socio estratégico **AsistMax**.
                     </p>
                     <div class="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex flex-col sm:flex-row justify-between items-center gap-4">
                         <span class="text-xs text-amber-300 font-semibold">¿Deseas cotizar o contratar otra cobertura adicional?</span>
                         <a href="https://sistema-seguros.onrender.com/" target="_blank" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-6 py-3 rounded-xl text-xs transition shadow-lg shrink-0">
-                            Abrir Sistema de Seguros ➔
+                            Abrir Sistema AsistMax ➔
                         </a>
                     </div>
                 </div>
             </section>
 
-            <!-- SECCIÓN: NOTICIAS EN VIVO Y FINANZAS -->
+            <!-- SECCIÓN: NOTICIAS & FINANZAS -->
             <section id="secNews" class="hidden space-y-6">
                 <div class="space-y-2">
-                    <h2 class="text-2xl font-bold text-white">Noticias de Impacto Mundial & Finanzas</h2>
-                    <p class="text-xs text-slate-400">Actualización automática diaria sobre economía, tecnología, mercado y consumo.</p>
+                    <h2 class="text-2xl font-bold text-white">Noticias de Impacto & Finanzas Personales</h2>
+                    <p class="text-xs text-slate-400">Actualización automática diaria sobre economía, consumo inteligente y ahorro.</p>
                 </div>
 
                 <div class="grid md:grid-cols-3 gap-6">
                     <div class="glass-card p-5 rounded-2xl space-y-3">
-                        <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-md font-bold">MERCADOS & INFLACIÓN</span>
-                        <h3 class="font-bold text-sm text-white">Impacto de la inflación en las compras de tecnología y hogar</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">Cómo capitalizar las cuotas sin interés y los descuentos masivos para mantener el poder adquisitivo familiar.</p>
+                        <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-md font-bold">MERCADOS & AHORRO</span>
+                        <h3 class="font-bold text-sm text-white">Cómo maximizar el ahorro familiar utilizando clubes de beneficios</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">Estrategias clave para combinar cuotas sin interés y descuentos directos en comercios adheridos.</p>
                     </div>
                     <div class="glass-card p-5 rounded-2xl space-y-3">
-                        <span class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-md font-bold">TENDENCIAS MUNDIALES</span>
-                        <h3 class="font-bold text-sm text-white">La revolución del e-commerce y los clubes de beneficios</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">Nuevas estrategias de marketing digital implementadas por plataformas líderes en el mundo este año.</p>
+                        <span class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-md font-bold">TENDENCIAS</span>
+                        <h3 class="font-bold text-sm text-white">El crecimiento de las compras inteligentes en supermercados y tecnología</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">Análisis del consumo masivo y el impacto de las rebajas del 20% al 50% en el bolsillo.</p>
                     </div>
                     <div class="glass-card p-5 rounded-2xl space-y-3">
-                        <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-md font-bold">FINANZAS PERSONALES</span>
-                        <h3 class="font-bold text-sm text-white">Seguros de vida y cobertura patrimonial: ¿Por qué son vitales?</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">Análisis de pólizas de hasta $20M con AsistMax y su rendimiento frente a contextos inflacionarios.</p>
+                        <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-md font-bold">PROTECCIÓN</span>
+                        <h3 class="font-bold text-sm text-white">Seguros de vida y cobertura patrimonial con AsistMax</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">La importancia de contar con un respaldo financiero de hasta $20M en contextos inflacionarios.</p>
                     </div>
                 </div>
             </section>
@@ -274,18 +277,18 @@ def read_root():
             <section id="secRegister" class="hidden space-y-6">
                 <div class="max-w-2xl mx-auto space-y-6">
                     <div class="text-center space-y-2">
-                        <h2 class="text-2xl font-bold text-white">Centro de Altas & Membresías</h2>
-                        <p class="text-xs text-slate-400">Únete como socio y obtén beneficios en toda la red y seguros.</p>
+                        <h2 class="text-2xl font-bold text-white">Centro de Altas & Membresías MaxShop</h2>
+                        <p class="text-xs text-slate-400">Únete al club de descuentos y obtén beneficios exclusivos en toda la red.</p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 bg-[#0b1326] p-1.5 rounded-2xl border border-slate-800 text-xs font-semibold">
-                        <button onclick="switchRegSub('user')" id="btnSubUser" class="py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold transition">1. Socio ($5.000)</button>
+                        <button onclick="switchRegSub('user')" id="btnSubUser" class="py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold transition">1. Socio Club ($5.000)</button>
                         <button onclick="switchRegSub('merchant')" id="btnSubMerchant" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">2. Comercio Adherido ($5.000)</button>
                     </div>
 
                     <!-- Socio Form -->
                     <div id="formUserBox" class="glass-card rounded-2xl p-6 shadow-xl space-y-4">
-                        <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Membresía Mensual Socio</h3>
+                        <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Membresía Mensual Socio Club</h3>
                         <form id="userForm" class="space-y-3">
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Correo Electrónico</label>
@@ -307,12 +310,11 @@ def read_root():
 
                     <!-- Comercio Form -->
                     <div id="formMerchantBox" class="hidden glass-card rounded-2xl p-6 shadow-xl space-y-4">
-                        <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-wider">Carga de Comercio & Publicidad</h3>
+                        <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-wider">Carga de Comercio & Promoción</h3>
                         <form id="merchantForm" class="space-y-3">
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Tu Correo (Login de Comerciante)</label>
                                 <input type="email" id="mercEmail" required placeholder="correo_comercio@email.com" class="w-full bg-[#030712] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
-                                <p class="text-[10px] text-slate-500 mt-1">Si ya te registraste antes, el sistema actualizará tu publicidad sin cobrarte nuevamente.</p>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
@@ -337,19 +339,18 @@ def read_root():
                                     <input type="number" step="0.1" id="discPercentage" required placeholder="Ej: 25" class="w-full bg-[#030712] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-400 mb-1">Título de Promo / Flyer</label>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Título de Promo</label>
                                     <input type="text" id="discTitle" required placeholder="Ej: 25% OFF Liquidación" class="w-full bg-[#030712] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Imagen o Flyer (Archivo o Enlace URL)</label>
-                                <input type="file" id="mercFile" accept="image/*" class="w-full bg-[#030712] border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-500 file:text-slate-950">
-                                <input type="url" id="mercImgUrl" placeholder="O pega URL de imagen..." class="w-full mt-2 bg-[#030712] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Enlace de Imagen / Flyer URL</label>
+                                <input type="url" id="mercImgUrl" placeholder="https://images.unsplash.com/..." class="w-full bg-[#030712] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
                             </div>
 
                             <div id="merchantPaymentWrapper" class="hidden p-4 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-3">
                                 <div class="flex justify-between items-center text-xs">
-                                    <span class="text-slate-300 font-semibold">Membresía Mensual Comercio:</span>
+                                    <span class="text-slate-300 font-semibold">Membresía Comercio:</span>
                                     <span class="text-cyan-400 font-bold text-sm">$5,000 / mes</span>
                                 </div>
                                 <a href="https://mpago.la/12kwFZe" target="_blank" class="block w-full text-center bg-[#009ee3] hover:opacity-90 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg">
@@ -357,7 +358,7 @@ def read_root():
                                 </a>
                             </div>
 
-                            <button type="submit" id="btnMerchantSubmit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition">Publicar / Actualizar Publicidad</button>
+                            <button type="submit" id="btnMerchantSubmit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition">Publicar / Actualizar en MaxShop</button>
                         </form>
                         <div id="merchantResult" class="mt-4 hidden"></div>
                     </div>
@@ -367,21 +368,21 @@ def read_root():
             <!-- SECCIÓN CAJA Y PAGO QR -->
             <section id="secPay" class="hidden space-y-6">
                 <div class="max-w-xl mx-auto glass-card rounded-2xl p-8 shadow-2xl border-emerald-500/30 relative">
-                    <div class="absolute -top-3 right-6 bg-emerald-500 text-slate-950 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">Caja Inteligente QR</div>
+                    <div class="absolute -top-3 right-6 bg-emerald-500 text-slate-950 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">Caja Inteligente QR MaxShop</div>
                     <div class="space-y-2 mb-6">
                         <h2 class="text-xl font-bold text-white">Simulador de Cobro en Caja</h2>
-                        <p class="text-xs text-slate-400">Verifica socio y aplica el descuento instantáneo.</p>
+                        <p class="text-xs text-slate-400">Verifica socio del club y aplica el descuento instantáneo.</p>
                     </div>
                     <form id="paymentForm" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Email del Socio</label>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Email del Socio Club</label>
                             <input type="email" id="payEmail" required placeholder="tu_correo@email.com" class="w-full bg-[#030712] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Comercio Adherido</label>
                                 <select id="payMerchantSelect" class="w-full bg-[#030712] border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white">
-                                    <option value="">Cargando...</option>
+                                    <option value="">Cargando comercios...</option>
                                 </select>
                             </div>
                             <div>
@@ -389,30 +390,30 @@ def read_root():
                                 <input type="number" step="0.01" id="payAmount" required placeholder="Ej: 15000" class="w-full bg-[#030712] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white">
                             </div>
                         </div>
-                        <button type="submit" class="w-full brand-gradient text-slate-950 font-extrabold py-3.5 rounded-xl text-xs transition shadow-xl">Pagar con Descuento de Locos</button>
+                        <button type="submit" class="w-full brand-gradient text-slate-950 font-extrabold py-3.5 rounded-xl text-xs transition shadow-xl">Aplicar Descuento y Cobrar</button>
                     </form>
                     <div id="paymentResult" class="mt-6 hidden"></div>
                 </div>
             </section>
 
-            <!-- SECCIÓN PANEL ADMINISTRADOR EXCLUSIVO -->
+            <!-- SECCIÓN PANEL ADMINISTRADOR -->
             <section id="secAdmin" class="hidden space-y-6">
                 <div class="max-w-4xl mx-auto glass-card rounded-2xl p-6 md:p-8 shadow-2xl border-amber-500/40 space-y-6">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-4">
                         <div>
-                            <h2 class="text-xl font-bold text-white">👑 Panel de Control Privado (Propietario)</h2>
-                            <p class="text-xs text-slate-400">Control absoluto de funciones, secciones y comercios de la empresa.</p>
+                            <h2 class="text-xl font-bold text-white">👑 Panel de Control Privado - MaxShop Pro</h2>
+                            <p class="text-xs text-slate-400">Control absoluto de socios, comercios y configuraciones del club.</p>
                         </div>
                         <button onclick="loadAdminData()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition">🔄 Actualizar</button>
                     </div>
 
                     <div class="grid md:grid-cols-2 gap-6">
                         <div class="bg-[#030712] p-4 rounded-xl border border-slate-800 space-y-3">
-                            <h3 class="font-bold text-xs text-emerald-400 uppercase">Socios Registrados</h3>
+                            <h3 class="font-bold text-xs text-emerald-400 uppercase">Socios del Club Registrados</h3>
                             <div id="adminUsersList" class="space-y-2 max-h-60 overflow-y-auto text-xs pr-1"><span class="text-slate-500">Cargando...</span></div>
                         </div>
                         <div class="bg-[#030712] p-4 rounded-xl border border-slate-800 space-y-3">
-                            <h3 class="font-bold text-xs text-cyan-400 uppercase">Comercios en la Red</h3>
+                            <h3 class="font-bold text-xs text-cyan-400 uppercase">Comercios en la Red MaxShop</h3>
                             <div id="adminMerchantsList" class="space-y-2 max-h-60 overflow-y-auto text-xs pr-1"><span class="text-slate-500">Cargando...</span></div>
                         </div>
                     </div>
@@ -426,22 +427,22 @@ def read_root():
             <div class="glass-card rounded-3xl p-6 max-w-sm w-full space-y-4 border-cyan-500/40 shadow-2xl relative">
                 <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold">✕</button>
                 <h3 class="font-bold text-base text-white">Acceso Exclusivo / Login</h3>
-                <p class="text-xs text-slate-400">Ingresa tu clave de propietario o correo de comerciante registrado.</p>
+                <p class="text-xs text-slate-400">Ingresa tu clave de administración o correo de comerciante registrado.</p>
                 <div class="space-y-3">
-                    <input type="password" id="loginKeyInput" placeholder="Clave de Administrador o Email..." class="w-full bg-[#030712] border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white">
+                    <input type="password" id="loginKeyInput" placeholder="Clave admin o Email..." class="w-full bg-[#030712] border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white">
                     <button onclick="executeLogin()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition">Acceder al Sistema</button>
                 </div>
-                <div id="loginError" class="text-xs text-red-400 hidden">Clave incorrecta.</div>
+                <div id="loginError" class="text-xs text-red-400 hidden">Clave o correo incorrecto.</div>
             </div>
         </div>
 
         <!-- Footer -->
         <footer class="border-t border-slate-800/80 py-6 text-center text-[10px] text-slate-500 space-y-2">
-            <p>MaxShop Pro & AsistMax Seguros • Pagos seguros operados a través de Mercado Pago</p>
-            <p class="text-slate-600">Bancos y Tarjetas compatibles: BNA+, Modo, Visa, Mastercard, Galicia, Santander, Macro.</p>
+            <p>MaxShop Club de Descuentos % & Seguros AsistMax • Pagos seguros operados a través de Mercado Pago</p>
+            <p class="text-slate-600">Medios compatibles: BNA+, Modo, Visa, Mastercard, Galicia, Santander, Macro.</p>
         </footer>
 
-        <!-- Script -->
+        <!-- Script de Funcionalidad Total -->
         <script>
             let loadedMerchants = [];
             let currentFilter = 'all';
@@ -454,16 +455,21 @@ def read_root():
                 try {
                     const res = await fetch('/api/merchants/');
                     loadedMerchants = await res.json();
-                    if(loadedMerchants.length === 0) {
-                        // Precargar un comercio por defecto si la base está vacía para evitar pantallas en blanco
+                    if(!loadedMerchants || loadedMerchants.length === 0) {
+                        // Datos precargados predeterminados para que nunca aparezca vacío
                         loadedMerchants = [
                             { id: 1, email: "demo@techstore.com", name: "TechStore Argentina", category: "Tecnología", image_url: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=600&q=80", percentage: 20, title: "20% OFF en Celulares" },
-                            { id: 2, email: "demo@supermax.com", name: "Supermercados Max", category: "Supermercados", image_url: "https://images.unsplash.com/photo-1556742049-0a67d553c299?auto=format&fit=crop&w=600&q=80", percentage: 15, title: "15% OFF en Canasta Básica" }
+                            { id: 2, email: "demo@supermax.com", name: "Supermercados Max", category: "Supermercados", image_url: "https://images.unsplash.com/photo-1556742049-0a67d553c299?auto=format&fit=crop&w=600&q=80", percentage: 15, title: "15% OFF en Canasta Básica" },
+                            { id: 3, email: "demo@modafit.com", name: "ModaFit Indumentaria", category: "Moda e Indumentaria", image_url: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80", percentage: 30, title: "30% OFF en Temporada" }
                         ];
                     }
                     renderCatalog();
                 } catch(e) {
                     console.error("Error cargando comercios:", e);
+                    loadedMerchants = [
+                        { id: 1, email: "demo@techstore.com", name: "TechStore Argentina", category: "Tecnología", image_url: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=600&q=80", percentage: 20, title: "20% OFF en Celulares" }
+                    ];
+                    renderCatalog();
                 }
             }
 
@@ -477,13 +483,19 @@ def read_root():
 
                 const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
                 if(currentPage > totalPages) currentPage = totalPages;
-                document.getElementById('pageIndicator').innerText = `Página ${currentPage} de ${totalPages}`;
+                const pageInd = document.getElementById('pageIndicator');
+                if(pageInd) pageInd.innerText = `Página ${currentPage} de ${totalPages}`;
 
                 const start = (currentPage - 1) * itemsPerPage;
                 const paginatedItems = filtered.slice(start, start + itemsPerPage);
 
                 catalogContainer.innerHTML = '';
-                selectPay.innerHTML = '';
+                if(selectPay) selectPay.innerHTML = '';
+
+                if(paginatedItems.length === 0) {
+                    catalogContainer.innerHTML = `<div class="col-span-3 text-center text-slate-400 text-xs py-10 glass-card rounded-2xl">No hay comercios disponibles en este rubro por el momento.</div>`;
+                    return;
+                }
 
                 paginatedItems.forEach((m) => {
                     catalogContainer.innerHTML += `
@@ -496,15 +508,17 @@ def read_root():
                                 </div>
                                 <h3 class="font-bold text-sm text-white">${m.name}</h3>
                                 <p class="text-xs text-slate-400">Promo: <span class="text-emerald-400 font-semibold">${m.title}</span></p>
-                                <button onclick="selectMerchantForPay(${m.id})" class="w-full mt-2 bg-slate-900 text-emerald-400 text-xs font-semibold py-2 rounded-xl border border-slate-800 hover:bg-slate-800 transition">Usar en Caja ➔</button>
+                                <button onclick="selectMerchantForPay(${m.id})" class="w-full mt-2 bg-slate-900 text-emerald-400 text-xs font-semibold py-2 rounded-xl border border-slate-800 hover:bg-slate-800 transition">Usar en Caja QR ➔</button>
                             </div>
                         </div>
                     `;
                 });
 
-                loadedMerchants.forEach((m) => {
-                    selectPay.innerHTML += `<option value="${m.id}">${m.name} (${m.percentage}% OFF)</option>`;
-                });
+                if(selectPay) {
+                    loadedMerchants.forEach((m) => {
+                        selectPay.innerHTML += `<option value="${m.id}">${m.name} (${m.percentage}% OFF)</option>`;
+                    });
+                }
             }
 
             function changePage(direction) {
@@ -578,7 +592,7 @@ def read_root():
                         document.getElementById('mercEmail').value = found.email;
                         document.getElementById('mercName').value = found.name;
                         document.getElementById('merchantPaymentWrapper').classList.add('hidden');
-                        alert("¡Bienvenido de nuevo! Tus datos fueron recordados. Puedes actualizar tu flyer o promoción sin volver a pagar.");
+                        alert("¡Bienvenido! Tus datos fueron reconocidos. Puedes actualizar tu promoción.");
                     } else {
                         document.getElementById('loginError').classList.remove('hidden');
                     }
@@ -618,12 +632,12 @@ def read_root():
 
                 if(wrapper.classList.contains('hidden')) {
                     wrapper.classList.remove('hidden');
-                    btn.textContent = "Confirmar Alta Socio";
+                    btn.textContent = "Confirmar Alta Socio Club";
                     return;
                 }
 
                 resDiv.classList.remove('hidden');
-                resDiv.innerHTML = `<div class="p-3 bg-[#030712] text-xs text-slate-400 animate-pulse">Registrando...</div>`;
+                resDiv.innerHTML = `<div class="p-3 bg-[#030712] text-xs text-slate-400 animate-pulse">Registrando socio...</div>`;
 
                 try {
                     const response = await fetch(`/users/?email=${encodeURIComponent(email)}&subscription_status=active`, { method: 'POST' });
@@ -631,7 +645,7 @@ def read_root():
                     if(data.error) {
                         resDiv.innerHTML = `<div class="p-3 bg-red-950/40 text-xs text-red-300">⚠️ ${data.error}</div>`;
                     } else {
-                        resDiv.innerHTML = `<div class="p-3 bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300">✨ ¡Socio registrado con éxito!</div>`;
+                        resDiv.innerHTML = `<div class="p-3 bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300">✨ ¡Socio registrado con éxito en MaxShop!</div>`;
                     }
                 } catch (err) {
                     resDiv.innerHTML = `<div class="p-3 bg-red-950/40 text-xs text-red-300">❌ Error de conexión.</div>`;
@@ -645,48 +659,34 @@ def read_root():
                 const cat = document.getElementById('mercCat').value;
                 const perc = document.getElementById('discPercentage').value;
                 const title = document.getElementById('discTitle').value;
-                
-                let imgUrl = document.getElementById('mercImgUrl').value;
-                const fileInput = document.getElementById('mercFile');
+                let imgUrl = document.getElementById('mercImgUrl').value || 'https://images.unsplash.com/photo-1556742049-0a67d553c299?auto=format&fit=crop&w=600&q=80';
 
-                if(fileInput.files && fileInput.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = async function(uploadEvent) {
-                        await sendMerchantToServer(email, name, cat, uploadEvent.target.result, perc, title);
-                    };
-                    reader.readAsDataURL(fileInput.files[0]);
-                } else {
-                    await sendMerchantToServer(email, name, cat, imgUrl || 'https://images.unsplash.com/photo-1556742049-0a67d553c299?auto=format&fit=crop&w=600&q=80', perc, title);
-                }
-            });
-
-            async function sendMerchantToServer(email, name, cat, imgUrl, perc, title) {
                 const wrapper = document.getElementById('merchantPaymentWrapper');
                 const btn = document.getElementById('btnMerchantSubmit');
                 const resDiv = document.getElementById('merchantResult');
 
-                const isReturningMerchant = loadedMerchants.some(m => m.email === email);
+                const isReturning = loadedMerchants.some(m => m.email === email);
 
-                if(wrapper.classList.contains('hidden') && !isReturningMerchant) {
+                if(wrapper.classList.contains('hidden') && !isReturning) {
                     wrapper.classList.remove('hidden');
                     btn.textContent = "Finalizar y Publicar";
                     return;
                 }
 
                 resDiv.classList.remove('hidden');
-                resDiv.innerHTML = `<div class="p-3 bg-[#030712] text-xs text-slate-400 animate-pulse">Publicando...</div>`;
+                resDiv.innerHTML = `<div class="p-3 bg-[#030712] text-xs text-slate-400 animate-pulse">Publicando en MaxShop...</div>`;
 
                 try {
                     const res = await fetch(`/api/merchants/create?email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&category=${encodeURIComponent(cat)}&image_url=${encodeURIComponent(imgUrl)}&lat=-34.6&lng=-58.3&title=${encodeURIComponent(title)}&percentage=${perc}`, { method: 'POST' });
                     const data = await res.json();
                     if(data.merchant_id) {
-                        resDiv.innerHTML = `<div class="p-3 bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-300">🏢 ¡Publicación actualizada con éxito en ¡Descuentos de Locos!!</div>`;
+                        resDiv.innerHTML = `<div class="p-3 bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-300">🏢 ¡Comercio publicado con éxito en MaxShop!</div>`;
                         fetchMerchants();
                     }
                 } catch(err) {
                     resDiv.innerHTML = `<div class="p-3 bg-red-950/40 text-xs text-red-300">❌ Error al publicar.</div>`;
                 }
-            }
+            });
 
             document.getElementById('paymentForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -733,8 +733,6 @@ def read_root():
                     users.forEach(u => {
                         uList.innerHTML += `<div class="bg-slate-900 p-2 rounded-lg border border-slate-800 flex justify-between items-center text-xs"><span>${u.email}</span><span class="text-emerald-400 font-bold">${u.subscription_status}</span></div>`;
                     });
-
-                    uList.innerHTML += `<div class="mt-3 p-2 bg-slate-950 border border-slate-800 rounded-lg text-[11px] text-slate-400"><strong>Control Propietario:</strong> Tienes acceso total para desplazar secciones, verificar pagos y administrar comercios.</div>`;
 
                     mList.innerHTML = loadedMerchants.length === 0 ? '<span class="text-slate-500">Sin comercios.</span>' : '';
                     loadedMerchants.forEach(m => {
@@ -800,7 +798,7 @@ def create_full_merchant(email: str, name: str, category: str, image_url: str, l
                 disc.title = title
                 disc.percentage = percentage
                 db.commit()
-            return {"message": "Comercio actualizado con éxito sin recargo", "merchant_id": existing_m.id}
+            return {"message": "Comercio actualizado con éxito", "merchant_id": existing_m.id}
 
         new_m = MerchantDB(email=email, name=name, category=category, image_url=image_url, lat=lat, lng=lng)
         db.add(new_m)
@@ -836,7 +834,7 @@ def process_payment(user_email: str, merchant_id: int, total_amount: float):
     try:
         user = db.query(UserDB).filter(UserDB.email == user_email).first()
         if not user:
-            return {"error": "Usuario no encontrado. Registrate primero."}
+            return {"error": "Usuario no encontrado. Registrate primero en el club."}
         if user.subscription_status != "active":
             return {"error": "Membresía inactiva. El descuento no se pudo aplicar."}
         
