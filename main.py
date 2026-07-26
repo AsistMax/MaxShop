@@ -28,8 +28,8 @@ class MerchantDB(Base):
     name = Column(String, nullable=False)
     category = Column(String, nullable=True)
     image_url = Column(String, nullable=True)
-    lat = Column(Float, nullable=True)  # Latitud para geolocalización real
-    lng = Column(Float, nullable=True)  # Longitud para geolocalización real
+    lat = Column(Float, nullable=True)
+    lng = Column(Float, nullable=True)
 
 class DiscountDB(Base):
     __tablename__ = "discounts"
@@ -41,9 +41,9 @@ class DiscountDB(Base):
 Base.metadata.create_all(bind=engine)
 
 # --- Inicializar FastAPI ---
-app = FastAPI(title="MaxShop - Club de Descuentos & Pagos Reales", version="7.0.0")
+app = FastAPI(title="MaxShop - Club de Descuentos & Dinámica en Vivo", version="8.0.0")
 
-# --- Interfaz Comercial 100% Real y Autogestionable ---
+# --- Interfaz Comercial Optimizada ---
 @app.get("/", response_class=HTMLResponse)
 def read_root():
     return """
@@ -52,7 +52,7 @@ def read_root():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>MaxShop | Club de Descuentos & Pagos Inteligentes</title>
+        <title>MaxShop | Club de Descuentos & Streaming</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <style>
@@ -60,11 +60,13 @@ def read_root():
             .brand-gradient { background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%); }
             .brand-text-gradient { background: linear-gradient(135deg, #34d399 0%, #22d3ee 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
             .glass-card { background: rgba(11, 19, 38, 0.9); backdrop-filter: blur(16px); border: 1px solid rgba(30, 58, 138, 0.4); }
+            @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+            .animate-marquee { display: flex; width: 200%; animation: marquee 25s linear infinite; }
         </style>
     </head>
     <body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
         
-        <!-- Barra de Navegación con Radar GPS Real -->
+        <!-- Barra de Navegación -->
         <header class="border-b border-slate-800/80 bg-[#040914]/95 backdrop-blur-md sticky top-0 z-50">
             <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
                 
@@ -82,33 +84,31 @@ def read_root():
                     </div>
                 </div>
 
-                <!-- Campanita con Geolocalización Real del Navegador -->
+                <!-- Radar GPS y Notificaciones -->
                 <div class="flex items-center space-x-3">
                     <div class="relative">
-                        <button onclick="checkGeoProximity()" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-emerald-400 hover:bg-slate-800 transition relative flex items-center justify-center shadow-md">
+                        <button onclick="checkGeoProximity()" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-emerald-400 hover:bg-slate-800 transition relative flex items-center justify-center shadow-md" title="Radar GPS">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                             </svg>
-                            <span id="geoBadge" class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full animate-ping hidden"></span>
-                            <span id="geoBadgeStatic" class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full hidden"></span>
                         </button>
                         
-                        <!-- PopUp del Radar GPS -->
+                        <!-- PopUp Radar -->
                         <div id="geoPopup" class="hidden absolute right-0 mt-2 w-72 glass-card rounded-2xl p-4 shadow-2xl border-emerald-500/30 z-50 space-y-2 text-xs">
                             <div class="flex justify-between items-center font-bold text-white border-b border-slate-800 pb-1.5">
-                                <span class="flex items-center space-x-1">📍 <span>Radar GPS Activo</span></span>
-                                <span class="text-[9px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">En Vivo</span>
+                                <span class="flex items-center space-x-1">📍 <span>Radar Geográfico</span></span>
+                                <span class="text-[9px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Activo</span>
                             </div>
                             <div id="geoPopupContent" class="text-slate-300">
-                                Buscando comercios adheridos en tu zona actual...
+                                Buscando comercios adheridos cercanos...
                             </div>
                         </div>
                     </div>
 
                     <nav class="hidden md:flex items-center space-x-1 text-xs">
                         <button onclick="switchSection('home')" id="navHome" class="px-3 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20 transition">Inicio</button>
-                        <button onclick="switchSection('catalog')" id="navCatalog" class="px-3 py-2 rounded-xl text-slate-400 hover:text-white transition">Comercios</button>
-                        <button onclick="switchSection('banks')" id="navBanks" class="px-3 py-2 rounded-xl text-slate-400 hover:text-white transition">Bancos</button>
+                        <button onclick="switchSection('catalog')" id="navCatalog" class="px-3 py-2 rounded-xl text-slate-400 hover:text-white transition">Comercios Adheridos</button>
+                        <button onclick="switchSection('live')" id="navLive" class="px-3 py-2 rounded-xl text-slate-400 hover:text-white transition">En Vivo / TV</button>
                         <button onclick="switchSection('register')" id="navRegister" class="px-3 py-2 rounded-xl text-slate-400 hover:text-white transition">Registrarse</button>
                         <button onclick="switchSection('pay')" id="navPay" class="px-3 py-2 rounded-xl text-slate-400 hover:text-white transition">Caja QR</button>
                     </nav>
@@ -116,7 +116,7 @@ def read_root():
             </div>
         </header>
 
-        <!-- Contenido -->
+        <!-- Contenido Principal -->
         <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow space-y-10">
             
             <!-- SECCIÓN INICIO -->
@@ -124,14 +124,14 @@ def read_root():
                 <div class="glass-card rounded-3xl p-6 md:p-10 relative overflow-hidden shadow-2xl border-emerald-500/20 grid md:grid-cols-2 gap-6 items-center">
                     <div class="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
                     <div class="space-y-4 relative z-10">
-                        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Red de Descuentos Inteligentes</span>
-                        <h2 class="text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">Ahorrá con <span class="brand-text-gradient">MaxShop</span> y tus tarjetas</h2>
+                        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Club de Beneficios y Descuentos</span>
+                        <h2 class="text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">Ahorrá con <span class="brand-text-gradient">MaxShop</span> y tu membresía</h2>
                         <p class="text-slate-300 text-xs md:text-sm leading-relaxed">
-                            Integración directa con comercios locales reales y pasarela de pagos automatizada por Mercado Pago.
+                            Accedé a nuestra red de comercios adheridos y operá de forma automatizada mediante Mercado Pago.
                         </p>
                         <div class="flex flex-wrap gap-3 pt-2">
                             <button onclick="switchSection('register')" class="brand-gradient hover:opacity-90 text-slate-950 font-extrabold px-5 py-3 rounded-xl text-xs transition shadow-lg">Asociarme Ahora ($5.000)</button>
-                            <button onclick="switchSection('catalog')" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-5 py-3 rounded-xl text-xs border border-slate-700 transition">Ver Comercios Reales</button>
+                            <button onclick="switchSection('catalog')" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-5 py-3 rounded-xl text-xs border border-slate-700 transition">Ver Comercios Adheridos</button>
                         </div>
                     </div>
                     <div class="relative z-10 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
@@ -139,93 +139,79 @@ def read_root():
                     </div>
                 </div>
 
-                <!-- Bancos y Tarjetas Aliadas Ampliadas con Identidad Visual -->
-                <div class="space-y-4">
-                    <p class="text-[11px] uppercase tracking-wider text-slate-400 font-bold text-center">Entidades Financieras, Billeteras y Tarjetas Aliadas</p>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                        <div class="glass-card p-3 rounded-xl flex flex-col justify-between border-slate-800 space-y-2">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center font-extrabold text-white text-xs">G</div>
-                                <span class="text-white font-bold text-xs">Galicia</span>
-                            </div>
-                            <span class="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded font-mono text-center">MODO / VISA</span>
+                <!-- Carrusel de Fotos en Movimiento para Separar Cuadros -->
+                <div class="overflow-hidden py-2 bg-slate-950/60 border-y border-slate-800 relative">
+                    <div class="animate-marquee flex space-x-6 items-center">
+                        <div class="flex items-center space-x-6 shrink-0">
+                            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
+                            <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
+                            <img src="https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
+                            <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
+                            <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
                         </div>
-                        <div class="glass-card p-3 rounded-xl flex flex-col justify-between border-slate-800 space-y-2">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-7 h-7 rounded-lg bg-red-600 flex items-center justify-center font-extrabold text-white text-xs">S</div>
-                                <span class="text-white font-bold text-xs">Santander</span>
-                            </div>
-                            <span class="text-[9px] bg-red-500/10 text-red-400 px-2 py-0.5 rounded font-mono text-center">MASTER / MODO</span>
-                        </div>
-                        <div class="glass-card p-3 rounded-xl flex flex-col justify-between border-slate-800 space-y-2">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-7 h-7 rounded-lg bg-cyan-600 flex items-center justify-center font-extrabold text-white text-xs">N</div>
-                                <span class="text-white font-bold text-xs">Banco Nación</span>
-                            </div>
-                            <span class="text-[9px] bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded font-mono text-center">BNA+ / MODO</span>
-                        </div>
-                        <div class="glass-card p-3 rounded-xl flex flex-col justify-between border-slate-800 space-y-2">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center font-extrabold text-slate-950 text-xs">M</div>
-                                <span class="text-white font-bold text-xs">Macro</span>
-                            </div>
-                            <span class="text-[9px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded font-mono text-center">QR DIRECTO</span>
-                        </div>
-                        <div class="glass-card p-3 rounded-xl flex flex-col justify-between border-slate-800 space-y-2">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center font-extrabold text-white text-xs">B</div>
-                                <span class="text-white font-bold text-xs">BBVA</span>
-                            </div>
-                            <span class="text-[9px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded font-mono text-center">GO / VISA</span>
+                        <div class="flex items-center space-x-6 shrink-0">
+                            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
+                            <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
+                            <img src="https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
+                            <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
+                            <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=300&q=80" class="w-32 h-16 object-cover rounded-xl border border-slate-800 shadow">
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- SECCIÓN CATÁLOGO DE COMERCIOS REALES -->
+            <!-- SECCIÓN CATÁLOGO DE COMERCIOS ADHERIDOS -->
             <section id="secCatalog" class="hidden space-y-6">
                 <div>
-                    <h2 class="text-2xl font-bold text-white">Directorio de Comercios Adheridos</h2>
-                    <p class="text-xs text-slate-400">Locales registrados en la red con descuentos activos aplicables en caja.</p>
+                    <h2 class="text-2xl font-bold text-white">Comercios Adheridos a la Red</h2>
+                    <p class="text-xs text-slate-400">Locales registrados con descuentos activos para utilizar en caja.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="realMerchantsContainer">
-                    <!-- Se carga dinámicamente desde el backend -->
-                    <div class="glass-card p-6 rounded-2xl text-center text-slate-400 text-xs">Cargando comercios reales...</div>
+                    <div class="glass-card p-6 rounded-2xl text-center text-slate-400 text-xs">Cargando comercios adheridos...</div>
                 </div>
             </section>
 
-            <!-- SECCIÓN PROMOS BANCARIAS -->
-            <section id="secBanks" class="hidden space-y-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-white">Promociones Bancarias Nacionales</h2>
-                    <p class="text-xs text-slate-400">Alianzas financieras vigentes combinables con tu membresía MaxShop.</p>
+            <!-- SECCIÓN EN VIVO / STREAMING (YOUTUBE) -->
+            <section id="secLive" class="hidden space-y-6">
+                <div class="space-y-2">
+                    <h2 class="text-2xl font-bold text-white">MaxShop Live & Streaming</h2>
+                    <p class="text-xs text-slate-400">Transmisiones en vivo de moda, tendencias, deportes y noticias para mantener dinámica la plataforma.</p>
                 </div>
+
                 <div class="grid md:grid-cols-3 gap-6">
-                    <div class="glass-card p-6 rounded-2xl space-y-3 border-blue-500/30">
-                        <span class="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-blue-500/20">Banco Galicia</span>
-                        <h3 class="text-base font-bold text-white">Jueves de Supermercados & Indumentaria</h3>
-                        <p class="text-xs text-slate-400">30% de ahorro pagando con Visa Débito y Crédito a través de MODO.</p>
+                    <div class="glass-card p-4 rounded-2xl space-y-3">
+                        <div class="aspect-video w-full rounded-xl overflow-hidden bg-slate-900">
+                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/jfKfPfyJRdk" title="Lofi Live" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <h3 class="font-bold text-sm text-white">Tendencias & Estilo Urbano Live</h3>
+                        <p class="text-[11px] text-slate-400">Canal en vivo para ambientar tu día.</p>
                     </div>
-                    <div class="glass-card p-6 rounded-2xl space-y-3 border-cyan-500/30">
-                        <span class="bg-cyan-500/10 text-cyan-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-cyan-500/20">Banco Nación</span>
-                        <h3 class="text-base font-bold text-white">Semana BNA+ Comercios de Barrio</h3>
-                        <p class="text-xs text-slate-400">Hasta 35% de reintegro escaneando QR con la billetera virtual BNA+.</p>
+
+                    <div class="glass-card p-4 rounded-2xl space-y-3">
+                        <div class="aspect-video w-full rounded-xl overflow-hidden bg-slate-900">
+                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/5qap5aO4i9A" title="Music Live" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <h3 class="font-bold text-sm text-white">Moda, Diseño & Diseñadores</h3>
+                        <p class="text-[11px] text-slate-400">Transmisión continua de pasarelas y novedades.</p>
                     </div>
-                    <div class="glass-card p-6 rounded-2xl space-y-3 border-red-500/30">
-                        <span class="bg-red-500/10 text-red-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-red-500/20">Banco Santander</span>
-                        <h3 class="text-base font-bold text-white">Especial Shoppings & Estética</h3>
-                        <p class="text-xs text-slate-400">25% OFF y cuotas sin interés en locales adheridos de la red.</p>
+
+                    <div class="glass-card p-4 rounded-2xl space-y-3">
+                        <div class="aspect-video w-full rounded-xl overflow-hidden bg-slate-900">
+                            <iframe class="w-full h-full" src="https://www.youtube.com/embed/1la41qXISzs" title="News Live" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <h3 class="font-bold text-sm text-white">Actualidad, Deportes y Noticias</h3>
+                        <p class="text-[11px] text-slate-400">Todo lo que pasa en el mundo en tiempo real.</p>
                     </div>
                 </div>
             </section>
 
-            <!-- SECCIÓN REGISTRO (CON MONTO DE SOCIO $5000 Y CARGA REAL DE COMERCIO) -->
+            <!-- SECCIÓN REGISTRO -->
             <section id="secRegister" class="hidden space-y-6">
                 <div class="max-w-2xl mx-auto space-y-6">
                     <div class="text-center space-y-2">
                         <h2 class="text-2xl font-bold text-white">Centro de Altas y Publicidad</h2>
-                        <p class="text-xs text-slate-400">Registrate como socio o sumá tu comercio con fotos y ubicación GPS.</p>
+                        <p class="text-xs text-slate-400">Registrate como socio o sumá tu comercio con fotos y ubicación.</p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 bg-[#0b1326] p-1.5 rounded-2xl border border-slate-800 text-xs font-semibold">
@@ -233,7 +219,7 @@ def read_root():
                         <button onclick="switchRegSub('merchant')" id="btnSubMerchant" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">2. Sumar mi Comercio</button>
                     </div>
 
-                    <!-- Socio (Membresía $5000 Correcta) -->
+                    <!-- Formulario Socio -->
                     <div id="formUserBox" class="glass-card rounded-2xl p-6 shadow-xl space-y-4">
                         <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Membresía Mensual de Socio</h3>
                         <form id="userForm" class="space-y-3">
@@ -257,9 +243,9 @@ def read_root():
                         <div id="userResult" class="mt-4 hidden"></div>
                     </div>
 
-                    <!-- Comercio (Carga de Datos, Fotos y Coordenadas GPS) -->
+                    <!-- Formulario Comercio -->
                     <div id="formMerchantBox" class="hidden glass-card rounded-2xl p-6 shadow-xl space-y-4">
-                        <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-wider">Carga de Comercio, Fotos y Geolocalización</h3>
+                        <h3 class="text-xs font-bold text-cyan-400 uppercase tracking-wider">Carga de Comercio Adherido</h3>
                         <form id="merchantForm" class="space-y-3">
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
@@ -268,7 +254,7 @@ def read_root():
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-400 mb-1">Rubro</label>
-                                    <input type="text" id="mercCat" required placeholder="Ej: Indumentaria / Gastronomía" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-cyan-500">
+                                    <input type="text" id="mercCat" required placeholder="Ej: Indumentaria" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-cyan-500">
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
@@ -287,11 +273,11 @@ def read_root():
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-400 mb-1">Latitud GPS (Opcional)</label>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Latitud GPS</label>
                                     <input type="number" step="0.000001" id="mercLat" placeholder="Ej: -28.469" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-xs">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-400 mb-1">Longitud GPS (Opcional)</label>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Longitud GPS</label>
                                     <input type="number" step="0.000001" id="mercLng" placeholder="Ej: -65.785" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-xs">
                                 </div>
                             </div>
@@ -307,7 +293,7 @@ def read_root():
                                 </a>
                             </div>
 
-                            <button type="submit" id="btnMerchantSubmit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition">Publicar Comercio en la Red</button>
+                            <button type="submit" id="btnMerchantSubmit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition">Publicar Comercio Adherido</button>
                         </form>
                         <div id="merchantResult" class="mt-4 hidden"></div>
                     </div>
@@ -320,7 +306,7 @@ def read_root():
                     <div class="absolute -top-3 right-6 bg-emerald-500 text-slate-950 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Caja Inteligente QR</div>
                     <div class="space-y-2 mb-6">
                         <h2 class="text-xl font-bold text-white">Simulador de Cobro en Caja</h2>
-                        <p class="text-xs text-slate-400">Ingresá tu correo y seleccioná tu comercio para aplicar el descuento automático.</p>
+                        <p class="text-xs text-slate-400">Ingresá tu correo y seleccioná el comercio adherido para aplicar el descuento.</p>
                     </div>
 
                     <form id="paymentForm" class="space-y-4">
@@ -350,12 +336,13 @@ def read_root():
 
         </main>
 
-        <!-- Footer -->
-        <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
+        <!-- Footer con Mención Limpia y Discreta de Entidades Financieras en Letra Pequeña -->
+        <footer class="border-t border-slate-800/80 py-6 text-center text-[10px] text-slate-500 space-y-2">
             <p>MaxShop Corporation • Pagos seguros operados a través de Mercado Pago</p>
+            <p class="text-slate-600">Entidades financieras y tarjetas compatibles sujetas a términos vigentes: Galicia (Modo/Visa), Santander (Master/Modo), Banco Nación (BNA+), Banco Macro (QR), BBVA (Go/Visa).</p>
         </footer>
 
-        <!-- Scripts y Lógica en Vivo -->
+        <!-- Scripts -->
         <script>
             let loadedMerchants = [];
 
@@ -368,7 +355,7 @@ def read_root():
                     const selectPay = document.getElementById('payMerchantSelect');
                     
                     if(loadedMerchants.length === 0) {
-                        catalogContainer.innerHTML = `<div class="col-span-3 text-center text-slate-400 text-xs py-8">Aún no hay comercios reales cargados. ¡Sé el primero en sumar tu comercio en la sección Registrarse!</div>`;
+                        catalogContainer.innerHTML = `<div class="col-span-3 text-center text-slate-400 text-xs py-8">Aún no hay comercios adheridos cargados. ¡Sumá tu comercio en Registrarse!</div>`;
                         selectPay.innerHTML = `<option value="">No hay comercios disponibles</option>`;
                         return;
                     }
@@ -376,8 +363,7 @@ def read_root():
                     catalogContainer.innerHTML = '';
                     selectPay.innerHTML = '';
 
-                    loadedMerchants.forEach((m, idx) => {
-                        // Catálogo HTML
+                    loadedMerchants.forEach((m) => {
                         catalogContainer.innerHTML += `
                             <div class="glass-card rounded-2xl overflow-hidden shadow-lg border-emerald-500/20">
                                 <img src="${m.image_url || 'https://images.unsplash.com/photo-1556742049-0a67d553c299?auto=format&fit=crop&w=600&q=80'}" alt="${m.name}" class="w-full h-36 object-cover">
@@ -389,8 +375,6 @@ def read_root():
                                 </div>
                             </div>
                         `;
-
-                        // Select de Caja
                         selectPay.innerHTML += `<option value="${m.id}">${m.name} (ID ${m.id})</option>`;
                     });
 
@@ -402,18 +386,17 @@ def read_root():
                 }
             }
 
-            // Geolocalización GPS Real del Navegador y Campanita
             function checkGeoProximity() {
                 const popup = document.getElementById('geoPopup');
                 const content = document.getElementById('geoPopupContent');
                 popup.classList.toggle('hidden');
 
                 if(!navigator.geolocation) {
-                    content.innerHTML = "Tu navegador no soporta geolocalización.";
+                    content.innerHTML = "Geolocalización no disponible en este dispositivo.";
                     return;
                 }
 
-                content.innerHTML = "Obteniendo tu posición GPS exacta...";
+                content.innerHTML = "Obteniendo ubicación GPS...";
 
                 navigator.geolocation.getCurrentPosition(async (position) => {
                     const userLat = position.coords.latitude;
@@ -424,25 +407,22 @@ def read_root():
                         const nearby = await res.json();
 
                         if(nearby.length > 0) {
-                            document.getElementById('geoBadge').classList.remove('hidden');
-                            document.getElementById('geoBadgeStatic').classList.remove('hidden');
-                            
                             content.innerHTML = `
                                 <div class="space-y-2">
                                     <p class="text-emerald-400 font-bold">¡Estás cerca de ${nearby[0].name}!</p>
-                                    <p class="text-[10px] text-slate-300">Tenés un <strong class="text-white">${nearby[0].percentage}% OFF</strong> disponible ahora.</p>
-                                    <button onclick="selectMerchantForPay(${nearby[0].id})" class="w-full brand-gradient text-slate-950 font-bold py-1.5 rounded-lg text-center mt-1">Usar Descuento</button>
+                                    <p class="text-[10px] text-slate-300">Descuento activo: <strong class="text-white">${nearby[0].percentage}% OFF</strong></p>
+                                    <button onclick="selectMerchantForPay(${nearby[0].id})" class="w-full brand-gradient text-slate-950 font-bold py-1.5 rounded-lg text-center mt-1">Usar en Caja</button>
                                 </div>
                             `;
                         } else {
-                            content.innerHTML = "No detectamos comercios de la red a menos de 5km de tu ubicación actual.";
+                            content.innerHTML = "No se detectaron comercios adheridos muy cerca de tu ubicación actual.";
                         }
                     } catch(err) {
-                        content.innerHTML = "Error al calcular la proximidad de locales.";
+                        content.innerHTML = "Sin comercios activos registrados en esta zona.";
                     }
                 }, () => {
-                    content.innerHTML = "Debes permitir el acceso a la ubicación en tu navegador para usar el radar.";
-                });
+                    content.innerHTML = "Activá los permisos de ubicación en tu navegador para usar el radar.";
+                }, { timeout: 10000 });
             }
 
             function autoDetectGPS() {
@@ -450,7 +430,7 @@ def read_root():
                     navigator.geolocation.getCurrentPosition((pos) => {
                         document.getElementById('mercLat').value = pos.coords.latitude;
                         document.getElementById('mercLng').value = pos.coords.longitude;
-                        alert("¡Ubicación GPS obtenida con éxito!");
+                        alert("¡Ubicación GPS guardada correctamente!");
                     }, () => {
                         alert("No se pudo obtener la ubicación GPS.");
                     });
@@ -458,7 +438,7 @@ def read_root():
             }
 
             function switchSection(sectionId) {
-                const sections = ['home', 'catalog', 'banks', 'register', 'pay'];
+                const sections = ['home', 'catalog', 'live', 'register', 'pay'];
                 sections.forEach(s => {
                     const el = document.getElementById('sec' + s.charAt(0).toUpperCase() + s.slice(1));
                     if(el) el.classList.add('hidden');
@@ -501,7 +481,6 @@ def read_root():
                 }
             }
 
-            // Registro de Socio ($5000)
             document.getElementById('userForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('userEmail').value;
@@ -540,7 +519,6 @@ def read_root():
                 }
             });
 
-            // Registro de Comercio Real con Fotos y GPS
             document.getElementById('merchantForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const name = document.getElementById('mercName').value;
@@ -557,12 +535,12 @@ def read_root():
 
                 if(wrapper.classList.contains('hidden')) {
                     wrapper.classList.remove('hidden');
-                    btn.textContent = "Finalizar Alta y Publicar en Red";
+                    btn.textContent = "Finalizar Alta y Publicar";
                     return;
                 }
 
                 resDiv.classList.remove('hidden');
-                resDiv.innerHTML = `<div class="p-3 rounded-xl bg-[#040914] text-xs text-slate-400 animate-pulse">Registrando comercio real en la red...</div>`;
+                resDiv.innerHTML = `<div class="p-3 rounded-xl bg-[#040914] text-xs text-slate-400 animate-pulse">Registrando comercio adherido...</div>`;
 
                 try {
                     const mRes = await fetch(`/api/merchants/create?name=${encodeURIComponent(name)}&category=${encodeURIComponent(cat)}&image_url=${encodeURIComponent(img)}&lat=${lat}&lng=${lng}&title=${encodeURIComponent(title)}&percentage=${perc}`, { method: 'POST' });
@@ -571,21 +549,20 @@ def read_root():
                     if(mData.merchant_id) {
                         resDiv.innerHTML = `
                             <div class="p-4 rounded-xl bg-cyan-950/40 border border-cyan-500/30 space-y-2">
-                                <span class="font-bold text-cyan-400 text-xs">🏢 ¡Comercio Publicado con Éxito!</span>
-                                <p class="text-xs text-slate-300">${name} (${cat}) - <strong class="text-cyan-400">${perc}% OFF</strong> (ID asignado: ${mData.merchant_id})</p>
+                                <span class="font-bold text-cyan-400 text-xs">🏢 ¡Comercio Adherido con Éxito!</span>
+                                <p class="text-xs text-slate-300">${name} (${cat}) - <strong class="text-cyan-400">${perc}% OFF</strong></p>
                                 <div class="pt-2 border-t border-cyan-500/20 text-[11px] text-cyan-300 flex justify-between items-center">
-                                    <span>Tus beneficios ya están visibles en el radar GPS.</span>
+                                    <span>Ya visible en la red de descuentos.</span>
                                     <button onclick="switchSection('catalog')" class="underline font-bold">Ver Catálogo ➔</button>
                                 </div>
                             </div>`;
                         fetchMerchants();
                     }
                 } catch (err) {
-                    resDiv.innerHTML = `<div class="p-3 rounded-xl bg-red-950/40 border border-red-800 text-xs text-red-300">❌ Error al registrar el comercio.</div>`;
+                    resDiv.innerHTML = `<div class="p-3 rounded-xl bg-red-950/40 border border-red-800 text-xs text-red-300">❌ Error al registrar.</div>`;
                 }
             });
 
-            // Pago QR
             document.getElementById('paymentForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('payEmail').value;
@@ -594,7 +571,7 @@ def read_root():
                 const resDiv = document.getElementById('paymentResult');
 
                 resDiv.classList.remove('hidden');
-                resDiv.innerHTML = `<div class="p-4 rounded-xl bg-[#040914] text-xs text-slate-400 animate-pulse text-center">Procesando pago QR inteligente...</div>`;
+                resDiv.innerHTML = `<div class="p-4 rounded-xl bg-[#040914] text-xs text-slate-400 animate-pulse text-center">Procesando pago QR...</div>`;
 
                 try {
                     const response = await fetch(`/process-payment/?user_email=${encodeURIComponent(email)}&merchant_id=${merchantId}&total_amount=${amount}`, { method: 'POST' });
@@ -630,11 +607,10 @@ def read_root():
                             </div>`;
                     }
                 } catch (err) {
-                    resDiv.innerHTML = `<div class="p-4 rounded-xl bg-red-950/40 border border-red-800 text-xs text-red-300">❌ Error de conexión en caja.</div>`;
+                    resDiv.innerHTML = `<div class="p-4 rounded-xl bg-red-950/40 border border-red-800 text-xs text-red-300">❌ Error en caja.</div>`;
                 }
             });
 
-            // Carga inicial al abrir
             fetchMerchants();
         </script>
     </body>
@@ -672,9 +648,8 @@ def get_nearby_merchants(lat: float, lng: float):
         nearby = []
         for m in merchants:
             if m.lat and m.lng:
-                # Aproximación simple de distancia en grados (1 grado ~ 111km)
                 diff = abs(m.lat - lat) + abs(m.lng - lng)
-                if diff < 0.5:  # Aprox dentro de 50km
+                if diff < 1.0:
                     disc = db.query(DiscountDB).filter(DiscountDB.merchant_id == m.id).first()
                     nearby.append({
                         "id": m.id,
@@ -698,7 +673,7 @@ def create_full_merchant(name: str, category: str, image_url: str, lat: float, l
         db.add(new_d)
         db.commit()
 
-        return {"message": "Comercio creado con éxito", "merchant_id": new_m.id}
+        return {"message": "Comercio adherido con éxito", "merchant_id": new_m.id}
     finally:
         db.close()
 
