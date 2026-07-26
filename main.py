@@ -38,9 +38,9 @@ class DiscountDB(Base):
 Base.metadata.create_all(bind=engine)
 
 # --- Inicializar FastAPI ---
-app = FastAPI(title="MaxShop - Club de Descuentos & Pagos", version="4.0.0")
+app = FastAPI(title="MaxShop - Club de Descuentos & Pagos", version="4.1.0")
 
-# --- Interfaz Comercial Interactiva de Alta Gama ---
+# --- Interfaz Comercial con Logo e Identidad de Colores Corporativos ---
 @app.get("/", response_class=HTMLResponse)
 def read_root():
     return """
@@ -53,33 +53,41 @@ def read_root():
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <style>
-            body { font-family: 'Plus Jakarta Sans', sans-serif; }
-            .glass-card { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(16px); border: 1px solid rgba(51, 65, 85, 0.4); }
+            body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #040914; color: #f8fafc; }
+            .brand-gradient { background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%); }
+            .brand-text-gradient { background: linear-gradient(135deg, #34d399 0%, #22d3ee 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+            .glass-card { background: rgba(11, 19, 38, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(30, 58, 138, 0.4); }
         </style>
     </head>
-    <body class="bg-[#020617] text-slate-100 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
+    <body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
         
-        <!-- Barra de Navegación Comercial -->
-        <header class="border-b border-slate-800/80 bg-[#020617]/90 backdrop-blur-md sticky top-0 z-50">
+        <!-- Barra de Navegación con Logotipo Corporativo -->
+        <header class="border-b border-slate-800/80 bg-[#040914]/90 backdrop-blur-md sticky top-0 z-50">
             <div class="max-w-6xl mx-auto px-4 py-3.5 flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-400 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 font-extrabold text-lg text-slate-950">M</div>
+                
+                <!-- Logo Corporativo Personalizado -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchSection('home')">
+                    <div class="w-11 h-11 rounded-2xl brand-gradient flex items-center justify-center shadow-lg shadow-emerald-500/20 transform hover:scale-105 transition">
+                        <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <h1 class="font-bold text-base leading-tight tracking-tight">MaxShop</h1>
-                            <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-medium">Club Premium</span>
+                            <h1 class="font-extrabold text-lg leading-tight tracking-tight text-white">Max<span class="text-emerald-400">Shop</span></h1>
+                            <span class="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Club Pro</span>
                         </div>
-                        <p class="text-[11px] text-slate-400">Beneficios, Descuentos & Pagos QR</p>
+                        <p class="text-[10px] text-slate-400 font-medium">Beneficios & Pagos Inteligentes</p>
                     </div>
                 </div>
                 
-                <!-- Menú de Opciones Interactivo -->
+                <!-- Menú de Opciones -->
                 <nav class="hidden md:flex items-center space-x-1 text-xs">
-                    <button onclick="switchSection('home')" id="navHome" class="px-3 py-2 rounded-lg bg-slate-800 text-white font-medium transition">Inicio</button>
-                    <button onclick="switchSection('catalog')" id="navCatalog" class="px-3 py-2 rounded-lg text-slate-400 hover:text-white transition">Comercios & Ofertas</button>
-                    <button onclick="switchSection('register')" id="navRegister" class="px-3 py-2 rounded-lg text-slate-400 hover:text-white transition">Asociarme / Comercios</button>
-                    <button onclick="switchSection('pay')" id="navPay" class="px-3 py-2 rounded-lg text-slate-400 hover:text-white transition">Caja & Pago QR</button>
-                    <button onclick="switchSection('contact')" id="navContact" class="px-3 py-2 rounded-lg text-slate-400 hover:text-white transition">Contacto</button>
+                    <button onclick="switchSection('home')" id="navHome" class="px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20 transition">Inicio</button>
+                    <button onclick="switchSection('catalog')" id="navCatalog" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition">Comercios & Ofertas</button>
+                    <button onclick="switchSection('register')" id="navRegister" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition">Asociarme / Comercios</button>
+                    <button onclick="switchSection('pay')" id="navPay" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition">Caja & Pago QR</button>
+                    <button onclick="switchSection('contact')" id="navContact" class="px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition">Contacto</button>
                 </nav>
             </div>
         </header>
@@ -87,242 +95,237 @@ def read_root():
         <!-- Contenido Dinámico -->
         <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow space-y-10">
             
-            <!-- SECCIÓN INICIO: HERO & PUBLICIDAD BANCOS / TARJETAS -->
+            <!-- SECCIÓN INICIO -->
             <section id="secHome" class="space-y-8">
-                <!-- Banner Principal -->
                 <div class="glass-card rounded-3xl p-8 md:p-12 relative overflow-hidden shadow-2xl border-emerald-500/20">
                     <div class="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-                    <div class="max-w-2xl space-y-4 relative z-10">
-                        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">La forma más inteligente de comprar</span>
-                        <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">Ahorrá en cada compra con tu membresía MaxShop</h2>
+                    <div class="max-w-2xl space-y-5 relative z-10">
+                        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">Ecosistema Financiero y Comercial</span>
+                        <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">Ahorrá inteligentemente con tu membresía <span class="brand-text-gradient">MaxShop</span></h2>
                         <p class="text-slate-300 text-sm md:text-base leading-relaxed">
-                            Olvidate de los cupones físicos. Pagá escaneando un código QR en caja o desde tu celular de forma instantánea. Descuentos automáticos en las mejores marcas, farmacias, indumentaria y hogar.
+                            Olvidate de los cupones en papel. Pagá escaneando un código QR en caja o desde tu dispositivo de forma instantánea. Descuentos automáticos en indumentaria, tecnología, hogar y farmacias.
                         </p>
                         <div class="flex flex-wrap gap-3 pt-2">
-                            <button onclick="switchSection('register')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">Quiero ser Socio</button>
-                            <button onclick="switchSection('catalog')" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-6 py-3 rounded-xl text-sm border border-slate-700 transition">Ver Ofertas</button>
+                            <button onclick="switchSection('register')" class="brand-gradient hover:opacity-90 text-slate-950 font-extrabold px-6 py-3.5 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">Quiero ser Socio</button>
+                            <button onclick="switchSection('catalog')" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3.5 rounded-xl text-sm border border-slate-700 transition">Ver Ofertas Vigentes</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Espacio Publicitario: Bancos y Tarjetas Asociadas -->
+                <!-- Marcas y Medios de Pago Aliados -->
                 <div class="space-y-3">
-                    <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold text-center">Bancos y Medios de Pago Aliados con Beneficios Acumulables</p>
+                    <p class="text-[11px] uppercase tracking-wider text-slate-400 font-bold text-center">Bancos y Medios de Pago Asociados con Beneficios Acumulables</p>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-300 font-bold text-sm border-slate-800">
+                        <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-200 font-bold text-xs border-slate-800">
                             <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> <span>Visa & Mastercard</span>
                         </div>
-                        <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-300 font-bold text-sm border-slate-800">
+                        <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-200 font-bold text-xs border-slate-800">
                             <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> <span>Banco Galicia / Macro</span>
                         </div>
-                        <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-300 font-bold text-sm border-slate-800">
+                        <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-200 font-bold text-xs border-slate-800">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> <span>Modo & Mercado Pago</span>
                         </div>
-                        <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-300 font-bold text-sm border-slate-800">
+                        <div class="glass-card p-4 rounded-xl flex items-center justify-center space-x-2 text-slate-200 font-bold text-xs border-slate-800">
                             <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> <span>BBVA / Santander</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Cómo Funciona (Explicación limpia y rápida) -->
+                <!-- Cómo Funciona -->
                 <div class="grid md:grid-cols-3 gap-6 pt-4">
-                    <div class="glass-card p-6 rounded-2xl space-y-3">
+                    <div class="glass-card p-6 rounded-2xl space-y-3 border-emerald-500/20">
                         <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-lg">1</div>
                         <h3 class="font-bold text-base text-white">Registro Exprés</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">Te registrás con tu correo en segundos. Activás tu membresía sin trámites engorrosos ni papeleo.</p>
+                        <p class="text-xs text-slate-400 leading-relaxed">Te registrás con tu correo en segundos y activas tu membresía de manera inmediata.</p>
                     </div>
-                    <div class="glass-card p-6 rounded-2xl space-y-3">
-                        <div class="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center font-bold text-lg">2</div>
+                    <div class="glass-card p-6 rounded-2xl space-y-3 border-cyan-500/20">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold text-lg">2</div>
                         <h3 class="font-bold text-base text-white">Elegís el Comercio</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">Navegá por nuestra red de marcas en indumentaria, tecnología, gastronomía, farmacias y mucho más.</p>
+                        <p class="text-xs text-slate-400 leading-relaxed">Navegá por nuestra red de marcas adheridas en diversos rubros comerciales.</p>
                     </div>
-                    <div class="glass-card p-6 rounded-2xl space-y-3">
+                    <div class="glass-card p-6 rounded-2xl space-y-3 border-blue-500/20">
                         <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-lg">3</div>
                         <h3 class="font-bold text-base text-white">Pago QR Inteligente</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">Escaneás el QR en caja o simulás el cobro: el descuento se aplica solo y pagás menos al instante.</p>
+                        <p class="text-xs text-slate-400 leading-relaxed">Escaneás el código QR en caja: el descuento se aplica solo y pagás menos al instante.</p>
                     </div>
                 </div>
             </section>
 
-            <!-- SECCIÓN CATÁLOGO & OFERTAS (Rubros y Comercios) -->
+            <!-- SECCIÓN CATÁLOGO DE OFERTAS -->
             <section id="secCatalog" class="hidden space-y-6">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h2 class="text-2xl font-bold text-white">Catálogo de Ofertas y Comercios Adheridos</h2>
-                        <p class="text-xs text-slate-400">Descubrí dónde podés usar tus beneficios hoy mismo.</p>
-                    </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Catálogo de Ofertas y Comercios</h2>
+                    <p class="text-xs text-slate-400">Descubrí los rubros y locales adheridos a la red MaxShop.</p>
                 </div>
 
-                <!-- Grilla de Ofertas con imágenes representativas simuladas -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Tarjeta 1: Indumentaria -->
-                    <div class="glass-card rounded-2xl overflow-hidden group shadow-lg">
-                        <div class="h-36 bg-gradient-to-tr from-indigo-900 to-slate-800 p-4 flex flex-col justify-between relative">
+                    <!-- Indumentaria -->
+                    <div class="glass-card rounded-2xl overflow-hidden shadow-lg border-indigo-500/20">
+                        <div class="h-36 bg-gradient-to-tr from-indigo-950 to-slate-900 p-4 flex flex-col justify-between">
                             <span class="bg-indigo-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full w-max">25% OFF</span>
-                            <span class="text-2xl font-bold text-white">🧥 Indumentaria & Moda</span>
+                            <span class="text-xl font-bold text-white">🧥 Indumentaria & Moda</span>
                         </div>
                         <div class="p-4 space-y-2">
                             <h3 class="font-bold text-sm text-white">Zoot & Marken Store</h3>
-                            <p class="text-xs text-slate-400">Descuento exclusivo en toda la temporada otoño-invierno.</p>
-                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition">Usar Beneficio</button>
+                            <p class="text-xs text-slate-400">Descuento exclusivo en temporada vigente.</p>
+                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition border border-slate-800">Usar Beneficio</button>
                         </div>
                     </div>
 
-                    <!-- Tarjeta 2: Electrodomésticos -->
-                    <div class="glass-card rounded-2xl overflow-hidden group shadow-lg">
-                        <div class="h-36 bg-gradient-to-tr from-cyan-900 to-slate-800 p-4 flex flex-col justify-between relative">
+                    <!-- Electro -->
+                    <div class="glass-card rounded-2xl overflow-hidden shadow-lg border-cyan-500/20">
+                        <div class="h-36 bg-gradient-to-tr from-cyan-950 to-slate-900 p-4 flex flex-col justify-between">
                             <span class="bg-cyan-500 text-slate-950 text-[10px] font-bold px-2.5 py-1 rounded-full w-max">15% OFF</span>
-                            <span class="text-2xl font-bold text-white">⚡ Electro & Tecnología</span>
+                            <span class="text-xl font-bold text-white">⚡ Electro & Tecnología</span>
                         </div>
                         <div class="p-4 space-y-2">
                             <h3 class="font-bold text-sm text-white">TecnoHouse Digital</h3>
-                            <p class="text-xs text-slate-400">Smart TVs, audio y línea blanca con cuotas sin interés.</p>
-                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition">Usar Beneficio</button>
+                            <p class="text-xs text-slate-400">Smart TVs y audio en cuotas sin interés.</p>
+                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition border border-slate-800">Usar Beneficio</button>
                         </div>
                     </div>
 
-                    <!-- Tarjeta 3: Farmacias -->
-                    <div class="glass-card rounded-2xl overflow-hidden group shadow-lg">
-                        <div class="h-36 bg-gradient-to-tr from-emerald-900 to-slate-800 p-4 flex flex-col justify-between relative">
+                    <!-- Farmacia -->
+                    <div class="glass-card rounded-2xl overflow-hidden shadow-lg border-emerald-500/20">
+                        <div class="h-36 bg-gradient-to-tr from-emerald-950 to-slate-900 p-4 flex flex-col justify-between">
                             <span class="bg-emerald-500 text-slate-950 text-[10px] font-bold px-2.5 py-1 rounded-full w-max">20% OFF</span>
-                            <span class="text-2xl font-bold text-white">💊 Farmacia & Perfumería</span>
+                            <span class="text-xl font-bold text-white">💊 Farmacia & Perfumería</span>
                         </div>
                         <div class="p-4 space-y-2">
                             <h3 class="font-bold text-sm text-white">Red FarmaSalud</h3>
-                            <p class="text-xs text-slate-400">Descuentos en medicamentos genéricos y perfumería selecta.</p>
-                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition">Usar Beneficio</button>
+                            <p class="text-xs text-slate-400">Rebajas en medicamentos y perfumería selecta.</p>
+                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition border border-slate-800">Usar Beneficio</button>
                         </div>
                     </div>
 
-                    <!-- Tarjeta 4: Muebles y Hogar -->
-                    <div class="glass-card rounded-2xl overflow-hidden group shadow-lg">
-                        <div class="h-36 bg-gradient-to-tr from-amber-900 to-slate-800 p-4 flex flex-col justify-between relative">
+                    <!-- Muebles -->
+                    <div class="glass-card rounded-2xl overflow-hidden shadow-lg border-amber-500/20">
+                        <div class="h-36 bg-gradient-to-tr from-amber-950 to-slate-900 p-4 flex flex-col justify-between">
                             <span class="bg-amber-500 text-slate-950 text-[10px] font-bold px-2.5 py-1 rounded-full w-max">30% OFF</span>
-                            <span class="text-2xl font-bold text-white">🛋️ Muebles & Decoración</span>
+                            <span class="text-xl font-bold text-white">🛋️ Muebles & Hogar</span>
                         </div>
                         <div class="p-4 space-y-2">
                             <h3 class="font-bold text-sm text-white">Habitat Design</h3>
-                            <p class="text-xs text-slate-400">Renová tus espacios con mobiliario de diseño moderno.</p>
-                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition">Usar Beneficio</button>
+                            <p class="text-xs text-slate-400">Renová tus espacios con diseño moderno.</p>
+                            <button onclick="switchSection('pay')" class="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold py-2 rounded-xl transition border border-slate-800">Usar Beneficio</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- SECCIÓN REGISTRO: ASOCIARME O INTEGRAR COMERCIO -->
+            <!-- SECCIÓN REGISTRO -->
             <section id="secRegister" class="hidden space-y-6">
                 <div class="max-w-2xl mx-auto space-y-6">
                     <div class="text-center space-y-2">
                         <h2 class="text-2xl font-bold text-white">Centro de Altas y Registros</h2>
-                        <p class="text-xs text-slate-400">Sumate como socio para recibir descuentos o registrá tu comercio para formar parte de la red.</p>
+                        <p class="text-xs text-slate-400">Sumate como socio o integrá tu comercio al club.</p>
                     </div>
 
-                    <!-- Pestañas internas de registro -->
-                    <div class="grid grid-cols-2 gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 text-xs font-semibold">
-                        <button onclick="switchRegSub('user')" id="btnSubUser" class="py-2.5 rounded-xl bg-slate-800 text-white transition">1. Asociarme (Cliente)</button>
+                    <div class="grid grid-cols-2 gap-2 bg-[#0b1326] p-1.5 rounded-2xl border border-slate-800 text-xs font-semibold">
+                        <button onclick="switchRegSub('user')" id="btnSubUser" class="py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold transition">1. Asociarme (Cliente)</button>
                         <button onclick="switchRegSub('merchant')" id="btnSubMerchant" class="py-2.5 rounded-xl text-slate-400 hover:text-white transition">2. Integrar Comercio</button>
                     </div>
 
-                    <!-- Formulario Usuario -->
+                    <!-- Usuario -->
                     <div id="formUserBox" class="glass-card rounded-2xl p-6 shadow-xl space-y-4">
                         <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider">Registro Rápido de Socio</h3>
                         <form id="userForm" class="space-y-3">
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Correo Electrónico</label>
-                                <input type="email" id="userEmail" required placeholder="tu_correo@email.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
+                                <input type="email" id="userEmail" required placeholder="tu_correo@email.com" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Estado de Membresía</label>
-                                <select id="userStatus" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
+                                <select id="userStatus" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
                                     <option value="active">Activa (Con beneficios plenos)</option>
                                     <option value="inactive">Inactiva</option>
                                 </select>
                             </div>
-                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">Obtener Membresía Gratis</button>
+                            <button type="submit" class="w-full brand-gradient hover:opacity-90 text-slate-950 font-extrabold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">Obtener Membresía Gratis</button>
                         </form>
                         <div id="userResult" class="mt-4 hidden"></div>
                     </div>
 
-                    <!-- Formulario Comercio -->
+                    <!-- Comercio -->
                     <div id="formMerchantBox" class="hidden glass-card rounded-2xl p-6 shadow-xl space-y-4">
-                        <h3 class="text-sm font-bold text-teal-400 uppercase tracking-wider">Integración de Comercio y Descuentos</h3>
+                        <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-wider">Integración de Comercio y Descuentos</h3>
                         <form id="merchantForm" class="space-y-3">
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-xs font-medium text-slate-400 mb-1">Nombre del Comercio</label>
-                                    <input type="text" id="mercName" required placeholder="Ej: Zoot Store" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500 transition">
+                                    <input type="text" id="mercName" required placeholder="Ej: Zoot Store" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 transition">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-400 mb-1">Rubro</label>
-                                    <input type="text" id="mercCat" required placeholder="Ej: Indumentaria" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500 transition">
+                                    <input type="text" id="mercCat" required placeholder="Ej: Indumentaria" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 transition">
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
                                 <div>
                                     <label class="block text-xs font-medium text-slate-400 mb-1">ID Comercio</label>
-                                    <input type="number" id="discMerchantId" required placeholder="Ej: 1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500 transition">
+                                    <input type="number" id="discMerchantId" required placeholder="Ej: 1" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 transition">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-400 mb-1">% Descuento</label>
-                                    <input type="number" step="0.1" id="discPercentage" required placeholder="Ej: 25" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500 transition">
+                                    <input type="number" step="0.1" id="discPercentage" required placeholder="Ej: 25" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 transition">
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Título de la Promo</label>
-                                <input type="text" id="discTitle" required placeholder="Ej: 25% Club MaxShop" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-teal-500 transition">
+                                <input type="text" id="discTitle" required placeholder="Ej: 25% Club MaxShop" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-cyan-500 transition">
                             </div>
-                            <button type="submit" class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-teal-500/20">Registrar Comercio y Descuento</button>
+                            <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:opacity-90 text-slate-950 font-extrabold py-3 rounded-xl text-sm transition shadow-lg shadow-cyan-500/20">Registrar Comercio y Descuento</button>
                         </form>
                         <div id="merchantResult" class="mt-4 hidden"></div>
                     </div>
                 </div>
             </section>
 
-            <!-- SECCIÓN CAJA Y PAGO QR INTELIGENTE -->
+            <!-- SECCIÓN CAJA Y PAGO QR -->
             <section id="secPay" class="hidden space-y-6">
                 <div class="max-w-xl mx-auto glass-card rounded-2xl p-8 shadow-2xl border-emerald-500/30 relative">
                     <div class="absolute -top-3 right-6 bg-emerald-500 text-slate-950 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Caja Inteligente QR</div>
                     <div class="space-y-2 mb-6">
                         <h2 class="text-xl font-bold text-white">Simulador de Pago en Caja</h2>
-                        <p class="text-xs text-slate-400">Escaneá o ingresá los datos de tu compra. El sistema valida tu membresía y aplica el beneficio al instante.</p>
+                        <p class="text-xs text-slate-400">Ingresá tu correo y los datos de la compra para validar el descuento automático.</p>
                     </div>
 
                     <form id="paymentForm" class="space-y-4">
                         <div>
                             <label class="block text-xs font-medium text-slate-400 mb-1">Email del Socio</label>
-                            <input type="email" id="payEmail" required placeholder="tu_correo@email.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
+                            <input type="email" id="payEmail" required placeholder="tu_correo@email.com" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">ID del Comercio</label>
-                                <input type="number" id="payMerchant" required placeholder="Ej: 1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
+                                <input type="number" id="payMerchant" required placeholder="Ej: 1" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Monto Total ($)</label>
-                                <input type="number" step="0.01" id="payAmount" required placeholder="Ej: 18000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
+                                <input type="number" step="0.01" id="payAmount" required placeholder="Ej: 18000" class="w-full bg-[#040914] border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition">
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-bold py-3.5 rounded-xl text-sm transition shadow-xl shadow-emerald-500/20">Pagar con Descuento Automático</button>
+                        <button type="submit" class="w-full brand-gradient hover:opacity-90 text-slate-950 font-extrabold py-3.5 rounded-xl text-sm transition shadow-xl shadow-emerald-500/20">Pagar con Descuento Automático</button>
                     </form>
 
                     <div id="paymentResult" class="mt-6 hidden"></div>
                 </div>
             </section>
 
-            <!-- SECCIÓN CONTACTO Y SOPORTE -->
+            <!-- SECCIÓN CONTACTO -->
             <section id="secContact" class="hidden space-y-6">
-                <div class="max-w-xl mx-auto glass-card rounded-2xl p-8 space-y-6 text-center">
+                <div class="max-w-xl mx-auto glass-card rounded-2xl p-8 space-y-6 text-center border-emerald-500/20">
                     <h2 class="text-2xl font-bold text-white">Canales de Comunicación y Soporte</h2>
                     <p class="text-xs text-slate-400 leading-relaxed">
-                        ¿Tenés dudas sobre tu membresía, querés sumar tu cadena de comercios o necesitás asistencia técnica con las pasarelas de pago? Estamos para ayudarte.
+                        ¿Tenés dudas sobre tu membresía o querés sumar tu cadena de comercios? Estamos para ayudarte.
                     </p>
                     <div class="grid grid-cols-2 gap-4 pt-2">
-                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                        <div class="bg-[#040914] p-4 rounded-xl border border-slate-800">
                             <span class="text-emerald-400 font-bold block mb-1 text-sm">💬 WhatsApp Comercial</span>
                             <span class="text-xs text-slate-300">+54 9 11 5555-MAXSHOP</span>
                         </div>
-                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-                            <span class="text-teal-400 font-bold block mb-1 text-sm">✉️ Soporte Empresas</span>
+                        <div class="bg-[#040914] p-4 rounded-xl border border-slate-800">
+                            <span class="text-cyan-400 font-bold block mb-1 text-sm">✉️ Soporte Empresas</span>
                             <span class="text-xs text-slate-300">empresas@maxshop.com</span>
                         </div>
                     </div>
@@ -336,19 +339,19 @@ def read_root():
             <p>MaxShop Corporation • Club de Beneficios, Descuentos & Pagos Inteligentes</p>
         </footer>
 
-        <!-- JavaScript de Navegación e Interactividad -->
+        <!-- JavaScript Dinámico -->
         <script>
             function switchSection(sectionId) {
                 const sections = ['home', 'catalog', 'register', 'pay', 'contact'];
                 sections.forEach(s => {
                     document.getElementById('sec' + s.charAt(0).toUpperCase() + s.slice(1)).classList.add('hidden');
                     const navBtn = document.getElementById('nav' + s.charAt(0).toUpperCase() + s.slice(1));
-                    if(navBtn) navBtn.className = "px-3 py-2 rounded-lg text-slate-400 hover:text-white transition";
+                    if(navBtn) navBtn.className = "px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition";
                 });
 
                 document.getElementById('sec' + sectionId.charAt(0).toUpperCase() + sectionId.slice(1)).classList.remove('hidden');
                 const activeNav = document.getElementById('nav' + sectionId.charAt(0).toUpperCase() + sectionId.slice(1));
-                if(activeNav) activeNav.className = "px-3 py-2 rounded-lg bg-slate-800 text-white font-medium transition";
+                if(activeNav) activeNav.className = "px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20 transition";
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
@@ -361,17 +364,16 @@ def read_root():
                 if(type === 'user') {
                     uBox.classList.remove('hidden');
                     mBox.classList.add('hidden');
-                    bUser.className = "py-2.5 rounded-xl bg-slate-800 text-white transition";
+                    bUser.className = "py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold transition";
                     bMerchant.className = "py-2.5 rounded-xl text-slate-400 hover:text-white transition";
                 } else {
                     uBox.classList.add('hidden');
                     mBox.classList.remove('hidden');
-                    bMerchant.className = "py-2.5 rounded-xl bg-slate-800 text-white transition";
+                    bMerchant.className = "py-2.5 rounded-xl bg-cyan-500 text-slate-950 font-bold transition";
                     bUser.className = "py-2.5 rounded-xl text-slate-400 hover:text-white transition";
                 }
             }
 
-            // Registrar Usuario
             document.getElementById('userForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('userEmail').value;
@@ -379,7 +381,7 @@ def read_root():
                 const resDiv = document.getElementById('userResult');
 
                 resDiv.classList.remove('hidden');
-                resDiv.innerHTML = `<div class="p-3 rounded-xl bg-slate-950 text-xs text-slate-400 animate-pulse">Procesando membresía...</div>`;
+                resDiv.innerHTML = `<div class="p-3 rounded-xl bg-[#040914] text-xs text-slate-400 animate-pulse">Procesando membresía...</div>`;
 
                 try {
                     const response = await fetch(`/users/?email=${encodeURIComponent(email)}&subscription_status=${status}`, { method: 'POST' });
@@ -403,7 +405,6 @@ def read_root():
                 }
             });
 
-            // Registrar Comercio
             document.getElementById('merchantForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const name = document.getElementById('mercName').value;
@@ -414,17 +415,17 @@ def read_root():
                 const resDiv = document.getElementById('merchantResult');
 
                 resDiv.classList.remove('hidden');
-                resDiv.innerHTML = `<div class="p-3 rounded-xl bg-slate-950 text-xs text-slate-400 animate-pulse">Integrando comercio...</div>`;
+                resDiv.innerHTML = `<div class="p-3 rounded-xl bg-[#040914] text-xs text-slate-400 animate-pulse">Integrando comercio...</div>`;
 
                 try {
                     await fetch(`/merchants/?name=${encodeURIComponent(name)}&category=${encodeURIComponent(cat)}`, { method: 'POST' });
                     await fetch(`/discounts/?title=${encodeURIComponent(title)}&percentage=${perc}&merchant_id=${mId}`, { method: 'POST' });
 
                     resDiv.innerHTML = `
-                        <div class="p-4 rounded-xl bg-teal-950/40 border border-teal-500/30 space-y-2">
-                            <span class="font-bold text-teal-400 text-xs">🏢 ¡Comercio Integrado a la Red!</span>
-                            <p class="text-xs text-slate-300">${name} (${cat}) - <strong class="text-teal-400">${perc}% OFF</strong></p>
-                            <div class="pt-2 border-t border-teal-500/20 text-[11px] text-teal-300 flex justify-between items-center">
+                        <div class="p-4 rounded-xl bg-cyan-950/40 border border-cyan-500/30 space-y-2">
+                            <span class="font-bold text-cyan-400 text-xs">🏢 ¡Comercio Integrado a la Red!</span>
+                            <p class="text-xs text-slate-300">${name} (${cat}) - <strong class="text-cyan-400">${perc}% OFF</strong></p>
+                            <div class="pt-2 border-t border-cyan-500/20 text-[11px] text-cyan-300 flex justify-between items-center">
                                 <span>Listo para recibir pagos con descuento.</span>
                                 <button onclick="switchSection('pay')" class="underline font-bold">Probar Caja ➔</button>
                             </div>
@@ -434,7 +435,6 @@ def read_root():
                 }
             });
 
-            // Simular Pago
             document.getElementById('paymentForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('payEmail').value;
@@ -443,7 +443,7 @@ def read_root():
                 const resDiv = document.getElementById('paymentResult');
 
                 resDiv.classList.remove('hidden');
-                resDiv.innerHTML = `<div class="p-4 rounded-xl bg-slate-950 text-xs text-slate-400 animate-pulse text-center">Procesando pago QR inteligente...</div>`;
+                resDiv.innerHTML = `<div class="p-4 rounded-xl bg-[#040914] text-xs text-slate-400 animate-pulse text-center">Procesando pago QR inteligente...</div>`;
 
                 try {
                     const response = await fetch(`/process-payment/?user_email=${encodeURIComponent(email)}&merchant_id=${merchantId}&total_amount=${amount}`, { method: 'POST' });
@@ -457,13 +457,13 @@ def read_root():
                             </div>`;
                     } else {
                         resDiv.innerHTML = `
-                            <div class="p-5 rounded-xl bg-gradient-to-br from-emerald-950/50 to-slate-900 border border-emerald-500/40 space-y-3">
+                            <div class="p-5 rounded-xl bg-gradient-to-br from-emerald-950/50 to-[#040914] border border-emerald-500/40 space-y-3">
                                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                                     <span class="font-bold text-emerald-400 text-sm">✅ ¡Pago QR Exitoso!</span>
                                     <span class="text-xs bg-emerald-500 text-slate-950 px-2.5 py-0.5 rounded-full font-bold">${data.discount_applied || '0%'} OFF</span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2 text-xs">
-                                    <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                                    <div class="bg-[#040914] p-2.5 rounded-lg border border-slate-800">
                                         <span class="text-slate-400 block text-[10px]">Monto Original</span>
                                         <span class="text-white font-mono font-bold">$${data.original_amount}</span>
                                     </div>
@@ -472,7 +472,7 @@ def read_root():
                                         <span class="text-emerald-400 font-mono font-bold">-$${data.amount_saved}</span>
                                     </div>
                                 </div>
-                                <div class="bg-slate-950 p-3 rounded-xl border border-emerald-500/30 flex justify-between items-center">
+                                <div class="bg-[#040914] p-3 rounded-xl border border-emerald-500/30 flex justify-between items-center">
                                     <span class="text-xs font-semibold text-slate-300">Total Final Cobrado:</span>
                                     <span class="text-lg font-extrabold font-mono text-emerald-400">$${data.final_amount_to_pay}</span>
                                 </div>
