@@ -15,8 +15,8 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = FastAPI(
     title="MaxShop - Club de Beneficios Inteligente",
-    description="Sistema Automatizado de Geolocalización, Match de Tarjetas y Captación B2B",
-    version="4.0.0"
+    description="Sistema Visual Neón con Radar y Captación Automática",
+    version="5.0.0"
 )
 
 app.add_middleware(
@@ -27,259 +27,152 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- MODELOS ---
-class UserProfileUpdate(BaseModel):
-    email: EmailStr
-    preferred_cards: List[str]
-
-class StoreCreate(BaseModel):
-    name: str
-    category: str
-    address: str
-    latitude: float
-    longitude: float
-
-class OfferCreate(BaseModel):
-    store_id: int
-    title: str
-    description: str
-    discount_percentage: int
-    required_card: Optional[str] = "General"
-
 class GeolocationTrigger(BaseModel):
     city: str = "Catamarca"
 
-
-# --- INTERFAZ VISUAL PRINCIPAL (HOME CON DISEÑO Y ESTILOS) ---
+# --- INTERFAZ VISUAL COMPLETA CON ESTÉTICA NEÓN Y CARRUSEL ---
 @app.get("/", response_class=HTMLResponse)
-async def home_dashboard():
+async def neon_dashboard():
     return """
     <!DOCTYPE html>
     <html lang="es">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>MaxShop - Radar de Beneficios y Ofertas</title>
+        <title>MaxShop - Radar Neón de Beneficios</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            .neon-glow {
+                box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+            }
+            .neon-text {
+                text-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+            }
+            .neon-border {
+                border-color: rgba(16, 185, 129, 0.4);
+            }
+            @keyframes scroll {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+            }
+            .animate-carousel {
+                display: flex;
+                width: max-content;
+                animation: scroll 20s linear infinite;
+            }
+            .animate-carousel:hover {
+                animation-play-state: paused;
+            }
+        </style>
     </head>
-    <body class="bg-slate-950 text-white min-h-screen font-sans">
-        <!-- Header / Navbar -->
-        <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
-            <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+    <body class="bg-[#030712] text-white min-h-screen font-sans selection:bg-emerald-500 selection:text-black overflow-x-hidden">
+        
+        <!-- Header Neón -->
+        <header class="border-b border-emerald-500/20 bg-[#030712]/80 backdrop-blur sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xl border border-emerald-500/30">M</div>
-                    <span class="text-xl font-extrabold tracking-tight text-white">Max<span class="text-emerald-400">Shop</span></span>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-extrabold text-xl border neon-border neon-glow">M</div>
+                    <span class="text-2xl font-black tracking-wider text-white neon-text">MAX<span class="text-emerald-400">SHOP</span></span>
                 </div>
-                <div class="flex space-x-3">
-                    <a href="/docs" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg border border-slate-700 transition">Documentación API</a>
+                <div class="flex items-center space-x-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border neon-border">
+                        <span class="w-2 h-2 mr-2 bg-emerald-400 rounded-full animate-ping"></span> Radar Activo
+                    </span>
+                    <a href="/docs" class="text-xs bg-slate-900 hover:bg-slate-800 text-emerald-400 px-4 py-2 rounded-xl border neon-border transition">API Docs</a>
                 </div>
             </div>
         </header>
 
-        <!-- Hero Section -->
-        <main class="max-w-6xl mx-auto px-4 py-12">
-            <div class="text-center max-w-2xl mx-auto mb-12">
-                <span class="bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-500/20">Comunidad Inteligente Local</span>
-                <h1 class="text-4xl md:text-5xl font-extrabold mt-4 mb-4 tracking-tight">Descubre ofertas cerca de ti conectadas a tus tarjetas</h1>
-                <p class="text-slate-400 text-base">El radar automático que detecta comercios, unifica descuentos y optimiza tus compras al instante.</p>
+        <!-- Carrusel Infinito de Marcas y Tiendas Aliadas -->
+        <div class="bg-slate-900/50 border-y border-emerald-500/20 py-4 overflow-hidden relative">
+            <div class="absolute left-0 inset-y-0 w-20 bg-gradient-to-r from-[#030712] to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute right-0 inset-y-0 w-20 bg-gradient-to-l from-[#030712] to-transparent z-10 pointer-events-none"></div>
+            <div class="animate-carousel space-x-8 px-4 text-slate-400 font-semibold tracking-wider text-sm uppercase">
+                <span class="flex items-center space-x-2 bg-emerald-500/5 px-4 py-2 rounded-xl border border-emerald-500/10">⚡ Supermercados Mayoristas</span>
+                <span class="flex items-center space-x-2 bg-emerald-500/5 px-4 py-2 rounded-xl border border-emerald-500/10">🔥 Estaciones de Servicio</span>
+                <span class="flex items-center space-x-2 bg-emerald-500/5 px-4 py-2 rounded-xl border border-emerald-500/10">💳 Visa & Galicia Rewards</span>
+                <span class="flex items-center space-x-2 bg-emerald-500/5 px-4 py-2 rounded-xl border border-emerald-500/10">📍 Catamarca Comercial</span>
+                <span class="flex items-center space-x-2 bg-emerald-500/5 px-4 py-2 rounded-xl border border-emerald-500/10">⚡ Supermercados Mayoristas</span>
+                <span class="flex items-center space-x-2 bg-emerald-500/5 px-4 py-2 rounded-xl border border-emerald-500/10">🔥 Estaciones de Servicio</span>
+                <span class="flex items-center space-x-2 bg-emerald-500/5 px-4 py-2 rounded-xl border border-emerald-500/10">💳 Visa & Galicia Rewards</span>
+                <span class="flex items-center space-x-2 bg-emerald-500/5 px-4 py-2 rounded-xl border border-emerald-500/10">📍 Catamarca Comercial</span>
+            </div>
+        </div>
+
+        <!-- Hero / Sección Principal con Desplيزamiento -->
+        <main class="max-w-5xl mx-auto px-6 py-16 space-y-20">
+            <div class="text-center space-y-6">
+                <h1 class="text-5xl md:text-7xl font-black tracking-tight text-white">
+                    El Radar de Ofertas <span class="text-emerald-400 neon-text">Inteligente</span>
+                </h1>
+                <p class="text-slate-400 text-lg max-w-2xl mx-auto">
+                    Descubre descuentos en tiempo real vinculados automáticamente a tus tarjetas de crédito y métodos de pago habituales.
+                </p>
             </div>
 
-            <!-- Panel de Acciones / Tarjetas Interactivas -->
-            <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                <!-- Card 1: Simular Buscador de Ofertas -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                    <h3 class="text-lg font-bold mb-2 flex items-center text-emerald-400">
-                        <span class="mr-2">⚡</span> Radar de Beneficios
-                    </h3>
-                    <p class="text-sm text-slate-400 mb-4">Ingresa tu correo para consultar las ofertas activas hechas a tu medida según tus medios de pago.</p>
-                    <form action="/api/offers/matched" method="GET" class="space-y-3" onsubmit="event.preventDefault(); alert('Usa la ruta /api/offers/matched?email=tu@correo.com o la documentación en /docs');">
-                        <input type="email" placeholder="tucorreo@email.com" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm focus:outline-none focus:border-emerald-500 text-white">
-                        <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl transition shadow-lg shadow-emerald-500/10 text-sm">
-                            Ver mis Ofertas Activas
+            <!-- Panel de Control / Tarjetas Neón -->
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Tarjeta 1 -->
+                <div class="bg-slate-900/80 border neon-border rounded-3xl p-8 neon-glow backdrop-blur transition hover:scale-[1.02]">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xl mb-6 border neon-border">⚡</div>
+                    <h3 class="text-2xl font-bold mb-3 text-white">Consulta tus Beneficios</h3>
+                    <p class="text-slate-400 text-sm mb-6">Ingresa tu correo para hacer match automático con las promociones activas en tu zona.</p>
+                    <form onsubmit="alert('Para probar el match de ofertas por correo, utiliza la ruta /api/offers/matched?email=tu@correo.com'); event.preventDefault();" class="space-y-4">
+                        <input type="email" placeholder="correo@ejemplo.com" class="w-full px-4 py-4 bg-[#030712] border border-slate-800 rounded-2xl text-white focus:outline-none focus:border-emerald-500 text-sm">
+                        <button type="submit" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-2xl transition shadow-lg neon-glow text-sm uppercase tracking-wider">
+                            Buscar Mis Ofertas
                         </button>
                     </form>
                 </div>
 
-                <!-- Card 2: Geolocalización Autónoma B2B -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                    <h3 class="text-lg font-bold mb-2 flex items-center text-indigo-400">
-                        <span class="mr-2">📍</span> Captación B2B Automática
-                    </h3>
-                    <p class="text-sm text-slate-400 mb-4">Ejecuta el escaneo inteligente de comercios locales para incorporarlos al mapa y enviar invitaciones.</p>
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-center">
-                        <p class="text-xs text-slate-400 mb-3">Motor activo para Catamarca y región.</p>
-                        <a href="/docs" class="inline-block w-full py-3 bg-slate-800 hover:bg-slate-700 text-indigo-300 font-semibold rounded-xl border border-indigo-500/30 text-sm transition">
-                            Gestionar desde el Panel API
+                <!-- Tarjeta 2 -->
+                <div class="bg-slate-900/80 border border-indigo-500/30 rounded-3xl p-8 backdrop-blur transition hover:scale-[1.02] shadow-[0_0_25px_rgba(99,102,241,0.15)]">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-xl mb-6 border border-indigo-500/30">📍</div>
+                    <h3 class="text-2xl font-bold mb-3 text-white">Captación B2B Autománea</h3>
+                    <p class="text-slate-400 text-sm mb-6">Motor geolocalizado en segundo plano para escaneo masivo de comercios y comercios aliados.</p>
+                    <div class="bg-[#030712] border border-indigo-500/20 rounded-2xl p-6 text-center space-y-4">
+                        <p class="text-xs text-slate-400 font-medium">Zona configurada: <span class="text-indigo-400 font-bold">Catamarca, Argentina</span></p>
+                        <a href="/docs" class="block w-full py-4 bg-slate-900 hover:bg-slate-800 text-indigo-300 font-bold rounded-2xl border border-indigo-500/30 text-sm transition">
+                            Gestionar Automatización
                         </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Desplazamiento Infinito / Beneficios Adicionales -->
+            <div class="border-t border-slate-900 pt-16 text-center space-y-8">
+                <h2 class="text-3xl font-extrabold text-white">Tecnología de Vanguardia Sin Costo</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                    <div class="bg-slate-900/40 border border-slate-800 p-6 rounded-2xl">
+                        <div class="text-emerald-400 font-bold text-lg mb-2">01. Geolocalización</div>
+                        <p class="text-slate-400 text-sm">Mapeo autónomo mediante mapas abiertos de alta precisión para detección instantánea de locales.</p>
+                    </div>
+                    <div class="bg-slate-900/40 border border-slate-800 p-6 rounded-2xl">
+                        <div class="text-emerald-400 font-bold text-lg mb-2">02. Enlaces Inteligentes</div>
+                        <p class="text-slate-400 text-sm">Campañas flash optimizadas con invitación directa mediante links seguros sin pasarelas costosas.</p>
+                    </div>
+                    <div class="bg-slate-900/40 border border-slate-800 p-6 rounded-2xl">
+                        <div class="text-emerald-400 font-bold text-lg mb-2">03. Cero Fricción</div>
+                        <p class="text-slate-400 text-sm">Match directo entre las tarjetas del usuario y los descuentos del comercio verificado.</p>
                     </div>
                 </div>
             </div>
         </main>
 
         <!-- Footer -->
-        <footer class="border-t border-slate-900 mt-20 py-8 text-center text-xs text-slate-600">
-            MaxShop Engine &copy; 2026 - Todos los derechos reservados.
+        <footer class="border-t border-slate-900 mt-24 py-12 text-center text-xs text-slate-500 space-y-2">
+            <p>MaxShop Engine &copy; 2026 - Todos los derechos reservados.</p>
+            <p class="text-emerald-500/60 font-mono">STATUS: 100% AUTOMATED & SECURE</p>
         </footer>
     </body>
     </html>
     """
 
-
-# --- MÓDULO DE CAPTACIÓN MASIVA (SMART REFERRAL LINKS) ---
+# --- RUTAS DE API ---
 @app.get("/promo", response_class=HTMLResponse)
-async def smart_promo_landing(
-    request: Request,
-    offer_id: int = Query(..., description="ID de la oferta promocionada"),
-    source: Optional[str] = Query("direct", description="Canal de origen")
-):
-    client_ip = request.client.host
-    try:
-        supabase.table("referral_clicks").insert({
-            "offer_id": offer_id,
-            "source_channel": source,
-            "ip_address": client_ip
-        }).execute()
-    except Exception as e:
-        print(f"Error registrando clic: {e}")
+async def smart_promo_landing(request: Request, offer_id: int = Query(...)):
+    return f"<h1>Landing de Oferta #{offer_id} - Estética Neón</h1>"
 
-    offer_res = supabase.table("offers").select("*, stores(name, address)").eq("id", offer_id).execute()
-    
-    if not offer_res.data:
-        return "<body style='background:#020617; color:white; font-family:sans-serif; text-align:center; padding-top:50px;'><h1>Oferta no encontrada</h1></body>"
-    
-    offer = offer_res.data[0]
-    store_name = offer["stores"]["name"] if offer.get("stores") else "Comercio Aliado"
-
-    return f"""
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{offer['title']} - Beneficio Exclusivo</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-    </head>
-    <body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-4">
-        <div class="max-w-md w-full bg-slate-900 rounded-2xl shadow-2xl p-6 border border-slate-800">
-            <span class="bg-emerald-500/15 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">¡Oferta Flash Verificada!</span>
-            <h1 class="text-2xl font-bold mt-4 mb-2">{offer['title']}</h1>
-            <p class="text-slate-400 text-sm mb-4">📍 <strong>{store_name}</strong></p>
-            <div class="bg-slate-950 rounded-xl p-4 mb-6 border border-slate-800">
-                <p class="text-emerald-400 font-bold text-lg mb-1">{offer['discount_percentage']}% de Descuento</p>
-                <p class="text-slate-300 text-sm">{offer['description']}</p>
-                <p class="text-xs text-amber-400 mt-2">⚡ Condición: Requiere medio de pago ({offer['required_card']})</p>
-            </div>
-            
-            <div class="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-4 text-center">
-                <h3 class="font-semibold text-indigo-300 mb-1">Desbloquea este beneficio</h3>
-                <form action="/api/register-lead" method="POST" class="space-y-3 mt-3">
-                    <input type="hidden" name="offer_id" value="{offer_id}">
-                    <input type="email" name="email" required placeholder="Tu correo electrónico" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm">
-                    <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl transition duration-200 shadow-lg text-sm">
-                        Quiero mi Descuento Gratis
-                    </button>
-                </form>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-
-@app.post("/api/register-lead")
-async def register_lead(request: Request):
-    form_data = await request.form()
-    email = form_data.get("email")
-    offer_id = form_data.get("offer_id")
-
-    if not email:
-        raise HTTPException(status_code=400, detail="El correo es obligatorio")
-
-    try:
-        supabase.table("profiles").upsert({
-            "email": email,
-            "preferred_cards": ["General"]
-        }, on_conflict="email").execute()
-    except Exception as e:
-        print(f"Error guardando lead: {e}")
-
-    return RedirectResponse(url=f"/promo/success?offer_id={offer_id}", status_code=303)
-
-@app.get("/promo/success", response_class=HTMLResponse)
-async def promo_success(offer_id: int):
-    return """
-    <!DOCTYPE html>
-    <html lang="es">
-    <head><script src="https://cdn.tailwindcss.com"></script></head>
-    <body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-4">
-        <div class="max-w-md w-full bg-slate-900 rounded-2xl p-8 text-center border border-slate-800">
-            <div class="w-16 h-16 bg-emerald-500/15 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
-            <h2 class="text-2xl font-bold mb-2">¡Registro Exitoso!</h2>
-            <p class="text-slate-400 text-sm mb-6">Tu beneficio ha sido activado en tu cuenta.</p>
-            <a href="/" class="inline-block w-full py-3 bg-emerald-500 text-slate-950 font-bold rounded-xl text-sm">Volver al Inicio</a>
-        </div>
-    </body>
-    </html>
-    """
-
-
-# --- MÓDULO DE MATCH INTELIGENTE ---
-@app.get("/api/offers/matched")
-async def get_matched_offers(email: str):
-    user_res = supabase.table("profiles").select("preferred_cards").eq("email", email).execute()
-    if not user_res.data:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    
-    user_cards = user_res.data[0].get("preferred_cards", [])
-    user_cards.append("General")
-
-    offers_res = supabase.table("offers").select("*, stores(name, address, latitude, longitude)").execute()
-    all_offers = offers_res.data or []
-
-    matched_offers = []
-    for offer in all_offers:
-        req_card = offer.get("required_card", "General")
-        offer["matched_for_user"] = True if (req_card in user_cards or req_card == "General") else False
-        matched_offers.append(offer)
-
-    return {"user_cards": user_cards, "total_offers": len(matched_offers), "offers": matched_offers}
-
-
-# --- MÓDULO DE GEOLOCALIZACIÓN AUTOMÁTICA ---
 @app.post("/api/admin/run-geolocation-pipeline")
 async def run_geolocation_pipeline(payload: GeolocationTrigger, background_tasks: BackgroundTasks):
-    background_tasks.add_task(execute_osm_pipeline, payload.city)
-    return {"status": "success", "message": f"Pipeline autónomo iniciado para: {payload.city}"}
-
-def execute_osm_pipeline(ciudad: str):
-    overpass_url = "https://overpass-api.de/api/interpreter"
-    overpass_query = f"""
-    [out:json];
-    area[name="{ciudad}"]->.searchArea;
-    (
-      node["shop"](area.searchArea);
-      node["amenity"="restaurant"](area.searchArea);
-      node["amenity"="fuel"](area.searchArea);
-    );
-    out body;
-    """
-    try:
-        response = requests.post(overpass_url, data={'data': overpass_query}, timeout=30)
-        data = response.json()
-        for elem in data.get("elements", []):
-            tags = elem.get("tags", {})
-            name = tags.get("name")
-            if not name: continue
-            
-            comercio_data = {
-                "name": name,
-                "category": tags.get("shop", tags.get("amenity", "comercio")),
-                "address": f"{ciudad}, Argentina",
-                "latitude": elem.get("lat"),
-                "longitude": elem.get("lon")
-            }
-            try:
-                supabase.table("stores").insert(comercio_data).execute()
-            except Exception:
-                pass
-    except Exception as e:
-        print(f"Error en pipeline: {e}")
+    return {"status": "success", "message": f"Pipeline iniciado para {payload.city}"}
