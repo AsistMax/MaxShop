@@ -1,5 +1,6 @@
-from fastapi import FastAPI, BackgroundTasks, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Depends, status
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
@@ -7,11 +8,15 @@ from supabase import create_client, Client
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://tu-proyecto.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "tu-supabase-anon-key")
+# Clave secreta para proteger el panel de administración (puedes cambiarla por la que desees)
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026*")
+
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+security = HTTPBasic()
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Panel Maestro",
-    version="15.0.0"
+    version="15.1.0"
 )
 
 app.add_middleware(
@@ -24,6 +29,17 @@ app.add_middleware(
 
 class GeolocationTrigger(BaseModel):
     city: str = "Catamarca"
+
+# Función de autenticación para proteger rutas sensibles (Admin)
+def verificar_admin(credentials: HTTPBasicCredentials = Depends(security)):
+    # Usuario por defecto: admin / Contraseña configurada en ADMIN_PASSWORD
+    if credentials.username != "admin" or credentials.password != ADMIN_PASSWORD:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales de administrador incorrectas",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
 
 # 1. LANDING PAGE PRINCIPAL
 @app.get("/", response_class=HTMLResponse)
@@ -374,9 +390,9 @@ async def panel_validacion():
 </html>
 """
 
-# 4. PANEL DE ADMINISTRACIÓN MAESTRO
+# 4. PANEL DE ADMINISTRACIÓN MAESTRO (Protegido por Contraseña)
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_dashboard():
+async def admin_dashboard(username: str = Depends(verificar_admin)):
     return """<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -391,7 +407,7 @@ async def admin_dashboard():
     <header class="bg-[#0A1128] border-b border-slate-800 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <span class="text-xl font-black text-white">Max<span class="text-orange-500">%</span>Shop</span>
-            <span class="bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Panel Maestro Admin</span>
+            <span class="bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Panel Maestro Admin (Seguro)</span>
         </div>
         <a href="/" class="text-xs font-bold text-slate-400 hover:text-white bg-slate-800 px-4 py-2 rounded-xl">Ver Sitio Público →</a>
     </header>
@@ -489,5 +505,5 @@ async def admin_dashboard():
 """
 
 @app.post("/api/admin/run-geolocation-pipeline")
-async def run_geolocation_pipeline(payload: GeolocationTrigger = GeolocationTrigger()):
+async def run_geolocation_pipeline(payload: GeolocationTrigger = GeolocationTrigger(), username: str = Depends(verificar_admin)):
     return {"status": "success", "message": f"Pipeline de geolocalización actualizado para {payload.city}"}
