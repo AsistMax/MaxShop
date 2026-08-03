@@ -1,5 +1,5 @@
 from fastapi import FastAPI, BackgroundTasks, HTTPException, Depends, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -8,15 +8,17 @@ from supabase import create_client, Client
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://tu-proyecto.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "tu-supabase-anon-key")
-# Clave secreta para proteger el panel de administración (puedes cambiarla por la que desees)
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026*")
+
+# Clave y usuario de acceso configurados para el panel de administración
+ADMIN_USER = "admin"
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 security = HTTPBasic()
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Panel Maestro",
-    version="15.1.0"
+    version="16.0.0"
 )
 
 app.add_middleware(
@@ -30,10 +32,9 @@ app.add_middleware(
 class GeolocationTrigger(BaseModel):
     city: str = "Catamarca"
 
-# Función de autenticación para proteger rutas sensibles (Admin)
+# Función de autenticación segura para el panel de administración
 def verificar_admin(credentials: HTTPBasicCredentials = Depends(security)):
-    # Usuario por defecto: admin / Contraseña configurada en ADMIN_PASSWORD
-    if credentials.username != "admin" or credentials.password != ADMIN_PASSWORD:
+    if credentials.username != ADMIN_USER or credentials.password != ADMIN_PASSWORD:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciales de administrador incorrectas",
