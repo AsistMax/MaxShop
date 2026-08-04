@@ -156,7 +156,7 @@ async def client_landing(request: Request, mensaje_sorteo: str = None):
             </div>
         </div>
 
-        <!-- NUEVA SECCIÓN: COMPRAR NÚMEROS DIRECTO DESDE LA APP (CLIENTE) -->
+        <!-- SECCIÓN: COMPRAR NÚMEROS DIRECTO DESDE LA APP (CLIENTE) -->
         <div id="comprar-app" class="bg-gradient-to-r from-emerald-950/40 via-[#101833] to-[#0A1128] border border-emerald-500/40 rounded-3xl p-8 shadow-2xl space-y-6">
             <div class="max-w-xl space-y-2">
                 <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase border border-emerald-500/20">Autogestión de Socio</span>
