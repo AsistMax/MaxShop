@@ -28,24 +28,12 @@ DB_MOCK = {
             "oferta": "20% OFF en efectivo",
             "imagen": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400",
             "estado": "Aprobado"
-        },
-        {
-            "id": 2,
-            "nombre": "Moda Urbana Store",
-            "categoria": "Indumentaria",
-            "oferta": "3 cuotas sin interés + 15% off",
-            "imagen": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400",
-            "estado": "Aprobado"
         }
     ]
 }
 
 @app.get("/", response_class=HTMLResponse)
 async def home(premio: str = None):
-    """
-    Landing Page principal de Max%Shop con la Ruleta de la Fortuna, formulario de comercios
-    y la vitrina de publicidades activas.
-    """
     comercios_activos = [c for c in DB_MOCK["comercios"] if c["estado"] == "Aprobado"]
     
     cards_html = ""
@@ -61,13 +49,14 @@ async def home(premio: str = None):
         </div>
         """
 
-    resultado_html = ""
+    resultado_script = ""
     if premio:
-        resultado_html = f"""
-        <div class="result-box">
-            <h3>🎰 Resultado del Giro:</h3>
-            <p style="font-size: 18px; color: #34d399; font-weight: bold;">{premio}</p>
-        </div>
+        resultado_script = f"""
+        window.addEventListener('DOMContentLoaded', (event) => {{
+            const resBox = document.getElementById('resultado-ruleta');
+            resBox.innerHTML = "<h3>🎉 ¡Felicidades! Ganaste:</h3><p style='font-size: 18px; color: #34d399; font-weight: bold;'>{premio}</p>";
+            resBox.style.display = 'block';
+        }});
         """
 
     return HTMLResponse(content=f"""
@@ -78,7 +67,7 @@ async def home(premio: str = None):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Max%Shop - Red de Descuentos y Ruleta</title>
         <style>
-            body {{ background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }}
+            body {{ background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; text-align: center; }}
             .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }}
             .logo {{ font-size: 24px; font-weight: bold; color: #fff; }}
             .logo span {{ color: #ff8c00; }}
@@ -96,7 +85,12 @@ async def home(premio: str = None):
             .btn-accion {{ background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 16px; }}
             .btn-ruleta {{ background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; }}
 
-            .result-box {{ background: rgba(52, 211, 153, 0.1); border: 1px solid #34d399; padding: 15px; border-radius: 8px; margin-top: 20px; }}
+            /* Estilo Ruleta Visual */
+            .wheel-container {{ position: relative; width: 220px; height: 220px; margin: 20px auto; border-radius: 50%; border: 8px solid #ff8c00; background: conic-gradient(#38bdf8 0deg 90deg, #3b82f6 90deg 180deg, #1e293b 180deg 270deg, #34d399 270deg 360deg); display: flex; align-items: center; justify-content: center; transition: transform 4s cubic-bezier(0.15, 0.95, 0.15, 1); box-shadow: 0 0 20px rgba(255,140,0,0.4); }}
+            .wheel-center {{ width: 60px; height: 60px; background: #0b0f19; border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: #ff8c00; }}
+            .pointer {{ width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid #ff8c00; margin: 0 auto -10px auto; position: relative; z-index: 10; }}
+
+            .result-box {{ background: rgba(52, 211, 153, 0.1); border: 1px solid #34d399; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; }}
 
             .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }}
             .card {{ background: #131b2e; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); text-align: left; }}
@@ -117,23 +111,30 @@ async def home(premio: str = None):
             </div>
         </div>
 
-        <!-- Sección Ruleta de la Fortuna MaxShop -->
+        <!-- Ruleta Visual Interactiva -->
         <div class="box-container" style="border-color: rgba(56, 189, 248, 0.3);">
             <h3 style="color: #ff8c00;">🎡 La Ruleta de la Fortuna - MaxShop</h3>
-            <p style="color: #94a3b8; font-size: 13px;">¡Gira por solo <b>$1.000</b>! Gana servicios, coberturas, descuentos o premios en efectivo especiales.</p>
-            <form action="/ruleta/girar" method="POST">
-                <button type="submit" class="btn-accion btn-ruleta">GIRAR RULETA ($1.000)</button>
+            <p style="color: #94a3b8; font-size: 13px;">Gira por solo <b>$1.000</b>. Participa por servicios y descuentos exclusivos (hasta 20%).</p>
+            
+            <div class="pointer"></div>
+            <div class="wheel-container" id="ruletaRueda">
+                <div class="wheel-center">MAX%</div>
+            </div>
+
+            <form action="/ruleta/pagar-y-girar" method="POST">
+                <button type="submit" class="btn-accion btn-ruleta" id="btnGirar">PAGAR $1.000 Y GIRAR</button>
             </form>
-            {resultado_html}
+            
+            <div class="result-box" id="resultado-ruleta"></div>
         </div>
 
         <!-- Formulario para subir publicidades -->
         <div class="box-container" style="text-align: left;">
             <h3>¿Tienes un negocio? Sube tu publicidad gratis</h3>
-            <p style="color: #94a3b8; font-size: 13px;">Puedes seleccionar una o varias imágenes de tu galería a la vez.</p>
+            <p style="color: #94a3b8; font-size: 13px;">Sube tus imágenes y ofrece hasta un 20% de descuento inicial.</p>
             <form action="/comercio/publicar" method="POST" enctype="multipart/form-data">
                 <label>Nombre de tu Tienda / Comercio</label>
-                <input type="text" name="nombre" placeholder="Ej: Indumentaria Central" required>
+                <input type="text" name="nombre" placeholder="Ej: Tienda Local" required>
                 
                 <label>Categoría</label>
                 <select name="categoria">
@@ -141,13 +142,12 @@ async def home(premio: str = None):
                     <option value="Indumentaria">Indumentaria</option>
                     <option value="Servicios">Servicios</option>
                     <option value="Tecnología">Tecnología</option>
-                    <option value="Salud y Belleza">Salud y Belleza</option>
                 </select>
 
-                <label>Descripción del Descuento u Oferta</label>
-                <input type="text" name="oferta" placeholder="Ej: 20% off pagando en efectivo" required>
+                <label>Descripción del Descuento (Máximo 20%)</label>
+                <input type="text" name="oferta" placeholder="Ej: 10% o 20% OFF abonando en efectivo" required>
 
-                <label>Imágenes o Logos (Puedes seleccionar varios archivos)</label>
+                <label>Imágenes o Logos</label>
                 <input type="file" name="imagenes_archivos" accept="image/*" multiple required>
 
                 <button type="submit" class="btn-accion">SUBIR PUBLICIDAD</button>
@@ -158,26 +158,60 @@ async def home(premio: str = None):
         <div class="grid">
             {cards_html}
         </div>
+
+        <script>
+            {resultado_script}
+        </script>
     </body>
     </html>
     """)
 
 
-@app.post("/ruleta/girar", response_class=HTMLResponse)
-async def girar_ruleta():
+@app.post("/ruleta/pagar-y-girar", response_class=HTMLResponse)
+async def pagar_y_girar():
     """
-    Controla el giro de la ruleta mediante probabilidades matemáticas.
-    Prioriza servicios, descuentos y 'seguí participando' para proteger la recaudación,
-    dejando premios de dinero en efectivo de forma muy esporádica.
+    Simula la pasarela de pago o validación de ticket de $1.000 antes de ejecutar la ruleta.
+    """
+    return HTMLResponse(content="""
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Procesando Pago - Max%Shop</title>
+        <style>
+            body { background-color: #0b0f19; color: #ffffff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
+            .box { background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); }
+            .spinner { border: 4px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: #ff8c00; animation: spin 1s linear infinite; margin: 20px auto; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        </style>
+    </head>
+    <body>
+        <div class="box">
+            <h3 style="color: #ff8c00;">💳 Procesando pago de $1.000...</h3>
+            <div class="spinner"></div>
+            <p style="color: #94a3b8; font-size: 13px;">Validando tu crédito para activar la Ruleta de la Fortuna...</p>
+        </div>
+        <script>
+            setTimeout(() => {
+                window.location.href = "/ruleta/girar-accion";
+            }, 2000);
+        </script>
+    </body>
+    </html>
+    """)
+
+
+@app.get("/ruleta/girar-accion", response_class=HTMLResponse)
+async def girar_accion():
+    """
+    Controla el giro con premios ajustados a la realidad actual (servicios y descuentos controlados máximo 20%).
     """
     premios_posibles = [
-        ("¡Seguí participando! Gracias por apoyar a MaxShop.", 40),
-        ("Servicio de Asesoría / Cobertura Básica bonificada", 30),
-        ("Descuento Especial del 50% en Comercios Adheridos", 20),
-        ("Premio en Efectivo: $5.000", 6),
-        ("Premio en Efectivo: $20.000", 3),
-        ("¡Premio Mayor en Efectivo: $50.000!", 0.9),
-        ("¡JACKPOT MÁXIMO: $100.000!", 0.1)
+        ("¡Seguí participando! Gracias por apoyar la recaudación inicial.", 55),
+        ("Servicio de Asesoría / Cobertura Básica bonificada", 25),
+        ("Descuento del 10% en Comercios Adheridos", 12),
+        ("Descuento del 20% (Máximo de red) en Comercios Adheridos", 7),
+        ("Premio Especial: Servicio bonificado x2", 1)
     ]
 
     textos = [p[0] for p in premios_posibles]
@@ -229,8 +263,8 @@ async def publicar_comercio(
     </head>
     <body>
         <div class="box">
-            <h3 style="color: #34d399;">✔ ¡Publicidades Subidas con Éxito!</h3>
-            <p style="color: #94a3b8; font-size: 14px;">Tus imágenes ya están publicadas en la vitrina del club.</p>
+            <h3 style="color: #34d399;">✔ ¡Publicidad Subida con Éxito!</h3>
+            <p style="color: #94a3b8; font-size: 14px;">Tu negocio ya forma parte de la vitrina del club.</p>
             <br>
             <a href="/" style="color: #38bdf8; text-decoration: none; font-weight: bold;">Volver a la vitrina</a>
         </div>
@@ -290,8 +324,8 @@ async def panel_admin():
                 <div class="stat-number">{total_comercios}</div>
             </div>
             <div class="stat-card">
-                <div>COBROS DEL MES</div>
-                <div class="stat-number" style="color: #fb923c;">$8.450.000</div>
+                <div>RECAUDACIÓN RULETA</div>
+                <div class="stat-number" style="color: #fb923c;">$145.000</div>
             </div>
         </div>
 
