@@ -1,258 +1,263 @@
-import os
-import random
-from typing import List
-from fastapi import FastAPI, Form, File, UploadFile, Request, HTTPException, Depends
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Depends, status, Form, File, UploadFile, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import os
+import random
 import urllib.parse
+from supabase import create_client, Client
 
-app = FastAPI(title="Max%Shop API", version="1.0.0")
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://tu-proyecto.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "tu-supabase-anon-key")
 
-# Crear carpeta para almacenar las imágenes subidas localmente si no existe
+# Clave y usuario de acceso configurados para el panel de administración
+ADMIN_USER = "admin"
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
+
+# supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+security = HTTPBasic()
+
+app = FastAPI(
+    title="Max%Shop - Club de Beneficios, Cobertura y Panel Maestro",
+    version="16.0.0"
+)
+
+# 1. Configuración de Archivos Estáticos para Subida de Imágenes Locales
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-# Montar la carpeta estática para servir las imágenes de los comercios
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Simulación de base de datos en memoria
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class GeolocationTrigger(BaseModel):
+    city: str = "Catamarca"
+
+# Función de autenticación segura para el panel de administración
+def verificar_admin(credentials: HTTPBasicCredentials = Depends(security)):
+    if credentials.username != ADMIN_USER or credentials.password != ADMIN_PASSWORD:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales de administrador incorrectas",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
+# Simulación de Base de Datos Dinámica
 DB_MOCK = {
     "socios": [
-        {"dni": "33438178", "nombre": "Juan Pérez", "plan": "Familiar VIP ($5M)", "estado": "activo"}
+        {"dni": "12345678", "nombre": "Juan Pérez", "plan": "Familiar VIP ($5M)", "estado": "activo"}
     ],
     "comercios": [
         {
             "id": 1,
             "nombre": "Café & Bar Central",
             "categoria": "Gastronomía",
-            "oferta": "20% OFF en efectivo",
+            "oferta": "20% de descuento abonando por transferencia o efectivo.",
             "imagen": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400",
-            "estado": "Aprobado",
-            "tipo": "local"
+            "estado": "Aprobado"
         },
         {
             "id": 2,
             "nombre": "Moda Urbana Store",
             "categoria": "Indumentaria",
-            "oferta": "15% off abonando en efectivo",
+            "oferta": "3 cuotas sin interés + 15% off",
             "imagen": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400",
-            "estado": "Aprobado",
-            "tipo": "local"
+            "estado": "Aprobado"
         }
-    ],
-    "publicidades_pendientes": [
-        {"id": 1, "comercio": "Burguer House", "oferta": "2x1 en hamburguesas los jueves", "estado": "Pendiente"}
     ]
 }
 
+# 1. LANDING PAGE PRINCIPAL
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request, premio: str = None):
-    """
-    Landing Page principal de Max%Shop con la Ruleta Visual, formulario de comercios con carga local
-    y la vitrina donde se visualizan todas las publicidades activas.
-    """
+async def client_landing(request: Request, premio: str = None):
+    # Generar las cards de los comercios dinámicamente
     comercios_activos = [c for c in DB_MOCK["comercios"] if c["estado"] == "Aprobado"]
-    
-    cards_html = ""
-    for comercio in comercios_activos:
-        cards_html += f"""
-        <div class="card">
-            <img src="{comercio.get('imagen', 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400')}" alt="{comercio['nombre']}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400'">
-            <div class="card-body">
-                <div class="badge-cat">{comercio['categoria']}</div>
-                <div class="titulo-comercio">{comercio['nombre']}</div>
-                <div class="oferta">🔥 {comercio['oferta']}</div>
+    grid_html = ""
+    for c in comercios_activos:
+        grid_html += f"""
+        <div class="bg-[#101833] border border-slate-800 rounded-3xl p-5 space-y-3 shadow-xl">
+            <div class="h-40 bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-700">
+                <img src="{c['imagen']}" alt="{c['nombre']}" class="w-full h-full object-cover">
             </div>
+            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md">{c.get('categoria', 'Comercio')}</span>
+            <h4 class="text-base font-bold text-white">{c['nombre']}</h4>
+            <p class="text-xs text-slate-400">{c['oferta']}</p>
         </div>
         """
 
-    resultado_script = ""
+    # Alerta de Ruleta si el usuario ganó algo
+    alerta_premio = ""
     if premio:
-        resultado_script = f"""
-        window.addEventListener('DOMContentLoaded', (event) => {{
-            const resBox = document.getElementById('resultado-ruleta');
-            resBox.innerHTML = "<h3>🎉 ¡Resultado del Giro:</h3><p style='font-size: 18px; color: #34d399; font-weight: bold;'>{premio}</p>";
-            resBox.style.display = 'block';
-        }});
+        alerta_premio = f"""
+        <div class="bg-emerald-500/10 border border-emerald-500 text-emerald-400 px-4 py-3 rounded-xl font-bold text-sm mt-4 text-center">
+            🎉 Resultado de la Ruleta: {premio}
+        </div>
         """
 
-    return HTMLResponse(content=f"""
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Max%Shop - Red de Descuentos y Ruleta</title>
-        <style>
-            body {{ background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }}
-            .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }}
-            .logo {{ font-size: 24px; font-weight: bold; color: #fff; }}
-            .logo span {{ color: #ff8c00; }}
-            .nav-buttons a {{ margin-left: 10px; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; }}
-            .btn-suscribir {{ background: linear-gradient(135deg, #ff8c00, #ffb347); color: #000; }}
-            .btn-admin {{ background: rgba(255,255,255,0.1); color: #fff; }}
-            .btn-validar {{ background: rgba(52,211,153,0.1); color: #34d399; }}
-            
-            .form-box {{ background: #131b2e; padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; text-align: left; }}
-            .form-box h3 {{ margin-top: 0; color: #38bdf8; text-align: center; }}
-            label {{ display: block; margin-top: 12px; font-size: 13px; color: #94a3b8; }}
-            input, select {{ width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #334155; background: #0b0f19; color: #fff; box-sizing: border-box; }}
-            input[type="file"] {{ padding: 8px; background: #1e293b; cursor: pointer; }}
-            
-            .btn-accion {{ background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 16px; text-align: center; }}
-            .btn-ruleta {{ background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; }}
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Max%Shop - Club de Beneficios y Cobertura Total</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes scroll {{ 0% {{ transform: translateX(0); }} 100% {{ transform: translateX(-50%); }} }}
+        .animate-scroll {{ display: flex; width: max-content; animation: scroll 35s linear infinite; }}
+        .animate-scroll:hover {{ animation-play-state: paused; }}
+        ::-webkit-scrollbar {{ width: 8px; height: 8px; }}
+        ::-webkit-scrollbar-track {{ background: #0A1128; }}
+        ::-webkit-scrollbar-thumb {{ background: #1E293B; border-radius: 4px; }}
+        
+        /* Estilos Ruleta */
+        .wheel-container-wrapper {{ text-align: center; margin: 0 auto; }}
+        .wheel-container {{ position: relative; width: 160px; height: 160px; border-radius: 50%; border: 6px solid #f97316; background: conic-gradient(#38bdf8 0deg 90deg, #3b82f6 90deg 180deg, #1e293b 180deg 270deg, #34d399 270deg 360deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(249, 115, 22, 0.3); }}
+        .wheel-center {{ width: 40px; height: 40px; background: #0f172a; border-radius: 50%; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px; color: #f97316; }}
+        .pointer {{ width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #f97316; margin: 0 auto -6px auto; position: relative; z-index: 10; }}
+    </style>
+</head>
+<body class="bg-[#0A1128] text-slate-100 min-h-screen font-sans selection:bg-orange-500 selection:text-white antialiased">
 
-            /* Estilos de la Ruleta Visual */
-            .wheel-container-wrapper {{ text-align: center; }}
-            .wheel-container {{ position: relative; width: 180px; height: 180px; margin: 15px auto; border-radius: 50%; border: 8px solid #ff8c00; background: conic-gradient(#38bdf8 0deg 90deg, #3b82f6 90deg 180deg, #1e293b 180deg 270deg, #34d399 270deg 360deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(255,140,0,0.3); }}
-            .wheel-center {{ width: 45px; height: 45px; background: #0b0f19; border-radius: 50%; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; color: #ff8c00; }}
-            .pointer {{ width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff8c00; margin: 0 auto -8px auto; position: relative; z-index: 10; }}
+    <!-- TOP BAR Y GEOLOCALIZACIÓN -->
+    <div class="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 text-xs py-2.5 px-4 flex flex-col sm:flex-row justify-between items-center border-b border-slate-800/80 gap-2">
+        <div class="flex items-center gap-2">
+            <span>📍 Ubicación:</span>
+            <select id="citySelect" class="bg-[#0A1128] text-emerald-400 font-bold px-2 py-1 rounded border border-slate-700 focus:outline-none">
+                <option value="Catamarca">Catamarca (Capital)</option>
+                <option value="Valle Viejo">Valle Viejo</option>
+            </select>
+        </div>
+        <div class="text-slate-300 font-medium hidden md:block">
+            🌟 <span class="text-emerald-400 font-bold">Club de Descuentos:</span> Cobertura familiar de hasta <span class="text-orange-400 font-bold">$5.000.000</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/comercio/validar" class="text-[11px] font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-full text-emerald-400 border border-slate-700">🛡️ Validar DNI</a>
+            <a href="/admin" class="text-[11px] font-bold bg-orange-500/10 hover:bg-orange-500/20 px-3 py-1 rounded-full text-orange-400 border border-orange-500/30">⚙️ Admin</a>
+        </div>
+    </div>
 
-            .result-box {{ background: rgba(52, 211, 153, 0.1); border: 1px solid #34d399; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; text-align: center; }}
+    <!-- HEADER / NAVBAR -->
+    <header class="sticky top-0 z-40 bg-[#0A1128]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+            <div class="flex items-center space-x-3 cursor-pointer">
+                <div class="text-2xl sm:text-3xl font-black tracking-tighter text-white">
+                    Max<span class="text-orange-500">%</span>Shop
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="/socio/12345678" class="hidden sm:inline-block text-xs font-bold text-blue-400 bg-blue-500/10 px-4 py-2.5 rounded-xl border border-blue-500/20">Ver Mi Credencial</a>
+                <a href="#planes" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black text-xs sm:text-sm px-5 py-3 rounded-xl transition shadow-lg shadow-orange-500/20 uppercase">
+                    🛡️ Suscribirme
+                </a>
+            </div>
+        </div>
+    </header>
 
-            /* Vitrina de comercios */
-            .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }}
-            .card {{ background: #131b2e; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); text-align: left; }}
-            .card-img {{ width: 100%; height: 160px; object-fit: cover; background: #1e293b; }}
-            .card-body {{ padding: 20px; }}
-            .badge-cat {{ background: #1e293b; color: #38bdf8; padding: 4px 10px; border-radius: 20px; font-size: 12px; display: inline-block; margin-bottom: 10px; }}
-            .titulo-comercio {{ font-size: 18px; font-weight: bold; margin-bottom: 8px; }}
-            .oferta {{ color: #34d399; font-size: 15px; font-weight: 500; }}
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <div class="logo">Max<span>%</span>Shop</div>
-            <div class="nav-buttons">
-                <a href="/validar" class="btn-admin btn-validar">Validar DNI</a>
-                <a href="/admin" class="btn-admin">Panel Admin</a>
-                <a href="/suscripcion" class="btn-suscribir">SUSCRIBIRME</a>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+        
+        <!-- HERO -->
+        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-8 md:p-14 shadow-2xl overflow-hidden">
+            <div class="relative z-10 max-w-2xl space-y-6">
+                <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-3.5 py-1.5 rounded-full border border-orange-500/20 uppercase tracking-widest">
+                    <span>🔥</span> <span>Entras por los Descuentos, te proteges con todo</span>
+                </span>
+                <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
+                    Club de Descuentos + Cobertura Total <span class="text-orange-500">$5.000.000</span>
+                </h1>
+                <p class="text-slate-300 text-base sm:text-lg leading-relaxed">
+                    Navega por los comercios adheridos, presenta tu credencial digital y obtén respaldo financiero.
+                </p>
+                <div class="pt-2 flex flex-wrap gap-4">
+                    <a href="#comercios" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-7 py-3.5 rounded-2xl transition text-sm uppercase shadow-lg">Ver Comercios</a>
+                </div>
             </div>
         </div>
 
-        <!-- Sección Ruleta de la Fortuna con Cobro de $1.000 y tope del 20% -->
-        <div class="form-box wheel-container-wrapper">
-            <h3 style="color: #ff8c00;">🎡 La Ruleta de la Fortuna - MaxShop</h3>
-            <p style="color: #94a3b8; font-size: 13px;">Gira por solo <b>$1.000</b>. Gana beneficios o descuentos exclusivos (hasta un 20%).</p>
+        <!-- SECCIÓN DE RULETA AGREGADA AL DISEÑO -->
+        <div class="bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-orange-500/30 rounded-3xl p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-orange-500/10 blur-3xl rounded-full"></div>
+            <div class="space-y-4 max-w-lg relative z-10">
+                <span class="text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase tracking-wider border border-orange-500/20">Sorteo Interactivo</span>
+                <h3 class="text-3xl font-black text-white">La Ruleta de la Fortuna</h3>
+                <p class="text-sm text-slate-400 leading-relaxed">Gira por solo <b>$1.000</b>. Gana beneficios, servicios bonificados o descuentos exclusivos (tope estricto 20%).</p>
+                <form action="/ruleta/pagar-y-girar" method="POST" class="pt-2">
+                    <button type="submit" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black px-7 py-3 rounded-xl transition text-xs uppercase tracking-wider shadow-lg">💳 Pagar $1.000 y Girar</button>
+                </form>
+                {alerta_premio}
+            </div>
             
-            <div class="pointer"></div>
-            <div class="wheel-container">
-                <div class="wheel-center">MAX%</div>
+            <div class="wheel-container-wrapper relative z-10">
+                <div class="pointer"></div>
+                <div class="wheel-container">
+                    <div class="wheel-center">MAX%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: REGISTRO DE COMERCIOS (AHORA CON UPLOADFILE Y ENCTYPE) -->
+        <div id="comercios" class="space-y-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-[#101833] border border-slate-800 rounded-3xl p-8 shadow-xl">
+                <div class="md:w-1/3">
+                    <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-500/20">Portal de Socios</span>
+                    <h2 class="text-2xl font-black text-white mt-2">Sube tu publicidad</h2>
+                    <p class="text-sm text-slate-400 mt-2">Añade tu logo o foto del local y la oferta para aparecer al instante en la red.</p>
+                </div>
+                <!-- FORMULARIO REAL DE SUBIDA -->
+                <form action="/comercio/publicar" method="POST" enctype="multipart/form-data" class="w-full md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input type="text" name="nombre" required placeholder="Nombre de tu tienda" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                    <input type="text" name="oferta" required placeholder="Ej: 25% OFF en efectivo" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                    <select name="categoria" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-slate-400 focus:outline-none focus:border-emerald-500">
+                        <option value="Gastronomía">Gastronomía</option>
+                        <option value="Indumentaria">Indumentaria</option>
+                        <option value="Servicios">Servicios</option>
+                    </select>
+                    <input type="file" name="imagen_archivo" accept="image/*" required class="bg-[#0A1128] border border-slate-700 px-4 py-2 rounded-xl text-xs text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20 cursor-pointer">
+                    <div class="sm:col-span-2">
+                        <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-3 rounded-xl text-xs uppercase tracking-wider transition">Publicar en Vitrina</button>
+                    </div>
+                </form>
             </div>
 
-            <form action="/ruleta/pagar-y-girar" method="POST">
-                <button type="submit" class="btn-accion btn-ruleta">PAGAR $1.000 Y GIRAR RULETA</button>
-            </form>
-            
-            <div class="result-box" id="resultado-ruleta"></div>
+            <!-- VITRINA DINÁMICA DE PUBLICIDADES -->
+            <div class="space-y-4 pt-4">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <span>🛍️</span> Comercios y Publicidades Activas
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {grid_html}
+                </div>
+            </div>
         </div>
+    </main>
 
-        <!-- Formulario para subir comercio con imagen local -->
-        <div class="form-box">
-            <h3>¿Tienes un negocio? Sube tu publicidad</h3>
-            <p style="color: #94a3b8; font-size: 13px;">Sube tu logo y ofrece hasta un 20% de descuento para aparecer en la red.</p>
-            <form action="/comercio/publicar" method="POST" enctype="multipart/form-data">
-                <label>Nombre de tu Tienda / Comercio</label>
-                <input type="text" name="nombre" placeholder="Ej: Indumentaria Central" required>
-                
-                <label>Categoría</label>
-                <select name="categoria">
-                    <option value="Gastronomía">Gastronomía</option>
-                    <option value="Indumentaria">Indumentaria</option>
-                    <option value="Servicios">Servicios</option>
-                    <option value="Tecnología">Tecnología</option>
-                    <option value="Salud y Belleza">Salud y Belleza</option>
-                </select>
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800/80 bg-[#070C1E] mt-24 py-12 text-center text-xs text-slate-400 space-y-3">
+        <p class="font-bold text-slate-300 text-sm">Max%Shop &copy; 2026 - Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
+"""
 
-                <label>Descripción del Descuento (Máximo 20%)</label>
-                <input type="text" name="oferta" placeholder="Ej: 15% off abonando en efectivo" required>
-
-                <label>Logo o Imagen del Negocio (Archivo local)</label>
-                <input type="file" name="imagen_archivo" accept="image/*" required>
-
-                <button type="submit" class="btn-accion">SUBIR PUBLICIDAD</button>
-            </form>
-        </div>
-
-        <h2>🛍️ Comercios y Publicidades Activas en la Red</h2>
-        <div class="grid">
-            {cards_html}
-        </div>
-
-        <script>
-            {resultado_script}
-        </script>
-    </body>
-    </html>
-    """)
-
-
-@app.post("/ruleta/pagar-y-girar", response_class=HTMLResponse)
-async def pagar_y_girar():
-    """
-    Simula el cobro previo de $1.000 antes de entregar el resultado de la ruleta.
-    """
-    return HTMLResponse(content="""
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Procesando Pago - Max%Shop</title>
-        <style>
-            body { background-color: #0b0f19; color: #ffffff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
-            .box { background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); }
-            .spinner { border: 4px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: #ff8c00; animation: spin 1s linear infinite; margin: 20px auto; }
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        </style>
-    </head>
-    <body>
-        <div class="box">
-            <h3 style="color: #ff8c00;">💳 Procesando pago de $1.000...</h3>
-            <div class="spinner"></div>
-            <p style="color: #94a3b8; font-size: 13px;">Validando transacción para girar la ruleta...</p>
-        </div>
-        <script>
-            setTimeout(() => {
-                window.location.href = "/ruleta/girar-accion";
-            }, 2000);
-        </script>
-    </body>
-    </html>
-    """)
-
-
-@app.get("/ruleta/girar-accion", response_class=HTMLResponse)
-async def girar_accion():
-    """
-    Calcula de forma aleatoria el premio con tope estricto de 20% de descuento.
-    """
-    premios_posibles = [
-        ("¡Seguí participando! Gracias por apoyar al club.", 55),
-        ("Servicio de Asesoría / Cobertura Básica bonificada", 25),
-        ("Descuento del 10% en Comercios Adheridos", 12),
-        ("Descuento del 20% (Máximo de red) en Comercios Adheridos", 7),
-        ("Premio Especial: Servicio bonificado x2", 1)
-    ]
-
-    textos = [p[0] for p in premios_posibles]
-    pesos = [p[1] for p in premios_posibles]
-
-    premio_obtenido = random.choices(textos, weights=pesos, k=1)[0]
-    encoded_premio = urllib.parse.quote(premio_obtenido)
-    
-    return RedirectResponse(url=f"/?premio={encoded_premio}", status_code=303)
-
+# ==========================================
+# ENDPOINTS AGREGADOS (IMÁGENES Y RULETA)
+# ==========================================
 
 @app.post("/comercio/publicar", response_class=HTMLResponse)
 async def publicar_comercio(
     nombre: str = Form(...),
-    categoria: str = Form(...),
     oferta: str = Form(...),
+    categoria: str = Form("Local"),
     imagen_archivo: UploadFile = File(...)
 ):
-    """
-    Recibe el archivo local subido por el comercio, lo guarda en static/uploads y lo publica.
-    """
+    """Guarda la imagen localmente y actualiza la vitrina"""
     imagen_url = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400"
     
     if imagen_archivo and imagen_archivo.filename:
@@ -262,204 +267,176 @@ async def publicar_comercio(
             buffer.write(content)
         imagen_url = f"/static/uploads/{imagen_archivo.filename}"
 
-    nuevo_id = len(DB_MOCK["comercios"]) + 1
     nuevo_comercio = {
-        "id": nuevo_id,
+        "id": len(DB_MOCK["comercios"]) + 1,
         "nombre": nombre,
         "categoria": categoria,
         "oferta": oferta,
         "imagen": imagen_url,
-        "estado": "Aprobado",
-        "tipo": "local"
+        "estado": "Aprobado"
     }
     DB_MOCK["comercios"].append(nuevo_comercio)
+    
+    # Redirigir de vuelta al inicio simulando éxito
+    return RedirectResponse(url="/#comercios", status_code=303)
 
+
+@app.post("/ruleta/pagar-y-girar", response_class=HTMLResponse)
+async def pagar_y_girar():
+    """Simula el cobro estilo Tailwind"""
     return HTMLResponse(content="""
     <!DOCTYPE html>
     <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Éxito - Max%Shop</title>
-        <style>
-            body { background-color: #0b0f19; color: #ffffff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
-            .box { background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); }
-        </style>
-    </head>
-    <body>
-        <div class="box">
-            <h3 style="color: #34d399;">✔ ¡Publicidad Subida con Éxito!</h3>
-            <p style="color: #94a3b8; font-size: 14px;">Tu anuncio y logo ya están publicados en la vitrina del club.</p>
-            <br>
-            <a href="/" style="color: #38bdf8; text-decoration: none; font-weight: bold;">Volver a la vitrina</a>
+    <head><script src="https://cdn.tailwindcss.com"></script></head>
+    <body class="bg-[#0A1128] flex items-center justify-center h-screen">
+        <div class="bg-[#101833] p-10 rounded-3xl border border-slate-800 text-center space-y-4 shadow-2xl max-w-sm">
+            <h3 class="text-orange-500 font-bold text-xl">💳 Procesando Pago de $1.000</h3>
+            <div class="w-10 h-10 border-4 border-slate-700 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
+            <p class="text-slate-400 text-xs">Validando en MercadoPago para habilitar el giro...</p>
         </div>
+        <script>setTimeout(() => { window.location.href = "/ruleta/girar-accion"; }, 2000);</script>
     </body>
     </html>
     """)
 
+@app.get("/ruleta/girar-accion", response_class=HTMLResponse)
+async def girar_accion():
+    premios = [
+        ("¡Seguí participando! Gracias por apoyar al club.", 55),
+        ("Servicio de Asesoría / Cobertura Básica bonificada", 25),
+        ("Descuento del 10% en Comercios Adheridos", 12),
+        ("Descuento tope del 20% en la Red", 7),
+        ("Premio Especial Bonificado", 1)
+    ]
+    premio_obtenido = random.choices([p[0] for p in premios], weights=[p[1] for p in premios], k=1)[0]
+    return RedirectResponse(url=f"/?premio={urllib.parse.quote(premio_obtenido)}", status_code=303)
+
+
+# ==========================================
+# SECCIONES ORIGINALES (CREDENCIAL, ADMIN, VALIDAR)
+# ==========================================
+
+@app.get("/socio/{dni}", response_class=HTMLResponse)
+async def credencial_digital(dni: str):
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-[#0A1128] min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-gradient-to-b from-[#1E2959] to-[#101833] border-2 border-emerald-500 rounded-3xl p-6 shadow-2xl space-y-6">
+        <div class="flex justify-between items-center border-b border-slate-700 pb-4">
+            <span class="font-black text-lg text-white">Max<span class="text-orange-500">%</span>Shop</span>
+            <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Socio Activo</span>
+        </div>
+        <div class="text-center">
+            <div class="w-20 h-20 bg-slate-800 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-slate-400 border border-slate-700 mb-2">👤</div>
+            <h2 class="text-xl font-bold text-white">Juan Pérez</h2>
+            <p class="text-xs text-slate-400">DNI: <span class="text-white font-mono">{dni}</span></p>
+        </div>
+        <a href="/" class="block text-center bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs">Volver al inicio</a>
+    </div>
+</body>
+</html>
+"""
 
 @app.get("/admin", response_class=HTMLResponse)
-async def panel_admin():
-    """
-    Panel Maestro de Administración (Seguro).
-    """
-    total_socios = len(DB_MOCK["socios"])
-    total_comercios = len(DB_MOCK["comercios"])
-    
-    filas_comercios = ""
-    for comercio in DB_MOCK["comercios"]:
-        filas_comercios += f"""
-                <tr>
-                    <td><img src="{comercio.get('imagen', '')}" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400'"></td>
-                    <td><b>{comercio['nombre']}</b><br><span style="font-size:12px; color:#94a3b8;">{comercio['categoria']}</span></td>
-                    <td>{comercio['oferta']}</td>
-                    <td><span style="background: rgba(52, 211, 153, 0.2); color: #34d399; padding: 4px 8px; border-radius: 4px; font-size: 12px;">{comercio['estado']}</span></td>
-                </tr>
+async def admin_dashboard(username: str = Depends(verificar_admin)):
+    # Generar tabla dinámicamente con los comercios subidos
+    filas_html = ""
+    for c in DB_MOCK["comercios"]:
+        filas_html += f"""
+        <tr class="hover:bg-slate-800/40 border-b border-slate-800">
+            <td class="p-3">
+                <div class="flex items-center gap-3">
+                    <img src="{c['imagen']}" class="w-10 h-10 rounded-lg object-cover bg-slate-800">
+                    <div>
+                        <p class="font-bold text-white text-sm">{c['nombre']}</p>
+                        <p class="text-[10px] text-slate-400">{c['categoria']}</p>
+                    </div>
+                </div>
+            </td>
+            <td class="p-3 text-slate-300 text-xs">{c['oferta']}</td>
+            <td class="p-3"><span class="bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded text-[10px] font-bold">Aprobado</span></td>
+        </tr>
         """
 
-    return HTMLResponse(content=f"""
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Panel Maestro Admin - Max%Shop</title>
-        <style>
-            body {{ background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }}
-            .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }}
-            .stats-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }}
-            .stat-card {{ background: #131b2e; padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }}
-            .stat-number {{ font-size: 28px; font-weight: bold; color: #34d399; margin-top: 5px; }}
-            .section {{ background: #131b2e; padding: 20px; border-radius: 12px; margin-bottom: 20px; }}
-            table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
-            th, td {{ text-align: left; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }}
-            .btn-volver {{ color: #94a3b8; text-decoration: none; display: inline-block; margin-top: 20px; }}
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <h2>Panel Maestro Admin (Seguro)</h2>
-            <a href="/" style="color: #38bdf8; text-decoration: none;">Ver Sitio Público →</a>
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-[#070C1E] text-slate-100 min-h-screen">
+    <header class="bg-[#0A1128] border-b border-slate-800 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl font-black text-white">Max<span class="text-orange-500">%</span>Shop</span>
+            <span class="bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Panel Maestro</span>
         </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div>SOCIOS ACTIVOS</div>
-                <div class="stat-number">{total_socios}</div>
-            </div>
-            <div class="stat-card">
-                <div>COMERCIOS ADHERIDOS</div>
-                <div class="stat-number">{total_comercios}</div>
-            </div>
-            <div class="stat-card">
-                <div>COBROS DEL MES (MP)</div>
-                <div class="stat-number" style="color: #fb923c;">$8.450.000</div>
-            </div>
-            <div class="stat-card">
-                <div>PUBLICIDADES PENDIENTES</div>
-                <div class="stat-number" style="color: #f87171;">{len(DB_MOCK["publicidades_pendientes"])}</div>
+        <a href="/" class="text-xs font-bold text-slate-400 hover:text-white bg-slate-800 px-4 py-2 rounded-xl">Ver Sitio Público →</a>
+    </header>
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-[#101833] border border-slate-800 p-5 rounded-3xl"><p class="text-xs text-slate-400">Comercios</p><h3 class="text-2xl font-black text-blue-400">{len(DB_MOCK['comercios'])}</h3></div>
+            <div class="bg-[#101833] border border-slate-800 p-5 rounded-3xl"><p class="text-xs text-slate-400">Socios Activos</p><h3 class="text-2xl font-black text-emerald-400">1,248</h3></div>
+            <div class="bg-[#101833] border border-slate-800 p-5 rounded-3xl"><p class="text-xs text-slate-400">Caja</p><h3 class="text-2xl font-black text-orange-400">$8.450.000</h3></div>
+        </div>
+        <div class="bg-[#101833] border border-slate-800 rounded-3xl p-6 shadow-xl">
+            <h2 class="text-lg font-bold text-white mb-4">Comercios Publicados en Vitrina</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-[#0A1128] text-slate-400 uppercase">
+                        <tr><th class="p-3">Comercio</th><th class="p-3">Oferta</th><th class="p-3">Estado</th></tr>
+                    </thead>
+                    <tbody>{filas_html}</tbody>
+                </table>
             </div>
         </div>
+    </main>
+</body>
+</html>
+"""
 
-        <div class="section">
-            <h3>Moderación de Publicidades y Comercios</h3>
-            <table>
-                <tr>
-                    <th>LOGO</th>
-                    <th>COMERCIO</th>
-                    <th>OFERTA / DESCUENTO</th>
-                    <th>ESTADO</th>
-                </tr>
-                {filas_comercios}
-            </table>
+# Validación vía POST unificada al diseño Tailwind
+@app.get("/comercio/validar", response_class=HTMLResponse)
+async def panel_validacion_get():
+    return """<!DOCTYPE html>
+<html lang="es">
+<head><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-[#0A1128] text-slate-100 min-h-screen p-6 flex flex-col items-center justify-center">
+    <div class="w-full max-w-md bg-[#101833] border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
+        <div class="text-center space-y-2">
+            <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Control Antifraude</span>
+            <h1 class="text-2xl font-black text-white">Validar DNI</h1>
         </div>
-        <a href="/" class="btn-volver">← Volver al sitio principal</a>
-    </body>
-    </html>
-    """)
-
-
-@app.get("/validar", response_class=HTMLResponse)
-async def validar_socio_form():
-    return HTMLResponse(content="""
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Validar DNI de Socio - Max%Shop</title>
-        <style>
-            body { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-            .box { background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }
-            input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #334155; background: #0b0f19; color: #fff; box-sizing: border-box; }
-            button { background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        </style>
-    </head>
-    <body>
-        <div class="box">
-            <h3>Validar DNI de Socio</h3>
-            <p style="color: #94a3b8; font-size: 13px;">Ingrese el DNI del cliente para reconfirmar su membresía activa.</p>
-            <form action="/validar" method="POST">
-                <input type="text" name="dni" placeholder="Ej: 33438178" required>
-                <button type="submit">VERIFICAR ESTADO EN SISTEMA</button>
-            </form>
-            <br>
-            <a href="/" style="color: #94a3b8; text-decoration: none; font-size: 13px;">← Volver al sitio principal</a>
+        <form action="/comercio/validar" method="POST" class="space-y-4">
+            <input type="text" name="dni" required placeholder="Ingrese DNI (Ej: 12345678)" class="w-full bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500">
+            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl text-xs uppercase shadow-lg">Verificar</button>
+        </form>
+        <div class="pt-4 border-t border-slate-800 text-center">
+            <a href="/" class="text-xs font-bold text-slate-400 hover:text-white">← Volver al sitio</a>
         </div>
-    </body>
-    </html>
-    """)
+    </div>
+</body>
+</html>"""
 
-
-@app.post("/validar", response_class=HTMLResponse)
-async def verificar_dni(dni: str = Form(...)):
-    socio_encontrado = next((s for s in DB_MOCK["socios"] if s["dni"] == dni), None)
-    
-    if socio_encontrado:
-        resultado_html = f"""
-        <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid #34d399; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">
-            <span style="color: #34d399; font-weight: bold;">✔ SOCIO ACTIVO HABILITADO</span><br>
-            <b>Cliente:</b> {socio_encontrado['nombre']}<br>
-            <b>Plan:</b> {socio_encontrado['plan']}<br>
-            <span style="color: #cbd5e1; font-size: 12px;">Cuota al día en Mercado Pago. Aplica descuento.</span>
-        </div>
-        """
+@app.post("/comercio/validar", response_class=HTMLResponse)
+async def panel_validacion_post(dni: str = Form(...)):
+    socio = next((s for s in DB_MOCK["socios"] if s["dni"] == dni), None)
+    if socio:
+        html_res = f"""<div class="p-4 rounded-2xl text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
+            <p class="font-bold text-sm">✅ SOCIO ACTIVO HABILITADO</p>
+            <p>Cliente: <strong>{socio['nombre']}</strong> | Plan: <strong>{socio['plan']}</strong></p>
+        </div>"""
     else:
-        resultado_html = f"""
-        <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid #f87171; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">
-            <span style="color: #f87171; font-weight: bold;">✖ SOCIO NO ENCONTRADO O INACTIVO</span><br>
-            <span style="color: #cbd5e1; font-size: 12px;">El DNI ingresado no registra cuotas al día.</span>
-        </div>
-        """
+        html_res = """<div class="p-4 rounded-2xl text-xs bg-red-500/10 border border-red-500/30 text-red-300">
+            <p class="font-bold text-sm">❌ SOCIO NO ENCONTRADO O VENCIDO</p>
+        </div>"""
 
-    return HTMLResponse(content=f"""
-    <!DOCTYPE html>
-    <html lang="es">
-    <head><title>Resultado Validación</title>
-    <style>body {{ background-color: #0b0f19; color: #ffffff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }} .box {{ background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }}</style>
-    </head>
-    <body>
-        <div class="box">
-            <h3>Resultado de Verificación</h3>
-            {resultado_html}
-            <br><br>
-            <a href="/validar" style="color: #38bdf8; text-decoration: none;">← Consultar otro DNI</a>
-        </div>
-    </body>
-    </html>
-    """)
-
-
-@app.get("/suscripcion", response_class=HTMLResponse)
-async def suscripcion_page():
-    return HTMLResponse(content="""
-    <!DOCTYPE html>
-    <html lang="es">
-    <head><title>Suscripción</title>
-    <style>body { background-color: #0b0f19; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px; }</style>
-    </head>
-    <body>
-        <h2>Únete a Max%Shop</h2>
-        <p>Próximamente integración completa con Mercado Pago y Sorteos Automáticos.</p>
-        <br><a href="/" style="color: #ff8c00; text-decoration: none;">Volver al inicio</a>
-    </body>
-    </html>
-    """)
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-[#0A1128] text-slate-100 min-h-screen p-6 flex items-center justify-center">
+    <div class="w-full max-w-md bg-[#101833] border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6 text-center">
+        <h1 class="text-2xl font-black text-white">Resultado de Validación</h1>
+        {html_res}
+        <a href="/comercio/validar" class="block w-full bg-slate-800 text-white font-bold py-3 rounded-xl text-xs uppercase">Consultar otro DNI</a>
+        <a href="/" class="block text-xs font-bold text-slate-400 hover:text-white pt-2">← Volver al sitio principal</a>
+    </div>
+</body>
+</html>"""
