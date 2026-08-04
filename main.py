@@ -1,13 +1,9 @@
-from fastapi import FastAPI, Form, Request, HTTPException, Depends
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-import os
+from fastapi import FastAPI, Form, Request, HTTPException
+from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="Max%Shop API", version="1.0.0")
 
-# Simulación de base de datos en memoria (Preparado para migrar a Supabase fácilmente)
-# Aquí se almacenarán los comercios, publicidades y socios a medida que se registren.
+# Simulación de base de datos en memoria (Preparado para migrar a Supabase)
 DB_MOCK = {
     "socios": [
         {"dni": "33438178", "nombre": "Juan Pérez", "plan": "Familiar VIP ($5M)", "estado": "activo"}
@@ -19,7 +15,7 @@ DB_MOCK = {
             "categoria": "Gastronomía",
             "oferta": "20% OFF en efectivo",
             "estado": "Aprobado",
-            "tipo": "local" # Puede ser local registrado o espejo
+            "tipo": "local"
         },
         {
             "id": 2,
@@ -36,14 +32,14 @@ DB_MOCK = {
 }
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
+async def home():
     """
     Landing Page principal de Max%Shop.
     Muestra los comercios y publicidades activas en la red.
     """
     comercios_activos = [c for c in DB_MOCK["comercios"] if c["estado"] == "Aprobado"]
     
-    html_content = f"""
+    html_content = """
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -51,16 +47,16 @@ async def home(request: Request):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Max%Shop - Red de Descuentos y Comercios</title>
         <style>
-            body {{ background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }}
-            .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }}
-            .logo {{ font-size: 24px; font-weight: bold; color: #fff; }}
-            .logo span {{ color: #ff8c00; }}
-            .btn-suscribir {{ background: linear-gradient(135deg, #ff8c00, #ffb347); color: #000; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; }}
-            .btn-admin {{ background: rgba(255,255,255,0.1); color: #fff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; margin-left: 10px; }}
-            .card {{ background: #131b2e; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }}
-            .badge-cat {{ background: #1e293b; color: #38bdf8; padding: 4px 10px; border-radius: 20px; font-size: 12px; display: inline-block; margin-bottom: 10px; }}
-            .titulo-comercio {{ font-size: 20px; font-weight: bold; margin-bottom: 8px; }}
-            .oferta {{ color: #cbd5e1; font-size: 15px; }}
+            body { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+            .logo { font-size: 24px; font-weight: bold; color: #fff; }
+            .logo span { color: #ff8c00; }
+            .btn-suscribir { background: linear-gradient(135deg, #ff8c00, #ffb347); color: #000; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+            .btn-admin { background: rgba(255,255,255,0.1); color: #fff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; margin-left: 10px; }
+            .card { background: #131b2e; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+            .badge-cat { background: #1e293b; color: #38bdf8; padding: 4px 10px; border-radius: 20px; font-size: 12px; display: inline-block; margin-bottom: 10px; }
+            .titulo-comercio { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+            .oferta { color: #cbd5e1; font-size: 15px; }
         </style>
     </head>
     <body>
@@ -99,7 +95,18 @@ async def panel_admin():
     """
     total_socios = len(DB_MOCK["socios"])
     total_comercios = len(DB_MOCK["comercios"])
+    pendientes = len(DB_MOCK["publicidades_pendientes"])
     
+    filas_comercios = ""
+    for comercio in DB_MOCK["comercios"]:
+        filas_comercios += f"""
+                <tr>
+                    <td>{comercio['nombre']}</td>
+                    <td>{comercio['oferta']}</td>
+                    <td><span style="background: rgba(52, 211, 153, 0.2); color: #34d399; padding: 4px 8px; border-radius: 4px; font-size: 12px;">{comercio['estado']}</span></td>
+                </tr>
+        """
+
     html_content = f"""
     <!DOCTYPE html>
     <html lang="es">
@@ -116,7 +123,6 @@ async def panel_admin():
             .section {{ background: #131b2e; padding: 20px; border-radius: 12px; margin-bottom: 20px; }}
             table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
             th, td {{ text-align: left; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }}
-            .badge-aprobado {{ background: rgba(52, 211, 153, 0.2); color: #34d399; padding: 4px 8px; border-radius: 4px; font-size: 12px; }}
             .btn-volver {{ color: #94a3b8; text-decoration: none; display: inline-block; margin-top: 20px; }}
         </style>
     </head>
@@ -141,31 +147,20 @@ async def panel_admin():
             </div>
             <div class="stat-card">
                 <div>PUBLICIDADES PENDIENTES</div>
-                <div class="stat-number" style="color: #f87171;">{len(DB_MOCK["publicidades_pendientes"])}</div>
+                <div class="stat-number" style="color: #f87171;">{pendientes}</div>
             </div>
         </div>
 
         <div class="section">
             <h3>Moderación de Publicidades y Comercios</h3>
-            <p style="color: #94a3b8; font-size: 14px;">Aprueba, rechaza o elimina las publicidades enviadas por las tiendas locales o el sistema espejo.</p>
+            <p style="color: #94a3b8; font-size: 14px;">Aprueba, rechaza o elimina las publicidades enviadas por las tiendas locales.</p>
             <table>
                 <tr>
                     <th>COMERCIO</th>
                     <th>OFERTA / DESCUENTO</th>
                     <th>ESTADO</th>
                 </tr>
-    """
-    
-    for comercio in DB_MOCK["comercios"]:
-        html_content += f"""
-                <tr>
-                    <td>{comercio['nombre']}</td>
-                    <td>{comercio['oferta']}</td>
-                    <td><span class="badge-aprobado">{comercio['estado']}</span></td>
-                </tr>
-        """
-        
-    html_content += """
+                {filas_comercios}
             </table>
         </div>
         <a href="/" class="btn-volver">← Volver al sitio principal</a>
@@ -180,7 +175,7 @@ async def validar_socio_form():
     """
     Panel Antifraude / Validador de DNI de Socio para comercios.
     """
-    html_content = """
+    return HTMLResponse(content="""
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -188,10 +183,10 @@ async def validar_socio_form():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Validar DNI de Socio - Max%Shop</title>
         <style>
-            body {{ background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }}
-            .box {{ background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }}
-            input {{ width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #334155; background: #0b0f19; color: #fff; box-sizing: border-box; }}
-            button {{ background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }}
+            body { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+            .box { background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }
+            input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #334155; background: #0b0f19; color: #fff; box-sizing: border-box; }
+            button { background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
         </style>
     </head>
     <body>
@@ -207,8 +202,7 @@ async def validar_socio_form():
         </div>
     </body>
     </html>
-    """
-    return HTMLResponse(content=html_content)
+    """)
 
 
 @app.post("/validar", response_class=HTMLResponse)
@@ -235,7 +229,7 @@ async def verificar_dni(dni: str = Form(...)):
         </div>
         """
 
-    html_content = f"""
+    return HTMLResponse(content=f"""
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -255,15 +249,11 @@ async def verificar_dni(dni: str = Form(...)):
         </div>
     </body>
     </html>
-    """
-    return HTMLResponse(content=html_content)
+    """)
 
 
 @app.get("/suscripcion", response_class=HTMLResponse)
 async def suscripcion_page():
-    """
-    Página orientada a la nueva suscripción y registro de clientes.
-    """
     return HTMLResponse(content="""
     <!DOCTYPE html>
     <html lang="es">
@@ -271,13 +261,13 @@ async def suscripcion_page():
         <meta charset="UTF-8">
         <title>Suscripción - Max%Shop</title>
         <style>
-            body {{ background-color: #0b0f19; color: #ffffff; font-family: sans-serif; text-align: center; padding-top: 50px; }}
+            body { background-color: #0b0f19; color: #ffffff; font-family: sans-serif; text-align: center; padding-top: 50px; }
         </style>
     </head>
     <body>
         <h2>Únete a Max%Shop</h2>
         <p>Próximamente integración completa con Mercado Pago y Sorteos Automáticos con Pozo Acumulado.</p>
-        <br><a href="/" style="color: #ff8c00;">Volver al inicio</a>
+        <br><a href="/" style="color: #ff8c00; text-decoration: none;">Volver al inicio</a>
     </body>
     </html>
     """)
