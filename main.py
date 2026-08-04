@@ -2,8 +2,9 @@ import os
 import random
 from typing import List
 from fastapi import FastAPI, Form, File, UploadFile, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+import urllib.parse
 
 app = FastAPI(title="Max%Shop API", version="1.0.0")
 
@@ -85,7 +86,6 @@ async def home(premio: str = None):
             .btn-suscribir {{ background: linear-gradient(135deg, #ff8c00, #ffb347); color: #000; }}
             .btn-admin {{ background: rgba(255,255,255,0.1); color: #fff; }}
             
-            /* Contenedores generales */
             .box-container {{ background: #131b2e; padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; text-align: center; }}
             .box-container h3 {{ margin-top: 0; color: #38bdf8; }}
             
@@ -98,7 +98,6 @@ async def home(premio: str = None):
 
             .result-box {{ background: rgba(52, 211, 153, 0.1); border: 1px solid #34d399; padding: 15px; border-radius: 8px; margin-top: 20px; }}
 
-            /* Vitrina de comercios */
             .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }}
             .card {{ background: #131b2e; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); text-align: left; }}
             .card-img {{ width: 100%; height: 160px; object-fit: cover; background: #1e293b; }}
@@ -171,9 +170,6 @@ async def girar_ruleta():
     Prioriza servicios, descuentos y 'seguí participando' para proteger la recaudación,
     dejando premios de dinero en efectivo de forma muy esporádica.
     """
-    # Definimos los premios y su ponderación relativa (peso) para controlar el margen de la casa:
-    # - Seguí participando / Servicios básicos: Mayor peso (alta probabilidad)
-    # - Premios en efectivo altos: Peso muy bajo (baja probabilidad)
     premios_posibles = [
         ("¡Seguí participando! Gracias por apoyar a MaxShop.", 40),
         ("Servicio de Asesoría / Cobertura Básica bonificada", 30),
@@ -187,13 +183,9 @@ async def girar_ruleta():
     textos = [p[0] for p in premios_posibles]
     pesos = [p[1] for p in premios_posibles]
 
-    # Elección aleatoria ponderada
     premio_obtenido = random.choices(textos, weights=pesos, k=1)[0]
-
-    # Redirigimos de vuelta a la home pasando el premio obtenido por parámetro GET
-    from fastapi.responses import RedirectResponse
-    import urllib.parse
     encoded_premio = urllib.parse.quote(premio_obtenido)
+    
     return RedirectResponse(url=f"/?premio={encoded_premio}", status_code=303)
 
 
