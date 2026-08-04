@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="Max%Shop API", version="1.0.0")
 
-# Simulación de base de datos en memoria (Preparado para migrar a Supabase)
+# Base de datos en memoria inicial
 DB_MOCK = {
     "socios": [
         {"dni": "33438178", "nombre": "Juan Pérez", "plan": "Familiar VIP ($5M)", "estado": "activo"}
@@ -14,32 +14,42 @@ DB_MOCK = {
             "nombre": "Café & Bar Central",
             "categoria": "Gastronomía",
             "oferta": "20% OFF en efectivo",
-            "estado": "Aprobado",
-            "tipo": "local"
+            "imagen": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400",
+            "estado": "Aprobado"
         },
         {
             "id": 2,
             "nombre": "Moda Urbana Store",
             "categoria": "Indumentaria",
             "oferta": "3 cuotas sin interés + 15% off",
-            "estado": "Aprobado",
-            "tipo": "local"
+            "imagen": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400",
+            "estado": "Aprobado"
         }
-    ],
-    "publicidades_pendientes": [
-        {"id": 1, "comercio": "Burguer House", "oferta": "2x1 en hamburguesas los jueves", "estado": "Pendiente"}
     ]
 }
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
     """
-    Landing Page principal de Max%Shop.
-    Muestra los comercios y publicidades activas en la red.
+    Landing Page principal de Max%Shop con formulario integrado para que los comercios suban su publicidad
+    y la vitrina donde se visualizan todas las publicidades activas.
     """
     comercios_activos = [c for c in DB_MOCK["comercios"] if c["estado"] == "Aprobado"]
     
-    html_content = """
+    cards_html = ""
+    for comercio in comercios_activos:
+        cards_html += f"""
+        <div class="card">
+            <img src="{comercio.get('imagen', 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400')}" alt="{comercio['nombre']}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400'">
+            <div class="card-body">
+                <div class="badge-cat">{comercio['categoria']}</div>
+                <div class="titulo-comercio">{comercio['nombre']}</div>
+                <div class="oferta">🔥 {comercio['oferta']}</div>
+            </div>
+        </div>
+        """
+
+    return HTMLResponse(content=f"""
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -47,67 +57,141 @@ async def home():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Max%Shop - Red de Descuentos y Comercios</title>
         <style>
-            body { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
-            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-            .logo { font-size: 24px; font-weight: bold; color: #fff; }
-            .logo span { color: #ff8c00; }
-            .btn-suscribir { background: linear-gradient(135deg, #ff8c00, #ffb347); color: #000; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; }
-            .btn-admin { background: rgba(255,255,255,0.1); color: #fff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; margin-left: 10px; }
-            .card { background: #131b2e; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
-            .badge-cat { background: #1e293b; color: #38bdf8; padding: 4px 10px; border-radius: 20px; font-size: 12px; display: inline-block; margin-bottom: 10px; }
-            .titulo-comercio { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
-            .oferta { color: #cbd5e1; font-size: 15px; }
+            body {{ background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }}
+            .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }}
+            .logo {{ font-size: 24px; font-weight: bold; color: #fff; }}
+            .logo span {{ color: #ff8c00; }}
+            .nav-buttons a {{ margin-left: 10px; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; }}
+            .btn-suscribir {{ background: linear-gradient(135deg, #ff8c00, #ffb347); color: #000; }}
+            .btn-admin {{ background: rgba(255,255,255,0.1); color: #fff; }}
+            
+            /* Formulario integrado en la home */
+            .form-box {{ background: #131b2e; padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; }}
+            .form-box h3 {{ margin-top: 0; color: #38bdf8; }}
+            label {{ display: block; margin-top: 12px; font-size: 13px; color: #94a3b8; }}
+            input, select {{ width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #334155; background: #0b0f19; color: #fff; box-sizing: border-box; }}
+            button {{ background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }}
+
+            /* Vitrina de comercios */
+            .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }}
+            .card {{ background: #131b2e; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }}
+            .card-img {{ width: 100%; height: 160px; object-fit: cover; background: #1e293b; }}
+            .card-body {{ padding: 20px; }}
+            .badge-cat {{ background: #1e293b; color: #38bdf8; padding: 4px 10px; border-radius: 20px; font-size: 12px; display: inline-block; margin-bottom: 10px; }}
+            .titulo-comercio {{ font-size: 18px; font-weight: bold; margin-bottom: 8px; }}
+            .oferta {{ color: #34d399; font-size: 15px; font-weight: 500; }}
         </style>
     </head>
     <body>
         <div class="header">
             <div class="logo">Max<span>%</span>Shop</div>
-            <div>
+            <div class="nav-buttons">
+                <a href="/validar" class="btn-admin" style="background: rgba(52,211,153,0.1); color: #34d399;">Validar DNI</a>
                 <a href="/admin" class="btn-admin">Panel Admin</a>
-                <a href="/suscripcion" class="btn-suscribir">SUSCRIBIRME ($5M)</a>
+                <a href="/suscripcion" class="btn-suscribir">SUSCRIBIRME</a>
             </div>
         </div>
 
-        <h2>🛍️ Comercios y Publicidades Activas en la Red</h2>
-    """
-    
-    for comercio in comercios_activos:
-        html_content += f"""
-        <div class="card">
-            <div class="badge-cat">{comercio['categoria']}</div>
-            <div class="titulo-comercio">{comercio['nombre']}</div>
-            <div class="oferta">{comercio['oferta']}</div>
+        <!-- Sección para que el comercio suba su publicidad directamente -->
+        <div class="form-box">
+            <h3>¿Tienes un negocio? Sube tu publicidad gratis</h3>
+            <p style="color: #94a3b8; font-size: 13px;">Publica tu oferta y logo para aparecer al instante en la red de descuentos.</p>
+            <form action="/comercio/publicar" method="POST">
+                <label>Nombre de tu Tienda / Comercio</label>
+                <input type="text" name="nombre" placeholder="Ej: Indumentaria Central" required>
+                
+                <label>Categoría</label>
+                <select name="categoria">
+                    <option value="Gastronomía">Gastronomía</option>
+                    <option value="Indumentaria">Indumentaria</option>
+                    <option value="Servicios">Servicios</option>
+                    <option value="Tecnología">Tecnología</option>
+                    <option value="Salud y Belleza">Salud y Belleza</option>
+                </select>
+
+                <label>Descripción del Descuento u Oferta</label>
+                <input type="text" name="oferta" placeholder="Ej: 20% off pagando en efectivo" required>
+
+                <label>Enlace de Imagen o Logo (URL)</label>
+                <input type="url" name="imagen" placeholder="https://i.imgur.com/tu-imagen.jpg" required>
+
+                <button type="submit">SUBIR PUBLICIDAD</button>
+            </form>
         </div>
-        """
-        
-    html_content += """
+
+        <h2>🛍️ Comercios y Publicidades Activas en la Red</h2>
+        <div class="grid">
+            {cards_html}
+        </div>
     </body>
     </html>
+    """)
+
+
+@app.post("/comercio/publicar", response_class=HTMLResponse)
+async def publicar_comercio(
+    nombre: str = Form(...),
+    categoria: str = Form(...),
+    oferta: str = Form(...),
+    imagen: str = Form(...)
+):
     """
-    return HTMLResponse(content=html_content)
+    Procesa la subida del comercio y lo añade directamente como aprobado a la vitrina.
+    """
+    nuevo_id = len(DB_MOCK["comercios"]) + 1
+    nuevo_comercio = {
+        "id": nuevo_id,
+        "nombre": nombre,
+        "categoria": categoria,
+        "oferta": oferta,
+        "imagen": imagen,
+        "estado": "Aprobado"
+    }
+    DB_MOCK["comercios"].append(nuevo_comercio)
+
+    return HTMLResponse(content="""
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Éxito - Max%Shop</title>
+        <style>
+            body { background-color: #0b0f19; color: #ffffff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
+            .box { background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); }
+        </style>
+    </head>
+    <body>
+        <div class="box">
+            <h3 style="color: #34d399;">✔ ¡Publicidad Subida con Éxito!</h3>
+            <p style="color: #94a3b8; font-size: 14px;">Tu anuncio ya está publicado en la vitrina del club.</p>
+            <br>
+            <a href="/" style="color: #38bdf8; text-decoration: none; font-weight: bold;">Volver a la vitrina</a>
+        </div>
+    </body>
+    </html>
+    """)
 
 
 @app.get("/admin", response_class=HTMLResponse)
 async def panel_admin():
     """
-    Panel Maestro de Administración (Seguro).
-    Permite moderar publicidades enviadas por comercios locales y de la red espejo.
+    Panel Maestro de Administración.
     """
     total_socios = len(DB_MOCK["socios"])
     total_comercios = len(DB_MOCK["comercios"])
-    pendientes = len(DB_MOCK["publicidades_pendientes"])
     
     filas_comercios = ""
     for comercio in DB_MOCK["comercios"]:
         filas_comercios += f"""
                 <tr>
-                    <td>{comercio['nombre']}</td>
+                    <td><img src="{comercio.get('imagen', '')}" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400'"></td>
+                    <td><b>{comercio['nombre']}</b><br><span style="font-size:12px; color:#94a3b8;">{comercio['categoria']}</span></td>
                     <td>{comercio['oferta']}</td>
-                    <td><span style="background: rgba(52, 211, 153, 0.2); color: #34d399; padding: 4px 8px; border-radius: 4px; font-size: 12px;">{comercio['estado']}</span></td>
+                    <td><span style="background: rgba(52, 211, 153, 0.1); color: #34d399; padding: 4px 8px; border-radius: 4px; font-size: 12px;">{comercio['estado']}</span></td>
                 </tr>
         """
 
-    html_content = f"""
+    return HTMLResponse(content=f"""
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -122,7 +206,7 @@ async def panel_admin():
             .stat-number {{ font-size: 28px; font-weight: bold; color: #34d399; margin-top: 5px; }}
             .section {{ background: #131b2e; padding: 20px; border-radius: 12px; margin-bottom: 20px; }}
             table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
-            th, td {{ text-align: left; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }}
+            th, td {{ text-align: left; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }}
             .btn-volver {{ color: #94a3b8; text-decoration: none; display: inline-block; margin-top: 20px; }}
         </style>
     </head>
@@ -138,26 +222,22 @@ async def panel_admin():
                 <div class="stat-number">{total_socios}</div>
             </div>
             <div class="stat-card">
-                <div>COMERCIOS ADHERIDOS</div>
+                <div>COMERCIOS TOTALES</div>
                 <div class="stat-number">{total_comercios}</div>
             </div>
             <div class="stat-card">
-                <div>COBROS DEL MES (MP)</div>
+                <div>COBROS DEL MES</div>
                 <div class="stat-number" style="color: #fb923c;">$8.450.000</div>
-            </div>
-            <div class="stat-card">
-                <div>PUBLICIDADES PENDIENTES</div>
-                <div class="stat-number" style="color: #f87171;">{pendientes}</div>
             </div>
         </div>
 
         <div class="section">
-            <h3>Moderación de Publicidades y Comercios</h3>
-            <p style="color: #94a3b8; font-size: 14px;">Aprueba, rechaza o elimina las publicidades enviadas por las tiendas locales.</p>
+            <h3>Gestión de Comercios y Publicidades</h3>
             <table>
                 <tr>
+                    <th>LOGO</th>
                     <th>COMERCIO</th>
-                    <th>OFERTA / DESCUENTO</th>
+                    <th>OFERTA</th>
                     <th>ESTADO</th>
                 </tr>
                 {filas_comercios}
@@ -166,24 +246,19 @@ async def panel_admin():
         <a href="/" class="btn-volver">← Volver al sitio principal</a>
     </body>
     </html>
-    """
-    return HTMLResponse(content=html_content)
+    """)
 
 
 @app.get("/validar", response_class=HTMLResponse)
 async def validar_socio_form():
-    """
-    Panel Antifraude / Validador de DNI de Socio para comercios.
-    """
     return HTMLResponse(content="""
     <!DOCTYPE html>
     <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Validar DNI de Socio - Max%Shop</title>
         <style>
-            body { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+            body { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
             .box { background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }
             input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #334155; background: #0b0f19; color: #fff; box-sizing: border-box; }
             button { background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
@@ -192,13 +267,11 @@ async def validar_socio_form():
     <body>
         <div class="box">
             <h3>Validar DNI de Socio</h3>
-            <p style="color: #94a3b8; font-size: 13px;">Ingrese el DNI del cliente para reconfirmar su membresía activa.</p>
             <form action="/validar" method="POST">
                 <input type="text" name="dni" placeholder="Ej: 33438178" required>
-                <button type="submit">VERIFICAR ESTADO EN SISTEMA</button>
+                <button type="submit">VERIFICAR ESTADO</button>
             </form>
-            <br>
-            <a href="/" style="color: #94a3b8; text-decoration: none; font-size: 13px;">← Volver al sitio principal</a>
+            <br><a href="/" style="color: #94a3b8; text-decoration: none; font-size: 13px;">← Volver al inicio</a>
         </div>
     </body>
     </html>
@@ -207,45 +280,24 @@ async def validar_socio_form():
 
 @app.post("/validar", response_class=HTMLResponse)
 async def verificar_dni(dni: str = Form(...)):
-    """
-    Procesa la validación del DNI consultando los registros.
-    """
     socio_encontrado = next((s for s in DB_MOCK["socios"] if s["dni"] == dni), None)
     
     if socio_encontrado:
-        resultado_html = f"""
-        <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid #34d399; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">
-            <span style="color: #34d399; font-weight: bold;">✔ SOCIO ACTIVO HABILITADO</span><br>
-            <b>Cliente:</b> {socio_encontrado['nombre']}<br>
-            <b>Plan:</b> {socio_encontrado['plan']}<br>
-            <span style="color: #cbd5e1; font-size: 12px;">Cuota al día en Mercado Pago. Aplica descuento.</span>
-        </div>
-        """
+        resultado = f'<span style="color: #34d399; font-weight: bold;">✔ SOCIO ACTIVO HABILITADO</span><br><b>Cliente:</b> {socio_encontrado["nombre"]}<br><b>Plan:</b> {socio_encontrado["plan"]}'
     else:
-        resultado_html = f"""
-        <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid #f87171; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">
-            <span style="color: #f87171; font-weight: bold;">✖ SOCIO NO ENCONTRADO O INACTIVO</span><br>
-            <span style="color: #cbd5e1; font-size: 12px;">El DNI ingresado no registra cuotas al día.</span>
-        </div>
-        """
+        resultado = '<span style="color: #f87171; font-weight: bold;">✖ SOCIO NO ENCONTRADO O INACTIVO</span>'
 
     return HTMLResponse(content=f"""
     <!DOCTYPE html>
     <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Resultado Validación - Max%Shop</title>
-        <style>
-            body {{ background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }}
-            .box {{ background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }}
-        </style>
+    <head><title>Resultado</title>
+    <style>body {{ background-color: #0b0f19; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }} .box {{ background: #131b2e; padding: 30px; border-radius: 12px; text-align: center; max-width: 400px; width: 100%; }}</style>
     </head>
     <body>
         <div class="box">
             <h3>Resultado de Verificación</h3>
-            {resultado_html}
-            <br><br>
-            <a href="/validar" style="color: #38bdf8; text-decoration: none;">← Consultar otro DNI</a>
+            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">{resultado}</div>
+            <br><a href="/validar" style="color: #38bdf8; text-decoration: none;">← Consultar otro DNI</a>
         </div>
     </body>
     </html>
@@ -257,16 +309,12 @@ async def suscripcion_page():
     return HTMLResponse(content="""
     <!DOCTYPE html>
     <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Suscripción - Max%Shop</title>
-        <style>
-            body { background-color: #0b0f19; color: #ffffff; font-family: sans-serif; text-align: center; padding-top: 50px; }
-        </style>
+    <head><title>Suscripción</title>
+    <style>body { background-color: #0b0f19; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px; }</style>
     </head>
     <body>
         <h2>Únete a Max%Shop</h2>
-        <p>Próximamente integración completa con Mercado Pago y Sorteos Automáticos con Pozo Acumulado.</p>
+        <p>Próximamente integración completa con Mercado Pago y Sorteos Automáticos.</p>
         <br><a href="/" style="color: #ff8c00; text-decoration: none;">Volver al inicio</a>
     </body>
     </html>
