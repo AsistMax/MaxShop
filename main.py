@@ -1,4 +1,5 @@
 import os
+import random
 from typing import List
 from fastapi import FastAPI, Form, File, UploadFile, Request
 from fastapi.responses import HTMLResponse
@@ -39,10 +40,10 @@ DB_MOCK = {
 }
 
 @app.get("/", response_class=HTMLResponse)
-async def home():
+async def home(premio: str = None):
     """
-    Landing Page principal de Max%Shop con formulario habilitado para múltiples imágenes
-    y la vitrina donde se visualizan todas las publicidades activas.
+    Landing Page principal de Max%Shop con la Ruleta de la Fortuna, formulario de comercios
+    y la vitrina de publicidades activas.
     """
     comercios_activos = [c for c in DB_MOCK["comercios"] if c["estado"] == "Aprobado"]
     
@@ -59,13 +60,22 @@ async def home():
         </div>
         """
 
+    resultado_html = ""
+    if premio:
+        resultado_html = f"""
+        <div class="result-box">
+            <h3>🎰 Resultado del Giro:</h3>
+            <p style="font-size: 18px; color: #34d399; font-weight: bold;">{premio}</p>
+        </div>
+        """
+
     return HTMLResponse(content=f"""
     <!DOCTYPE html>
     <html lang="es">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Max%Shop - Red de Descuentos y Comercios</title>
+        <title>Max%Shop - Red de Descuentos y Ruleta</title>
         <style>
             body {{ background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }}
             .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }}
@@ -75,17 +85,22 @@ async def home():
             .btn-suscribir {{ background: linear-gradient(135deg, #ff8c00, #ffb347); color: #000; }}
             .btn-admin {{ background: rgba(255,255,255,0.1); color: #fff; }}
             
-            /* Formulario integrado en la home */
-            .form-box {{ background: #131b2e; padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; }}
-            .form-box h3 {{ margin-top: 0; color: #38bdf8; }}
-            label {{ display: block; margin-top: 12px; font-size: 13px; color: #94a3b8; }}
+            /* Contenedores generales */
+            .box-container {{ background: #131b2e; padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; text-align: center; }}
+            .box-container h3 {{ margin-top: 0; color: #38bdf8; }}
+            
+            label {{ display: block; margin-top: 12px; font-size: 13px; color: #94a3b8; text-align: left; }}
             input, select {{ width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #334155; background: #0b0f19; color: #fff; box-sizing: border-box; }}
             input[type="file"] {{ padding: 8px; background: #1e293b; cursor: pointer; }}
-            button {{ background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }}
+            
+            .btn-accion {{ background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 16px; }}
+            .btn-ruleta {{ background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; }}
+
+            .result-box {{ background: rgba(52, 211, 153, 0.1); border: 1px solid #34d399; padding: 15px; border-radius: 8px; margin-top: 20px; }}
 
             /* Vitrina de comercios */
             .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }}
-            .card {{ background: #131b2e; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }}
+            .card {{ background: #131b2e; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); text-align: left; }}
             .card-img {{ width: 100%; height: 160px; object-fit: cover; background: #1e293b; }}
             .card-body {{ padding: 20px; }}
             .badge-cat {{ background: #1e293b; color: #38bdf8; padding: 4px 10px; border-radius: 20px; font-size: 12px; display: inline-block; margin-bottom: 10px; }}
@@ -103,8 +118,18 @@ async def home():
             </div>
         </div>
 
-        <!-- Formulario con soporte para múltiples archivos físicos -->
-        <div class="form-box">
+        <!-- Sección Ruleta de la Fortuna MaxShop -->
+        <div class="box-container" style="border-color: rgba(56, 189, 248, 0.3);">
+            <h3 style="color: #ff8c00;">🎡 La Ruleta de la Fortuna - MaxShop</h3>
+            <p style="color: #94a3b8; font-size: 13px;">¡Gira por solo <b>$1.000</b>! Gana servicios, coberturas, descuentos o premios en efectivo especiales.</p>
+            <form action="/ruleta/girar" method="POST">
+                <button type="submit" class="btn-accion btn-ruleta">GIRAR RULETA ($1.000)</button>
+            </form>
+            {resultado_html}
+        </div>
+
+        <!-- Formulario para subir publicidades -->
+        <div class="box-container" style="text-align: left;">
             <h3>¿Tienes un negocio? Sube tu publicidad gratis</h3>
             <p style="color: #94a3b8; font-size: 13px;">Puedes seleccionar una o varias imágenes de tu galería a la vez.</p>
             <form action="/comercio/publicar" method="POST" enctype="multipart/form-data">
@@ -126,7 +151,7 @@ async def home():
                 <label>Imágenes o Logos (Puedes seleccionar varios archivos)</label>
                 <input type="file" name="imagenes_archivos" accept="image/*" multiple required>
 
-                <button type="submit">SUBIR PUBLICIDAD</button>
+                <button type="submit" class="btn-accion">SUBIR PUBLICIDAD</button>
             </form>
         </div>
 
@@ -139,6 +164,39 @@ async def home():
     """)
 
 
+@app.post("/ruleta/girar", response_class=HTMLResponse)
+async def girar_ruleta():
+    """
+    Controla el giro de la ruleta mediante probabilidades matemáticas.
+    Prioriza servicios, descuentos y 'seguí participando' para proteger la recaudación,
+    dejando premios de dinero en efectivo de forma muy esporádica.
+    """
+    # Definimos los premios y su ponderación relativa (peso) para controlar el margen de la casa:
+    # - Seguí participando / Servicios básicos: Mayor peso (alta probabilidad)
+    # - Premios en efectivo altos: Peso muy bajo (baja probabilidad)
+    premios_posibles = [
+        ("¡Seguí participando! Gracias por apoyar a MaxShop.", 40),
+        ("Servicio de Asesoría / Cobertura Básica bonificada", 30),
+        ("Descuento Especial del 50% en Comercios Adheridos", 20),
+        ("Premio en Efectivo: $5.000", 6),
+        ("Premio en Efectivo: $20.000", 3),
+        ("¡Premio Mayor en Efectivo: $50.000!", 0.9),
+        ("¡JACKPOT MÁXIMO: $100.000!", 0.1)
+    ]
+
+    textos = [p[0] for p in premios_posibles]
+    pesos = [p[1] for p in premios_posibles]
+
+    # Elección aleatoria ponderada
+    premio_obtenido = random.choices(textos, weights=pesos, k=1)[0]
+
+    # Redirigimos de vuelta a la home pasando el premio obtenido por parámetro GET
+    from fastapi.responses import RedirectResponse
+    import urllib.parse
+    encoded_premio = urllib.parse.quote(premio_obtenido)
+    return RedirectResponse(url=f"/?premio={encoded_premio}", status_code=303)
+
+
 @app.post("/comercio/publicar", response_class=HTMLResponse)
 async def publicar_comercio(
     nombre: str = Form(...),
@@ -146,9 +204,6 @@ async def publicar_comercio(
     oferta: str = Form(...),
     imagenes_archivos: List[UploadFile] = File(...)
 ):
-    """
-    Procesa múltiples archivos de imagen subidos, los guarda y crea una entrada por cada foto.
-    """
     for imagen_archivo in imagenes_archivos:
         if imagen_archivo.filename:
             file_path = os.path.join(UPLOAD_DIR, imagen_archivo.filename)
