@@ -1,7 +1,7 @@
 import os
 import random
 from typing import List
-from fastapi import FastAPI, Form, File, UploadFile, Request
+from fastapi import FastAPI, Form, File, UploadFile, Request, HTTPException, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import urllib.parse
@@ -12,10 +12,10 @@ app = FastAPI(title="Max%Shop API", version="1.0.0")
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Montar la carpeta estática para que las imágenes subidas sean visibles públicamente
+# Montar la carpeta estática para servir las imágenes de los comercios
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Base de datos en memoria inicial
+# Simulación de base de datos en memoria
 DB_MOCK = {
     "socios": [
         {"dni": "33438178", "nombre": "Juan Pérez", "plan": "Familiar VIP ($5M)", "estado": "activo"}
@@ -27,7 +27,8 @@ DB_MOCK = {
             "categoria": "Gastronomía",
             "oferta": "20% OFF en efectivo",
             "imagen": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400",
-            "estado": "Aprobado"
+            "estado": "Aprobado",
+            "tipo": "local"
         },
         {
             "id": 2,
@@ -35,13 +36,17 @@ DB_MOCK = {
             "categoria": "Indumentaria",
             "oferta": "15% off abonando en efectivo",
             "imagen": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400",
-            "estado": "Aprobado"
+            "estado": "Aprobado",
+            "tipo": "local"
         }
+    ],
+    "publicidades_pendientes": [
+        {"id": 1, "comercio": "Burguer House", "oferta": "2x1 en hamburguesas los jueves", "estado": "Pendiente"}
     ]
 }
 
 @app.get("/", response_class=HTMLResponse)
-async def home(premio: str = None):
+async def home(request: Request, premio: str = None):
     """
     Landing Page principal de Max%Shop con la Ruleta Visual, formulario de comercios con carga local
     y la vitrina donde se visualizan todas las publicidades activas.
@@ -86,6 +91,7 @@ async def home(premio: str = None):
             .nav-buttons a {{ margin-left: 10px; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block; }}
             .btn-suscribir {{ background: linear-gradient(135deg, #ff8c00, #ffb347); color: #000; }}
             .btn-admin {{ background: rgba(255,255,255,0.1); color: #fff; }}
+            .btn-validar {{ background: rgba(52,211,153,0.1); color: #34d399; }}
             
             .form-box {{ background: #131b2e; padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; text-align: left; }}
             .form-box h3 {{ margin-top: 0; color: #38bdf8; text-align: center; }}
@@ -96,10 +102,10 @@ async def home(premio: str = None):
             .btn-accion {{ background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 16px; text-align: center; }}
             .btn-ruleta {{ background: linear-gradient(135deg, #38bdf8, #3b82f6); color: #fff; }}
 
-            /* Estilos de la Ruleta Visual Interactiva */
+            /* Estilos de la Ruleta Visual */
             .wheel-container-wrapper {{ text-align: center; }}
-            .wheel-container {{ position: relative; width: 200px; height: 200px; margin: 15px auto; border-radius: 50%; border: 8px solid #ff8c00; background: conic-gradient(#38bdf8 0deg 90deg, #3b82f6 90deg 180deg, #1e293b 180deg 270deg, #34d399 270deg 360deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(255,140,0,0.3); }}
-            .wheel-center {{ width: 50px; height: 50px; background: #0b0f19; border-radius: 50%; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; color: #ff8c00; }}
+            .wheel-container {{ position: relative; width: 180px; height: 180px; margin: 15px auto; border-radius: 50%; border: 8px solid #ff8c00; background: conic-gradient(#38bdf8 0deg 90deg, #3b82f6 90deg 180deg, #1e293b 180deg 270deg, #34d399 270deg 360deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(255,140,0,0.3); }}
+            .wheel-center {{ width: 45px; height: 45px; background: #0b0f19; border-radius: 50%; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; color: #ff8c00; }}
             .pointer {{ width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid #ff8c00; margin: 0 auto -8px auto; position: relative; z-index: 10; }}
 
             .result-box {{ background: rgba(52, 211, 153, 0.1); border: 1px solid #34d399; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; text-align: center; }}
@@ -118,16 +124,16 @@ async def home(premio: str = None):
         <div class="header">
             <div class="logo">Max<span>%</span>Shop</div>
             <div class="nav-buttons">
-                <a href="/validar" class="btn-admin" style="background: rgba(52,211,153,0.1); color: #34d399;">Validar DNI</a>
+                <a href="/validar" class="btn-admin btn-validar">Validar DNI</a>
                 <a href="/admin" class="btn-admin">Panel Admin</a>
                 <a href="/suscripcion" class="btn-suscribir">SUSCRIBIRME</a>
             </div>
         </div>
 
-        <!-- Sección Ruleta de la Fortuna con Cobro Previo y Máximo 20% de descuento -->
+        <!-- Sección Ruleta de la Fortuna con Cobro de $1.000 y tope del 20% -->
         <div class="form-box wheel-container-wrapper">
             <h3 style="color: #ff8c00;">🎡 La Ruleta de la Fortuna - MaxShop</h3>
-            <p style="color: #94a3b8; font-size: 13px;">Gira por solo <b>$1.000</b>. Gana servicios o descuentos exclusivos (hasta 20%).</p>
+            <p style="color: #94a3b8; font-size: 13px;">Gira por solo <b>$1.000</b>. Gana beneficios o descuentos exclusivos (hasta un 20%).</p>
             
             <div class="pointer"></div>
             <div class="wheel-container">
@@ -141,9 +147,9 @@ async def home(premio: str = None):
             <div class="result-box" id="resultado-ruleta"></div>
         </div>
 
-        <!-- Sección para que el comercio suba su publicidad con archivos locales -->
+        <!-- Formulario para subir comercio con imagen local -->
         <div class="form-box">
-            <h3>¿Tienes un negocio? Sube tu publicidad gratis</h3>
+            <h3>¿Tienes un negocio? Sube tu publicidad</h3>
             <p style="color: #94a3b8; font-size: 13px;">Sube tu logo y ofrece hasta un 20% de descuento para aparecer en la red.</p>
             <form action="/comercio/publicar" method="POST" enctype="multipart/form-data">
                 <label>Nombre de tu Tienda / Comercio</label>
@@ -159,9 +165,9 @@ async def home(premio: str = None):
                 </select>
 
                 <label>Descripción del Descuento (Máximo 20%)</label>
-                <input type="text" name="oferta" placeholder="Ej: 10% o 20% off abonando en efectivo" required>
+                <input type="text" name="oferta" placeholder="Ej: 15% off abonando en efectivo" required>
 
-                <label>Imagen o Logo de tu Negocio (Archivo local)</label>
+                <label>Logo o Imagen del Negocio (Archivo local)</label>
                 <input type="file" name="imagen_archivo" accept="image/*" required>
 
                 <button type="submit" class="btn-accion">SUBIR PUBLICIDAD</button>
@@ -184,7 +190,7 @@ async def home(premio: str = None):
 @app.post("/ruleta/pagar-y-girar", response_class=HTMLResponse)
 async def pagar_y_girar():
     """
-    Simula la pasarela de cobro de los $1.000 antes de entregar el premio de la ruleta.
+    Simula el cobro previo de $1.000 antes de entregar el resultado de la ruleta.
     """
     return HTMLResponse(content="""
     <!DOCTYPE html>
@@ -218,7 +224,7 @@ async def pagar_y_girar():
 @app.get("/ruleta/girar-accion", response_class=HTMLResponse)
 async def girar_accion():
     """
-    Controla la ruleta con probabilidades equilibradas (máximo 20% de descuento en comercios y servicios).
+    Calcula de forma aleatoria el premio con tope estricto de 20% de descuento.
     """
     premios_posibles = [
         ("¡Seguí participando! Gracias por apoyar al club.", 55),
@@ -245,8 +251,7 @@ async def publicar_comercio(
     imagen_archivo: UploadFile = File(...)
 ):
     """
-    Procesa la subida del archivo de imagen local del comercio, lo guarda en static/uploads
-    y lo añade a la vitrina activa.
+    Recibe el archivo local subido por el comercio, lo guarda en static/uploads y lo publica.
     """
     imagen_url = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400"
     
@@ -264,7 +269,8 @@ async def publicar_comercio(
         "categoria": categoria,
         "oferta": oferta,
         "imagen": imagen_url,
-        "estado": "Aprobado"
+        "estado": "Aprobado",
+        "tipo": "local"
     }
     DB_MOCK["comercios"].append(nuevo_comercio)
 
@@ -294,7 +300,7 @@ async def publicar_comercio(
 @app.get("/admin", response_class=HTMLResponse)
 async def panel_admin():
     """
-    Panel Maestro de Administración.
+    Panel Maestro de Administración (Seguro).
     """
     total_socios = len(DB_MOCK["socios"])
     total_comercios = len(DB_MOCK["comercios"])
@@ -306,7 +312,7 @@ async def panel_admin():
                     <td><img src="{comercio.get('imagen', '')}" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400'"></td>
                     <td><b>{comercio['nombre']}</b><br><span style="font-size:12px; color:#94a3b8;">{comercio['categoria']}</span></td>
                     <td>{comercio['oferta']}</td>
-                    <td><span style="background: rgba(52, 211, 153, 0.1); color: #34d399; padding: 4px 8px; border-radius: 4px; font-size: 12px;">{comercio['estado']}</span></td>
+                    <td><span style="background: rgba(52, 211, 153, 0.2); color: #34d399; padding: 4px 8px; border-radius: 4px; font-size: 12px;">{comercio['estado']}</span></td>
                 </tr>
         """
 
@@ -341,22 +347,26 @@ async def panel_admin():
                 <div class="stat-number">{total_socios}</div>
             </div>
             <div class="stat-card">
-                <div>COMERCIOS TOTALES</div>
+                <div>COMERCIOS ADHERIDOS</div>
                 <div class="stat-number">{total_comercios}</div>
             </div>
             <div class="stat-card">
-                <div>RECAUDACIÓN RULETA</div>
-                <div class="stat-number" style="color: #fb923c;">$145.000</div>
+                <div>COBROS DEL MES (MP)</div>
+                <div class="stat-number" style="color: #fb923c;">$8.450.000</div>
+            </div>
+            <div class="stat-card">
+                <div>PUBLICIDADES PENDIENTES</div>
+                <div class="stat-number" style="color: #f87171;">{len(DB_MOCK["publicidades_pendientes"])}</div>
             </div>
         </div>
 
         <div class="section">
-            <h3>Gestión de Comercios y Publicidades</h3>
+            <h3>Moderación de Publicidades y Comercios</h3>
             <table>
                 <tr>
                     <th>LOGO</th>
                     <th>COMERCIO</th>
-                    <th>OFERTA</th>
+                    <th>OFERTA / DESCUENTO</th>
                     <th>ESTADO</th>
                 </tr>
                 {filas_comercios}
@@ -377,7 +387,7 @@ async def validar_socio_form():
         <meta charset="UTF-8">
         <title>Validar DNI de Socio - Max%Shop</title>
         <style>
-            body { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+            body { background-color: #0b0f19; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
             .box { background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }
             input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #334155; background: #0b0f19; color: #fff; box-sizing: border-box; }
             button { background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
@@ -386,11 +396,13 @@ async def validar_socio_form():
     <body>
         <div class="box">
             <h3>Validar DNI de Socio</h3>
+            <p style="color: #94a3b8; font-size: 13px;">Ingrese el DNI del cliente para reconfirmar su membresía activa.</p>
             <form action="/validar" method="POST">
                 <input type="text" name="dni" placeholder="Ej: 33438178" required>
-                <button type="submit">VERIFICAR ESTADO</button>
+                <button type="submit">VERIFICAR ESTADO EN SISTEMA</button>
             </form>
-            <br><a href="/" style="color: #94a3b8; text-decoration: none; font-size: 13px;">← Volver al inicio</a>
+            <br>
+            <a href="/" style="color: #94a3b8; text-decoration: none; font-size: 13px;">← Volver al sitio principal</a>
         </div>
     </body>
     </html>
@@ -402,21 +414,34 @@ async def verificar_dni(dni: str = Form(...)):
     socio_encontrado = next((s for s in DB_MOCK["socios"] if s["dni"] == dni), None)
     
     if socio_encontrado:
-        resultado = f'<span style="color: #34d399; font-weight: bold;">✔ SOCIO ACTIVO HABILITADO</span><br><b>Cliente:</b> {socio_encontrado["nombre"]}<br><b>Plan:</b> {socio_encontrado["plan"]}'
+        resultado_html = f"""
+        <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid #34d399; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">
+            <span style="color: #34d399; font-weight: bold;">✔ SOCIO ACTIVO HABILITADO</span><br>
+            <b>Cliente:</b> {socio_encontrado['nombre']}<br>
+            <b>Plan:</b> {socio_encontrado['plan']}<br>
+            <span style="color: #cbd5e1; font-size: 12px;">Cuota al día en Mercado Pago. Aplica descuento.</span>
+        </div>
+        """
     else:
-        resultado = '<span style="color: #f87171; font-weight: bold;">✖ SOCIO NO ENCONTRADO O INACTIVO</span>'
+        resultado_html = f"""
+        <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid #f87171; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">
+            <span style="color: #f87171; font-weight: bold;">✖ SOCIO NO ENCONTRADO O INACTIVO</span><br>
+            <span style="color: #cbd5e1; font-size: 12px;">El DNI ingresado no registra cuotas al día.</span>
+        </div>
+        """
 
     return HTMLResponse(content=f"""
     <!DOCTYPE html>
     <html lang="es">
-    <head><title>Resultado</title>
-    <style>body {{ background-color: #0b0f19; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }} .box {{ background: #131b2e; padding: 30px; border-radius: 12px; text-align: center; max-width: 400px; width: 100%; }}</style>
+    <head><title>Resultado Validación</title>
+    <style>body {{ background-color: #0b0f19; color: #ffffff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }} .box {{ background: #131b2e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }}</style>
     </head>
     <body>
         <div class="box">
             <h3>Resultado de Verificación</h3>
-            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">{resultado}</div>
-            <br><a href="/validar" style="color: #38bdf8; text-decoration: none;">← Consultar otro DNI</a>
+            {resultado_html}
+            <br><br>
+            <a href="/validar" style="color: #38bdf8; text-decoration: none;">← Consultar otro DNI</a>
         </div>
     </body>
     </html>
