@@ -1,9 +1,8 @@
-from fastapi import FastAPI, BackgroundTasks, HTTPException, Depends, status, Form, File, UploadFile, Request
+from fastapi import FastAPI, HTTPException, Depends, status, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import os
 import random
 import urllib.parse
@@ -14,7 +13,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="19.0.0"
+    version="20.0.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -38,14 +37,14 @@ def verificar_admin(credentials: HTTPBasicCredentials = Depends(HTTPBasic())):
         )
     return credentials.username
 
-# Base de datos simulada con sistema de bolillero, apuestas semanales y pozo acumulado
+# Base de datos simulada completa para la app del cliente y comercios
 DB_MOCK = {
     "pozo_acumulado": 450000, 
     "socios": [
         {"dni": "12345678", "nombre": "Juan Pérez", "plan": "Familiar VIP ($5M)", "estado": "activo"}
     ],
     "apuestas_semanales": [
-        {"id": 1, "dni": "12345678", "nombre": "Juan Pérez", "numeros": [7, 14, 22, 33, 41], "comercio": "Café & Bar Central", "fecha": "2026-06-07"}
+        {"id": 1, "dni": "12345678", "nombre": "Juan Pérez", "numeros": [7, 14, 22, 33, 41], "comercio": "App Digital Directa", "fecha": "2026-06-07"}
     ],
     "comercios": [
         {
@@ -55,6 +54,22 @@ DB_MOCK = {
             "oferta": "20% de descuento abonando en efectivo",
             "imagen": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400",
             "estado": "Aprobado"
+        },
+        {
+            "id": 2,
+            "nombre": "Moda Urbana Store",
+            "categoria": "Indumentaria",
+            "oferta": "3 cuotas sin interés con tarjeta de socio",
+            "imagen": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400",
+            "estado": "Aprobado"
+        },
+        {
+            "id": 3,
+            "nombre": "Farmacia del Pueblo",
+            "categoria": "Salud y Bienestar",
+            "oferta": "15% de descuento en perfumería",
+            "imagen": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400",
+            "estado": "Aprobado"
         }
     ]
 }
@@ -63,33 +78,40 @@ DB_MOCK = {
 async def client_landing(request: Request, mensaje_sorteo: str = None):
     pozo_actual = DB_MOCK["pozo_acumulado"]
     
-    apuestas_html = ""
-    for ap in DB_MOCK["apuestas_semanales"]:
-        nums_str = ", ".join(str(n) for n in ap["numeros"])
-        apuestas_html += f"""
-        <div class="bg-[#0A1128] border border-slate-800 p-4 rounded-2xl flex justify-between items-center text-xs">
-            <div>
-                <p class="font-bold text-white">{ap['nombre']} (DNI: {ap['dni']})</p>
-                <p class="text-slate-400">Origen: {ap['comercio']} | Números: <span class="text-orange-400 font-mono font-bold">[{nums_str}]</span></p>
+    # Renderizar comercios adheridos para que el cliente los vea
+    comercios_html = ""
+    for com in DB_MOCK["comercios"]:
+        comercios_html += f"""
+        <div class="bg-[#101833] border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:border-orange-500/50 transition flex flex-col justify-between">
+            <img src="{com['imagen']}" alt="{com['nombre']}" class="w-full h-40 object-cover opacity-80">
+            <div class="p-5 space-y-3 flex-1 flex flex-col justify-between">
+                <div class="space-y-1">
+                    <span class="text-[10px] font-bold text-orange-400 bg-orange-500/10 px-2.5 py-1 rounded-md uppercase">{com['categoria']}</span>
+                    <h4 class="text-base font-black text-white">{com['nombre']}</h4>
+                    <p class="text-xs text-slate-300">🔥 <b>Beneficio:</b> {com['oferta']}</p>
+                </div>
+                <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+                    <span>📍 Catamarca Capital</span>
+                    <span class="text-emerald-400 font-bold">Activo en la Red</span>
+                </div>
             </div>
-            <span class="bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-md font-bold">Participa Domingo</span>
         </div>
         """
 
     alerta_sorteo = ""
     if mensaje_sorteo:
         alerta_sorteo = f"""
-        <div class="bg-orange-500/10 border border-orange-500 text-orange-400 px-4 py-3 rounded-xl font-bold text-sm mt-4 text-center animate-pulse">
+        <div class="bg-orange-500/10 border border-orange-500 text-orange-400 px-4 py-3 rounded-xl font-bold text-sm text-center animate-pulse">
             🎲 {mensaje_sorteo}
         </div>
         """
 
     return f"""<!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Max%Shop - Sorteo Semanal y Autogestión Digital</title>
+    <title>Max%Shop - Club de Beneficios y Bolillero Semanal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         ::-webkit-scrollbar {{ width: 8px; height: 8px; }}
@@ -98,7 +120,7 @@ async def client_landing(request: Request, mensaje_sorteo: str = None):
         
         .wheel-container-wrapper {{ text-align: center; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }}
         .wheel-container {{
-            position: relative; width: 260px; height: 260px; border-radius: 50%; border: 8px solid #cbd5e1;
+            position: relative; width: 240px; height: 240px; border-radius: 50%; border: 8px solid #cbd5e1;
             background: conic-gradient(
                 #ef4444 0deg 36deg, #f97316 36deg 72deg, #eab308 72deg 108deg,
                 #84cc16 108deg 144deg, #10b981 144deg 180deg, #06b6d4 180deg 216deg,
@@ -114,6 +136,19 @@ async def client_landing(request: Request, mensaje_sorteo: str = None):
         .pointer {{
             width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid #f97316;
             margin-bottom: -8px; z-index: 20; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+        }}
+
+        /* Estilo Bolillero Real */
+        .bolillero-cage {{
+            width: 180px; height: 180px; border-radius: 50%; border: 4px solid rgba(255,255,255,0.2);
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(15,23,42,0.9));
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 0 30px rgba(249,115,22,0.3);
+            display: flex; align-items: center; justify-content: center; position: relative; margin: 0 auto;
+        }}
+        .bolilla {{
+            width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffedd5, #f97316);
+            color: #0f172a; font-weight: 900; font-size: 14px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(0,0,0,0.3);
         }}
     </style>
 </head>
@@ -134,34 +169,54 @@ async def client_landing(request: Request, mensaje_sorteo: str = None):
             <div class="text-2xl sm:text-3xl font-black tracking-tighter text-white">
                 Max<span class="text-orange-500">%</span>Shop
             </div>
+            <nav class="hidden md:flex items-center space-x-6 text-xs font-bold text-slate-300">
+                <a href="#comprar" class="hover:text-orange-400 transition">Comprar Números</a>
+                <a href="#bolillero" class="hover:text-orange-400 transition">Bolillero Dominical</a>
+                <a href="#comercios" class="hover:text-orange-400 transition">Comercios Adheridos</a>
+                <a href="#ruleta" class="hover:text-orange-400 transition">Ruleta</a>
+            </nav>
             <div class="flex items-center space-x-3">
-                <a href="#comprar-app" class="hidden sm:inline-block text-xs font-bold text-emerald-400 bg-emerald-500/10 px-4 py-2.5 rounded-xl border border-emerald-500/20">📱 Comprar Online</a>
-                <a href="#bolillero" class="hidden sm:inline-block text-xs font-bold text-orange-400 bg-orange-500/10 px-4 py-2.5 rounded-xl border border-orange-500/20">🎲 Sorteo Semanal</a>
+                <a href="#comprar" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl uppercase shadow-lg">
+                    Participar $1.000
+                </a>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
         
         <!-- HERO -->
-        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-8 md:p-14 shadow-2xl">
-            <div class="max-w-2xl space-y-6">
+        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-8 md:p-14 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="max-w-xl space-y-6">
                 <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-3.5 py-1.5 rounded-full border border-orange-500/20 uppercase">
-                    <span>🔥</span> <span>Compra en Comercios o Directo en la App</span>
+                    <span>🔥</span> <span>Sorteo Semanal estilo Telekino y Quiniela</span>
                 </span>
                 <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
                     Pozo Acumulado <span class="text-orange-500">${pozo_actual:,.0f}</span>
                 </h1>
-                <p class="text-slate-300 text-base">Elegí tus números por $1.000 cada uno. Podes registrarlo en cualquier comercio adherido o comprarlos directamente aquí mismo en la app con pago digital.</p>
+                <p class="text-slate-300 text-sm leading-relaxed">Elegí tus números de la suerte por solo $1.000 cada uno. Participa todos los domingos y gana beneficios exclusivos en nuestra red de comercios en Catamarca.</p>
+                <div class="flex gap-4">
+                    <a href="#comprar" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-3 rounded-xl text-xs uppercase shadow-lg">Comprar Números</a>
+                    <a href="#comercios" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-3 rounded-xl text-xs uppercase border border-slate-700">Ver Comercios</a>
+                </div>
+            </div>
+            <div class="bg-[#0A1128] border border-orange-500/30 p-6 rounded-3xl shadow-2xl text-center space-y-4">
+                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Próximo Sorteo Dominical</p>
+                <div class="bolillero-cage">
+                    <div class="bolilla animate-bounce">17</div>
+                </div>
+                <p class="text-[11px] text-orange-400 font-bold">DOMINGO 21:00 HS EN VIVO</p>
             </div>
         </div>
 
-        <!-- SECCIÓN: COMPRAR NÚMEROS DIRECTO DESDE LA APP (CLIENTE) -->
-        <div id="comprar-app" class="bg-gradient-to-r from-emerald-950/40 via-[#101833] to-[#0A1128] border border-emerald-500/40 rounded-3xl p-8 shadow-2xl space-y-6">
+        {alerta_sorteo}
+
+        <!-- SECCIÓN 1: COMPRAR NÚMEROS EN LA APP -->
+        <div id="comprar" class="bg-gradient-to-r from-emerald-950/30 via-[#101833] to-[#0A1128] border border-emerald-500/40 rounded-3xl p-8 shadow-2xl space-y-6">
             <div class="max-w-xl space-y-2">
                 <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase border border-emerald-500/20">Autogestión de Socio</span>
                 <h3 class="text-2xl font-black text-white">Comprar Números Directo en la App ($1.000 c/u)</h3>
-                <p class="text-xs text-slate-400">¿No querés pasar por el local? Ingresá tus datos, elegí tus números preferidos y abona online para participar este domingo.</p>
+                <p class="text-xs text-slate-400">Ingresá tus datos, elegí tus números preferidos y abona online para participar este domingo en el pozo acumulado.</p>
             </div>
             
             <form action="/app/comprar-jugada" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
@@ -176,58 +231,82 @@ async def client_landing(request: Request, mensaje_sorteo: str = None):
             </form>
         </div>
 
-        <!-- SECCIÓN BOLILLERO / REGISTRO COMERCIAL -->
+        <!-- SECCIÓN 2: EL BOLILLERO VIRTUAL REAL -->
         <div id="bolillero" class="bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-orange-500/30 rounded-3xl p-8 shadow-2xl space-y-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div class="space-y-2 max-w-lg">
+                <div class="space-y-2 max-w-xl">
                     <span class="text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase border border-orange-500/20">Sorteo Dominical Estilo Telekino</span>
-                    <h3 class="text-3xl font-black text-white">El Bolillero de Max%Shop</h3>
-                    <p class="text-sm text-slate-400 leading-relaxed">También podés acercarte a un comercio de la red habilitado y pedirle al comerciante que te cargue tus números de la suerte.</p>
+                    <h3 class="text-3xl font-black text-white">El Bolillero Virtual de Max%Shop</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">Nuestro bolillero electrónico sortea semanalmente las bolillas ganadoras. Si tus números coinciden, te llevas el pozo acumulado.</p>
                 </div>
-                <div class="bg-[#0A1128] border border-orange-500/40 p-6 rounded-2xl text-center shadow-xl">
+                <div class="bg-[#0A1128] border border-orange-500/40 p-6 rounded-2xl text-center shadow-xl w-full md:w-auto">
                     <p class="text-xs text-slate-400">POZO ACUMULADO ACTUAL</p>
                     <p class="text-3xl font-black text-emerald-400 mt-1">${pozo_actual:,.0f}</p>
-                    <span class="text-[10px] text-orange-400 mt-2 block font-bold">DOMINGO 21:00 HS</span>
                 </div>
             </div>
 
-            <!-- Formulario de Registro en Comercio Adherido -->
-            <div class="bg-[#101833] border border-slate-800 p-6 rounded-2xl space-y-4">
-                <h4 class="text-sm font-bold text-white uppercase tracking-wider">Registro Presencial en Comercio Adherido</h4>
-                <form action="/bolillero/registrar" method="POST" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <input type="text" name="dni" required placeholder="DNI del Socio / Cliente" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
-                    <input type="text" name="nombre" required placeholder="Nombre y Apellido" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
-                    <input type="text" name="numeros" required placeholder="Ej: 5, 12, 23, 34, 45" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
-                    <select name="comercio" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-slate-300">
-                        <option value="Café & Bar Central">Café & Bar Central</option>
-                        <option value="Moda Urbana Store">Moda Urbana Store</option>
-                    </select>
-                    <div class="sm:col-span-2 md:col-span-4">
-                        <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider">
-                            🛡️ Registrar Jugada en Local Comercial
+            <!-- Simulación visual de bolillas saliendo del bolillero -->
+            <div class="bg-[#0A1128] border border-slate-800 p-8 rounded-2xl text-center space-y-6">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Últimas Bolillas Sorteadas del Bolillero</p>
+                <div class="flex justify-center items-center gap-4 flex-wrap">
+                    <div class="bolilla">07</div>
+                    <div class="bolilla">14</div>
+                    <div class="bolilla">22</div>
+                    <div class="bolilla">33</div>
+                    <div class="bolilla">41</div>
+                </div>
+                <div class="pt-2">
+                    <form action="/bolillero/sortear" method="POST">
+                        <button type="submit" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black px-8 py-3 rounded-xl text-xs uppercase shadow-lg">
+                            🎲 Girar Bolillero y Simular Sorteo Dominical
                         </button>
-                    </div>
-                </form>
-                {alerta_sorteo}
+                    </form>
+                </div>
             </div>
+        </div>
 
-            <!-- Listado de jugadas activas -->
-            <div class="space-y-3">
-                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Jugadas confirmadas para el sorteo:</h4>
+        <!-- SECCIÓN 3: COMERCIOS ADHERIDOS (LO QUE IMPORTA PARA MOSTRAR LA RED) -->
+        <div id="comercios" class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div class="space-y-2">
-                    {apuestas_html}
+                    <span class="text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full uppercase border border-blue-500/20">Red Comercial Catamarca</span>
+                    <h3 class="text-3xl font-black text-white">Comercios Adheridos</h3>
+                    <p class="text-xs text-slate-400">Con tu credencial de socio o participando en el bolillero accedés a beneficios en estos locales.</p>
                 </div>
             </div>
 
-            <div class="pt-4 border-t border-slate-800 flex justify-end">
-                <form action="/bolillero/sortear" method="POST">
-                    <button type="submit" class="bg-slate-800 hover:bg-slate-700 text-orange-400 border border-orange-500/30 font-bold px-5 py-2.5 rounded-xl text-xs uppercase">
-                        🎲 Simular Sorteo Dominical (Bolillero)
+            <!-- Grid de Comercios -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {comercios_html}
+            </div>
+        </div>
+
+        <!-- SECCIÓN 4: RULETA COMERCIAL -->
+        <div id="ruleta" class="bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-slate-800 rounded-3xl p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
+            <div class="space-y-4 max-w-lg">
+                <span class="text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full uppercase border border-blue-500/20">Ruleta de Descuentos</span>
+                <h3 class="text-3xl font-black text-white">Gira por Beneficios Directos</h3>
+                <p class="text-sm text-slate-400 leading-relaxed">Los socios activos pueden girar la ruleta para ganar premios instantáneos en los comercios adheridos de la red.</p>
+                <form action="/ruleta/iniciar-pago" method="POST">
+                    <button type="submit" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-3 rounded-xl transition text-xs uppercase border border-slate-700">
+                        Girar Ruleta Comercial ($1.000)
                     </button>
                 </form>
             </div>
+            <div class="wheel-container-wrapper">
+                <div class="pointer"></div>
+                <div class="wheel-container">
+                    <div class="wheel-center">MAX%</div>
+                </div>
+            </div>
         </div>
+
     </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800 bg-[#070C1E] mt-20 py-10 text-center text-xs text-slate-500">
+        <p>Max%Shop © 2026 - Catamarca (Capital), Argentina. Todos los derechos reservados.</p>
+    </footer>
 </body>
 </html>
 """
@@ -256,36 +335,8 @@ async def comprar_jugada_app(
     monto_agregado = len(lista_nums) * 1000
     DB_MOCK["pozo_acumulado"] += monto_agregado
 
-    mensaje = f"¡Compra exitosa en la App! Se procesaron ${monto_agregado} y tus números ya participan."
-    return RedirectResponse(url=f"/?mensaje_sorteo={urllib.parse.quote(mensaje)}", status_code=303)
-
-@app.post("/bolillero/registrar", response_class=HTMLResponse)
-async def registrar_jugada(
-    dni: str = Form(...),
-    nombre: str = Form(...),
-    numeros: str = Form(...),
-    comercio: str = Form(...)
-):
-    try:
-        lista_nums = [int(n.strip()) for n in numeros.split(",") if n.strip().isdigit()]
-    except:
-        lista_nums = [7, 14, 21]
-
-    nueva_apuesta = {
-        "id": len(DB_MOCK["apuestas_semanales"]) + 1,
-        "dni": dni,
-        "nombre": nombre,
-        "numeros": lista_nums,
-        "comercio": comercio,
-        "fecha": datetime.now().strftime("%Y-%m-%d")
-    }
-    DB_MOCK["apuestas_semanales"].append(nueva_apuesta)
-    
-    monto_agregado = len(lista_nums) * 1000
-    DB_MOCK["pozo_acumulado"] += monto_agregado
-
-    mensaje = f"¡Jugada registrada en comercio! Se cobraron ${monto_agregado} y el pozo aumentó."
-    return RedirectResponse(url=f"/?mensaje_sorteo={urllib.parse.quote(mensaje)}", status_code=303)
+    mensaje = f"¡Compra exitosa! Se procesaron ${monto_agregado} y tus números ya participan para este domingo."
+    return RedirectResponse(url=f"/?mensaje_sorteo={urllib.parse.quote(mensaje)}#bolillero", status_code=303)
 
 @app.post("/bolillero/sortear", response_class=HTMLResponse)
 async def simular_sorteo():
@@ -300,14 +351,31 @@ async def simular_sorteo():
 
     pozo_actual = DB_MOCK["pozo_acumulado"]
     if ganador_encontrado:
-        mensaje = f"¡SORTEO DOMINICAL! Números ganadores: {ganadores_sorteo}. ¡Ganador del pozo de ${pozo_actual:,.0f}: {ganador_encontrado}!"
+        mensaje = f"¡SORTEO REALIZADO! Bolillas: {ganadores_sorteo}. ¡Ganador del pozo de ${pozo_actual:,.0f}: {ganador_encontrado}!"
         DB_MOCK["pozo_acumulado"] = 200000 
         DB_MOCK["apuestas_semanales"] = [] 
     else:
         DB_MOCK["pozo_acumulado"] += 150000 
-        mensaje = f"¡SORTEO DOMINICAL! Números bolillero: {ganadores_sorteo}. Pozo VACANTE. ¡Se acumulan $150.000 más para el próximo domingo!"
+        mensaje = f"¡SORTEO REALIZADO! Bolillas: {ganadores_sorteo}. Pozo VACANTE. ¡Se acumulan $150.000 más para el próximo domingo!"
 
-    return RedirectResponse(url=f"/?mensaje_sorteo={urllib.parse.quote(mensaje)}", status_code=303)
+    return RedirectResponse(url=f"/?mensaje_sorteo={urllib.parse.quote(mensaje)}#bolillero", status_code=303)
+
+@app.post("/ruleta/iniciar-pago", response_class=HTMLResponse)
+async def iniciar_pago():
+    return HTMLResponse(content="""
+    <!DOCTYPE html>
+    <html lang="es">
+    <head><script src="https://cdn.tailwindcss.com"></script></head>
+    <body class="bg-[#0A1128] flex items-center justify-center h-screen">
+        <div class="bg-[#101833] p-10 rounded-3xl border border-slate-800 text-center space-y-4 shadow-2xl max-w-sm">
+            <h3 class="text-orange-500 font-bold text-xl">💳 Redirigiendo a Pasarela</h3>
+            <div class="w-10 h-10 border-4 border-slate-700 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
+            <p class="text-slate-400 text-xs">Procesando pago de ruleta...</p>
+        </div>
+        <script>setTimeout(() => { window.location.href = "/#ruleta"; }, 2000);</script>
+    </body>
+    </html>
+    """)
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(username: str = Depends(verificar_admin)):
@@ -325,7 +393,7 @@ async def admin_dashboard(username: str = Depends(verificar_admin)):
     <div class="max-w-4xl mx-auto space-y-6">
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-black">Panel de Administración</h1>
-            <a href="/" class="bg-slate-800 px-4 py-2 rounded-xl text-xs">Ver Sitio</a>
+            <a href="/" class="bg-slate-800 px-4 py-2 rounded-xl text-xs text-white">Ver Sitio</a>
         </div>
         <div class="bg-[#101833] p-6 rounded-3xl border border-slate-800 space-y-4">
             <h2 class="text-lg font-bold">Jugadas Registradas (App y Comercios)</h2>
@@ -345,7 +413,7 @@ async def validar_dni_get():
 <head><script src="https://cdn.tailwindcss.com"></script></head>
 <body class="bg-[#0A1128] text-slate-100 min-h-screen p-6 flex items-center justify-center">
     <div class="w-full max-w-md bg-[#101833] border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
-        <h1 class="text-2xl font-black text-center">Validar Socio / Jugada</h1>
+        <h1 class="text-2xl font-black text-center text-white">Validar Socio / Jugada</h1>
         <form action="/comercio/validar" method="POST" class="space-y-4">
             <input type="text" name="dni" required placeholder="DNI del cliente" class="w-full bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-sm text-white">
             <button type="submit" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-xs uppercase">Verificar Estado</button>
@@ -368,7 +436,7 @@ async def validar_dni_post(dni: str = Form(...)):
 <head><script src="https://cdn.tailwindcss.com"></script></head>
 <body class="bg-[#0A1128] text-slate-100 min-h-screen p-6 flex items-center justify-center">
     <div class="w-full max-w-md bg-[#101833] border border-slate-800 rounded-3xl p-8 text-center space-y-6">
-        <h1 class="text-xl font-bold">Resultado de Validación</h1>
+        <h1 class="text-xl font-bold text-white">Resultado de Validación</h1>
         {res}
         <div class="text-left bg-[#0A1128] p-4 rounded-xl border border-slate-700">
             <p class="text-xs font-bold text-slate-300 mb-2">Jugadas activas para este domingo:</p>
