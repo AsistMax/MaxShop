@@ -1,7 +1,17 @@
-from fastapi import FastAPI, Form, Request, HTTPException
+import os
+from typing import List
+from fastapi import FastAPI, Form, File, UploadFile, Request
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="Max%Shop API", version="1.0.0")
+
+# Crear carpeta para almacenar las imágenes subidas si no existe
+UPLOAD_DIR = "static/uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# Montar la carpeta estática para que las imágenes sean visibles públicamente
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Base de datos en memoria inicial
 DB_MOCK = {
@@ -31,7 +41,7 @@ DB_MOCK = {
 @app.get("/", response_class=HTMLResponse)
 async def home():
     """
-    Landing Page principal de Max%Shop con formulario integrado para que los comercios suban su publicidad
+    Landing Page principal de Max%Shop con formulario habilitado para múltiples imágenes
     y la vitrina donde se visualizan todas las publicidades activas.
     """
     comercios_activos = [c for c in DB_MOCK["comercios"] if c["estado"] == "Aprobado"]
@@ -70,6 +80,7 @@ async def home():
             .form-box h3 {{ margin-top: 0; color: #38bdf8; }}
             label {{ display: block; margin-top: 12px; font-size: 13px; color: #94a3b8; }}
             input, select {{ width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #334155; background: #0b0f19; color: #fff; box-sizing: border-box; }}
+            input[type="file"] {{ padding: 8px; background: #1e293b; cursor: pointer; }}
             button {{ background: #34d399; color: #000; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }}
 
             /* Vitrina de comercios */
@@ -92,11 +103,11 @@ async def home():
             </div>
         </div>
 
-        <!-- Sección para que el comercio suba su publicidad directamente -->
+        <!-- Formulario con soporte para múltiples archivos físicos -->
         <div class="form-box">
             <h3>¿Tienes un negocio? Sube tu publicidad gratis</h3>
-            <p style="color: #94a3b8; font-size: 13px;">Publica tu oferta y logo para aparecer al instante en la red de descuentos.</p>
-            <form action="/comercio/publicar" method="POST">
+            <p style="color: #94a3b8; font-size: 13px;">Puedes seleccionar una o varias imágenes de tu galería a la vez.</p>
+            <form action="/comercio/publicar" method="POST" enctype="multipart/form-data">
                 <label>Nombre de tu Tienda / Comercio</label>
                 <input type="text" name="nombre" placeholder="Ej: Indumentaria Central" required>
                 
@@ -112,8 +123,8 @@ async def home():
                 <label>Descripción del Descuento u Oferta</label>
                 <input type="text" name="oferta" placeholder="Ej: 20% off pagando en efectivo" required>
 
-                <label>Enlace de Imagen o Logo (URL)</label>
-                <input type="url" name="imagen" placeholder="https://i.imgur.com/tu-imagen.jpg" required>
+                <label>Imágenes o Logos (Puedes seleccionar varios archivos)</label>
+                <input type="file" name="imagenes_archivos" accept="image/*" multiple required>
 
                 <button type="submit">SUBIR PUBLICIDAD</button>
             </form>
@@ -133,21 +144,30 @@ async def publicar_comercio(
     nombre: str = Form(...),
     categoria: str = Form(...),
     oferta: str = Form(...),
-    imagen: str = Form(...)
+    imagenes_archivos: List[UploadFile] = File(...)
 ):
     """
-    Procesa la subida del comercio y lo añade directamente como aprobado a la vitrina.
+    Procesa múltiples archivos de imagen subidos, los guarda y crea una entrada por cada foto.
     """
-    nuevo_id = len(DB_MOCK["comercios"]) + 1
-    nuevo_comercio = {
-        "id": nuevo_id,
-        "nombre": nombre,
-        "categoria": categoria,
-        "oferta": oferta,
-        "imagen": imagen,
-        "estado": "Aprobado"
-    }
-    DB_MOCK["comercios"].append(nuevo_comercio)
+    for imagen_archivo in imagenes_archivos:
+        if imagen_archivo.filename:
+            file_path = os.path.join(UPLOAD_DIR, imagen_archivo.filename)
+            with open(file_path, "wb") as buffer:
+                content = await imagen_archivo.read()
+                buffer.write(content)
+            
+            imagen_url = f"/static/uploads/{imagen_archivo.filename}"
+            
+            nuevo_id = len(DB_MOCK["comercios"]) + 1
+            nuevo_comercio = {
+                "id": nuevo_id,
+                "nombre": nombre,
+                "categoria": categoria,
+                "oferta": oferta,
+                "imagen": imagen_url,
+                "estado": "Aprobado"
+            }
+            DB_MOCK["comercios"].append(nuevo_comercio)
 
     return HTMLResponse(content="""
     <!DOCTYPE html>
@@ -162,8 +182,8 @@ async def publicar_comercio(
     </head>
     <body>
         <div class="box">
-            <h3 style="color: #34d399;">✔ ¡Publicidad Subida con Éxito!</h3>
-            <p style="color: #94a3b8; font-size: 14px;">Tu anuncio ya está publicado en la vitrina del club.</p>
+            <h3 style="color: #34d399;">✔ ¡Publicidades Subidas con Éxito!</h3>
+            <p style="color: #94a3b8; font-size: 14px;">Tus imágenes ya están publicadas en la vitrina del club.</p>
             <br>
             <a href="/" style="color: #38bdf8; text-decoration: none; font-weight: bold;">Volver a la vitrina</a>
         </div>
@@ -174,9 +194,6 @@ async def publicar_comercio(
 
 @app.get("/admin", response_class=HTMLResponse)
 async def panel_admin():
-    """
-    Panel Maestro de Administración.
-    """
     total_socios = len(DB_MOCK["socios"])
     total_comercios = len(DB_MOCK["comercios"])
     
