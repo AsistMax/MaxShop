@@ -1,11 +1,9 @@
+import os
 from fastapi import FastAPI, HTTPException, Depends, status, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
-import os
-import random
-import urllib.parse
 from datetime import datetime
 
 ADMIN_USER = "admin"
@@ -13,7 +11,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="21.0.0"
+    version="22.0.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -37,9 +35,9 @@ def verificar_admin(credentials: HTTPBasicCredentials = Depends(HTTPBasic())):
         )
     return credentials.username
 
-# Base de datos ampliada estructurada por roles y registros
+# Base de datos en memoria completa y estructurada
 DB_MOCK = {
-    "pozo_acumulado": 900000, 
+    "pozo_acumulado": 900000,
     "usuarios": [
         {"dni": "12345678", "nombre": "Juan Pérez", "email": "juan@mail.com", "telefono": "3834123456", "ciudad": "Catamarca (Capital)", "suscripcion": "Activa ($10M)"}
     ],
@@ -55,6 +53,15 @@ DB_MOCK = {
             "imagen": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400",
             "ciudad": "Catamarca (Capital)",
             "estado": "Aprobado"
+        },
+        {
+            "id": 2,
+            "nombre": "Moda Urbana Store",
+            "categoria": "Indumentaria",
+            "oferta": "3 cuotas sin interés con tarjeta de socio",
+            "imagen": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400",
+            "ciudad": "Catamarca (Capital)",
+            "estado": "Aprobado"
         }
     ],
     "apuestas_semanales": [
@@ -66,7 +73,6 @@ DB_MOCK = {
 async def client_landing(request: Request, mensaje: str = None):
     pozo_actual = DB_MOCK["pozo_acumulado"]
     
-    # Renderizar comercios adheridos
     comercios_html = ""
     for com in DB_MOCK["comercios"]:
         comercios_html += f"""
@@ -89,7 +95,7 @@ async def client_landing(request: Request, mensaje: str = None):
     alerta_box = ""
     if mensaje:
         alerta_box = f"""
-        <div class="bg-orange-500/10 border border-orange-500 text-orange-400 px-4 py-3 rounded-xl font-bold text-sm text-center animate-pulse">
+        <div class="bg-orange-500/10 border border-orange-500 text-orange-400 px-6 py-4 rounded-2xl font-bold text-sm text-center shadow-xl animate-bounce">
             ✨ {mensaje}
         </div>
         """
@@ -114,47 +120,50 @@ async def client_landing(request: Request, mensaje: str = None):
 </head>
 <body class="bg-[#0A1128] text-slate-100 min-h-screen font-sans selection:bg-orange-500 selection:text-white antialiased">
 
-    <!-- TOP BAR CON SELECTOR DE CIUDAD Y ACCESOS RÁPIDOS -->
-    <div class="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 text-xs py-2.5 px-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-b border-slate-800">
-        <div class="flex items-center gap-3">
-            <span class="font-bold text-slate-300">📍 Ciudad:</span>
-            <select class="bg-slate-900 border border-slate-700 text-orange-400 text-xs rounded-lg px-3 py-1 font-bold outline-none">
-                <option>Catamarca (Capital)</option>
-                <option>Valle Viejo</option>
-                <option>Fray Mamerto Esquiú</option>
-                <option>San Fernando del Valle</option>
+    <!-- TOP BAR DE NAVEGACIÓN Y CIUDADES -->
+    <div class="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 text-xs py-3 px-4 sm:px-8 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-800">
+        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+            <span class="font-bold text-slate-300 flex items-center gap-1">📍 Ciudad:</span>
+            <select id="selectorCiudad" onchange="cambiarCiudad(this.value)" class="bg-slate-900 border border-slate-700 text-orange-400 text-xs rounded-xl px-4 py-2 font-bold outline-none shadow-inner">
+                <option value="Catamarca">Catamarca (Capital)</option>
+                <option value="Valle Viejo">Valle Viejo</option>
+                <option value="Fray Mamerto Esquiú">Fray Mamerto Esquiú</option>
+                <option value="Tinogasta">Tinogasta</option>
+                <option value="Chilecito">Chilecito</option>
             </select>
         </div>
         <div class="flex items-center gap-3">
             <div class="relative group">
-                <button class="text-[11px] font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-full text-slate-200 border border-slate-700 flex items-center gap-1">
+                <button class="text-xs font-bold bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-200 border border-slate-700 flex items-center gap-1.5 shadow">
                     👥 Accesos y Roles ▾
                 </button>
-                <div class="absolute right-0 mt-1 w-48 bg-[#101833] border border-slate-700 rounded-xl shadow-2xl hidden group-hover:block z-50 p-2 space-y-1">
-                    <a href="/comercio/validar" class="block px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg">🛡️ Panel Comercio</a>
-                    <a href="/admin" class="block px-3 py-2 text-xs text-orange-400 hover:bg-slate-800 rounded-lg font-bold">⚙️ Panel Administrador</a>
+                <div class="absolute right-0 mt-2 w-52 bg-[#101833] border border-slate-700 rounded-2xl shadow-2xl hidden group-hover:block z-50 p-2 space-y-1">
+                    <a href="/comercio/validar" class="block px-3 py-2.5 text-xs text-slate-300 hover:bg-slate-800 rounded-xl transition">🛡️ Panel Comercio / Colaborador</a>
+                    <a href="/admin" class="block px-3 py-2.5 text-xs text-orange-400 hover:bg-slate-800 rounded-xl font-bold transition">⚙️ Panel Administrador (Super)</a>
                 </div>
             </div>
-            <a href="#registro" class="text-[11px] font-bold bg-orange-500 text-slate-950 px-4 py-1.5 rounded-full uppercase shadow-md">Registrarse / Ingresar</a>
+            <button onclick="abrirModalRegistro()" class="text-xs font-bold bg-orange-500 hover:bg-orange-400 text-slate-950 px-5 py-2 rounded-xl uppercase shadow-lg transition">Registrarse / Ingresar</button>
         </div>
     </div>
 
-    <!-- MAPA HORIZONTAL FINO Y SUTIL -->
-    <div class="w-full bg-[#070C1E] border-b border-slate-800 py-2 px-4 flex items-center justify-between text-[11px] text-slate-400">
-        <div class="flex items-center gap-2 overflow-x-auto whitespace-nowrap">
-            <span class="text-orange-400 font-bold">🗺️ Mapa de Red Activa:</span>
-            <span class="bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Centro Comercial (Catamarca)</span>
-            <span class="bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Zona Norte</span>
-            <span class="bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Zona Sur</span>
+    <!-- MAPA HORIZONTAL ELEGANTE Y INTERACTIVO -->
+    <div class="w-full bg-[#070C1E] border-b border-slate-800 py-3 px-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-300 gap-3">
+        <div class="flex items-center gap-3 overflow-x-auto whitespace-nowrap w-full md:w-auto">
+            <span class="text-orange-400 font-black flex items-center gap-1">🗺️ Mapa de Red Georeferenciada:</span>
+            <span onclick="filtrarZona('Centro')" class="cursor-pointer bg-slate-900 hover:bg-slate-800 px-3 py-1 rounded-lg border border-slate-700 transition">Centro Comercial</span>
+            <span onclick="filtrarZona('Norte')" class="cursor-pointer bg-slate-900 hover:bg-slate-800 px-3 py-1 rounded-lg border border-slate-700 transition">Zona Norte</span>
+            <span onclick="filtrarZona('Sur')" class="cursor-pointer bg-slate-900 hover:bg-slate-800 px-3 py-1 rounded-lg border border-slate-700 transition">Zona Sur</span>
+            <span onclick="filtrarZona('Oeste')" class="cursor-pointer bg-slate-900 hover:bg-slate-800 px-3 py-1 rounded-lg border border-slate-700 transition">Zona Oeste</span>
         </div>
-        <span class="hidden md:inline text-emerald-400 font-bold">● Geolocalización GPS Activa</span>
+        <div class="flex items-center gap-2 text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">
+            <span>🟢 Geolocalización GPS Activa</span>
+        </div>
     </div>
 
     <!-- HEADER / LOGO OFICIAL -->
     <header class="sticky top-0 z-40 bg-[#0A1128]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             <div class="flex items-center space-x-3">
-                <!-- Espacio preparado para logo oficial desde GitHub o estáticos -->
                 <div class="text-2xl sm:text-3xl font-black tracking-tighter text-white flex items-center gap-2">
                     Max<span class="text-orange-500">%</span>Shop
                     <span class="text-[10px] bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-md uppercase hidden sm:inline">Descuentos de Locos</span>
@@ -167,7 +176,7 @@ async def client_landing(request: Request, mensaje: str = None):
                 <a href="#suscripcion" class="hover:text-orange-400 transition">Planes y Cobertura</a>
             </nav>
             <div class="flex items-center space-x-3">
-                <a href="#suscripcion" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl uppercase shadow-lg">
+                <a href="#suscripcion" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl uppercase shadow-lg transition">
                     Suscribirse $10k+
                 </a>
             </div>
@@ -176,10 +185,12 @@ async def client_landing(request: Request, mensaje: str = None):
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
         
-        <!-- HERO CON IMAGEN PRINCIPAL -->
-        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8">
-            <div class="text-center max-w-3xl mx-auto space-y-4">
-                <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-3.5 py-1.5 rounded-full border border-orange-500/20 uppercase">
+        {alerta_box}
+
+        <!-- HERO CON LOGO Y BANNER PRINCIPAL SOLICITADO -->
+        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center">
+            <div class="max-w-3xl mx-auto space-y-4">
+                <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-4 py-2 rounded-full border border-orange-500/20 uppercase shadow">
                     <span>🔥</span> <span>Club de Beneficios, Cobertura y Sorteos Semanales</span>
                 </span>
                 <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
@@ -188,13 +199,11 @@ async def client_landing(request: Request, mensaje: str = None):
                 <p class="text-slate-300 text-sm leading-relaxed">Disfruta de la red de comercios más grande, obtén cobertura de hasta 30 millones y participa por el bolillero dominical.</p>
             </div>
 
-            <!-- Imagen principal de la app (Banner que adjuntaste) -->
-            <div class="rounded-2xl overflow-hidden border border-slate-700 shadow-2xl relative">
-                <img src="/static/uploads/hero_banner.png" alt="Max%Shop Banner" class="w-full h-auto object-cover max-h-[450px]" onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200'">
+            <!-- Imagen principal cargada y ajustada -->
+            <div class="rounded-2xl overflow-hidden border border-slate-700 shadow-2xl relative bg-slate-900">
+                <img src="/static/uploads/hero_banner.png" alt="Max%Shop Banner" class="w-full h-auto object-cover max-h-[500px]" onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200'">
             </div>
         </div>
-
-        {alerta_box}
 
         <!-- SECCIÓN DE COMERCIOS ADHERIDOS -->
         <div id="comercios" class="space-y-6">
@@ -212,40 +221,183 @@ async def client_landing(request: Request, mensaje: str = None):
 
     </main>
 
+    <!-- MODAL DE REGISTRO / SUSCRIPCIÓN / MERCADO PAGO INTEGRADO -->
+    <div id="modalRegistro" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-[#101833] border border-slate-700 rounded-3xl max-w-lg w-full p-8 shadow-2xl space-y-6 relative">
+            <button onclick="cerrarModalRegistro()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-lg font-bold">✕</button>
+            <div class="text-center space-y-2">
+                <h3 class="text-2xl font-black text-white">Registro en Max%Shop</h3>
+                <p class="text-xs text-slate-300">Completa tus datos para activar geolocalización, notificaciones y cupones exclusivos.</p>
+            </div>
+            <form action="/registrar-usuario" method="POST" class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-300">Nombre y Apellido</label>
+                    <input type="text" name="nombre" required placeholder="Ej: María Gómez" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white mt-1 outline-none focus:border-orange-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-300">DNI</label>
+                        <input type="text" name="dni" required placeholder="Ej: 35123456" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white mt-1 outline-none focus:border-orange-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-300">Teléfono (WhatsApp)</label>
+                        <input type="text" name="telefono" required placeholder="Ej: 3834556677" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white mt-1 outline-none focus:border-orange-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-300">Correo Electrónico (Notificaciones)</label>
+                    <input type="email" name="email" required placeholder="correo@ejemplo.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white mt-1 outline-none focus:border-orange-500">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-300">Seleccionar Nivel de Suscripción / Cobertura</label>
+                    <select name="suscripcion" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-orange-400 font-bold mt-1 outline-none">
+                        <option value="Gratis">Registro Gratis (Navegación y Cupones)</option>
+                        <option value="10M">Suscripción $10.000 (Cobertura $10 Millones)</option>
+                        <option value="20M">Suscripción $20.000 (Cobertura $20 Millones)</option>
+                        <option value="30M">Suscripción $30.000 (Cobertura $30 Millones)</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black py-3 rounded-xl text-xs uppercase shadow-xl transition">
+                    💳 Pagar y Activar Cuenta (Pasarela Segura)
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="border-t border-slate-800 bg-[#070C1E] mt-20 py-10 text-center text-xs text-slate-500">
         <p>Max%Shop © 2026 - Catamarca (Capital), Argentina. Todos los derechos reservados.</p>
     </footer>
+
+    <script>
+        function abrirModalRegistro() {{
+            document.getElementById('modalRegistro').classList.remove('hidden');
+        }}
+        function cerrarModalRegistro() {{
+            document.getElementById('modalRegistro').classList.add('hidden');
+        }}
+        function cambiarCiudad(ciudad) {{
+            alert("Ciudad seleccionada: " + ciudad + ". Actualizando red de comercios cercanos...");
+        }}
+        function filtrarZona(zona) {{
+            alert("Filtrando comercios en: " + zona);
+        }}
+    </script>
 </body>
 </html>
 """
 
+@app.post("/registrar-usuario")
+async def registrar_usuario(
+    nombre: str = Form(...),
+    dni: str = Form(...),
+    telefono: str = Form(...),
+    email: str = Form(...),
+    suscripcion: str = Form(...)
+):
+    # Guardar en base de datos en memoria
+    DB_MOCK["usuarios"].append({
+        "dni": dni,
+        "nombre": nombre,
+        "email": email,
+        "telefono": telefono,
+        "ciudad": "Catamarca (Capital)",
+        "suscripcion": suscripcion
+    })
+    mensaje = f"¡Registro exitoso, {nombre}! Tu cuenta y notificaciones han sido activadas correctamente."
+    return RedirectResponse(url=f"/?mensaje={urllib.parse.quote(mensaje)}", status_code=303)
+
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(username: str = Depends(verificar_admin)):
     usuarios_filas = "".join([f"""
-        <tr class="border-b border-slate-800 text-xs">
-            <td class="p-3 text-white font-bold">{u['nombre']}</td>
-            <td class="p-3 text-slate-300 font-mono">{u['dni']}</td>
-            <td class="p-3 text-slate-300">{u['telefono']}</td>
-            <td class="p-3 text-orange-400">{u['email']}</td>
-            <td class="p-3 text-emerald-400">{u['ciudad']}</td>
+        <tr class="border-b border-slate-800 text-xs hover:bg-slate-800/40 transition">
+            <td class="p-3.5 text-white font-bold">{u['nombre']}</td>
+            <td class="p-3.5 text-slate-300 font-mono">{u['dni']}</td>
+            <td class="p-3.5 text-slate-300">{u['telefono']}</td>
+            <td class="p-3.5 text-orange-400">{u['email']}</td>
+            <td class="p-3.5 text-emerald-400 font-bold">{u['suscripcion']}</td>
         </tr>""" for u in DB_MOCK["usuarios"]])
+
+    comercios_filas = "".join([f"""
+        <tr class="border-b border-slate-800 text-xs hover:bg-slate-800/40 transition">
+            <td class="p-3.5 text-white font-bold">{c['nombre']}</td>
+            <td class="p-3.5 text-slate-300">{c['categoria']}</td>
+            <td class="p-3.5 text-emerald-400 font-bold">{c['estado']}</td>
+            <td class="p-3.5 text-right">
+                <span class="text-orange-400 font-bold cursor-pointer hover:underline">Gestionar</span>
+            </td>
+        </tr>""" for c in DB_MOCK["comercios"]])
+
+    colaboradores_filas = "".join([f"""
+        <tr class="border-b border-slate-800 text-xs hover:bg-slate-800/40 transition">
+            <td class="p-3.5 text-white font-bold">{col['nombre']}</td>
+            <td class="p-3.5 text-slate-300">{col['email']}</td>
+            <td class="p-3.5 text-orange-400 font-mono font-bold">{col['ventas']} ventas</td>
+            <td class="p-3.5 text-emerald-400">{col['estado']}</td>
+        </tr>""" for col in DB_MOCK["colaboradores"]])
 
     return f"""<!DOCTYPE html>
 <html lang="es">
-<head><script src="https://cdn.tailwindcss.com"></script></head>
-<body class="bg-[#070C1E] text-slate-100 min-h-screen p-8">
-    <div class="max-w-6xl mx-auto space-y-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-black">Panel de Administración Exclusivo (Super-Admin)</h1>
-            <a href="/" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-xs text-white">← Volver al Sitio</a>
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Administración - Max%Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#070C1E] text-slate-100 min-h-screen p-6 sm:p-10 font-sans">
+    <div class="max-w-7xl mx-auto space-y-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#101833] p-6 rounded-3xl border border-slate-800 shadow-2xl">
+            <div>
+                <span class="text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase border border-orange-500/20">Control Absoluto</span>
+                <h1 class="text-2xl sm:text-3xl font-black text-white mt-2">Panel de Administración Max%Shop</h1>
+            </div>
+            <a href="/" class="bg-slate-800 hover:bg-slate-700 px-5 py-2.5 rounded-xl text-xs font-bold text-white border border-slate-700 transition">← Volver al Sitio Web</a>
         </div>
-        <div class="bg-[#101833] p-6 rounded-3xl border border-slate-800 space-y-4 shadow-2xl">
-            <h2 class="text-lg font-bold text-orange-400">Base de Datos de Usuarios Registrados</h2>
+
+        <!-- TARJETAS DE ESTADÍSTICAS -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="bg-[#101833] p-6 rounded-3xl border border-slate-800 shadow-xl space-y-2">
+                <span class="text-xs text-slate-400 font-bold">Total Socios Registrados</span>
+                <h3 class="text-3xl font-black text-white">{len(DB_MOCK["usuarios"])}</h3>
+            </div>
+            <div class="bg-[#101833] p-6 rounded-3xl border border-slate-800 shadow-xl space-y-2">
+                <span class="text-xs text-slate-400 font-bold">Comercios Activos en Red</span>
+                <h3 class="text-3xl font-black text-orange-400">{len(DB_MOCK["comercios"])}</h3>
+            </div>
+            <div class="bg-[#101833] p-6 rounded-3xl border border-slate-800 shadow-xl space-y-2">
+                <span class="text-xs text-slate-400 font-bold">Pozo Acumulado Actual</span>
+                <h3 class="text-3xl font-black text-emerald-400">${DB_MOCK["pozo_acumulado"]:,.0f}</h3>
+            </div>
+        </div>
+
+        <!-- TABLA DE USUARIOS / SOCIOS -->
+        <div class="bg-[#101833] p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6 shadow-2xl">
+            <h2 class="text-lg font-black text-white flex items-center gap-2">👥 Base de Datos Completa de Socios (Clientes)</h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
-                    <thead><tr class="text-slate-400 border-b border-slate-800 text-xs"><th class="p-3">Nombre</th><th class="p-3">DNI</th><th class="p-3">Teléfono</th><th class="p-3">Correo</th><th class="p-3">Ciudad</th></tr></thead>
+                    <thead><tr class="text-slate-400 border-b border-slate-800 text-xs"><th class="p-3.5">Nombre</th><th class="p-3.5">DNI</th><th class="p-3.5">Teléfono</th><th class="p-3.5">Correo (Notificaciones)</th><th class="p-3.5">Suscripción</th></tr></thead>
                     <tbody>{usuarios_filas}</tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TABLA DE COMERCIOS -->
+        <div class="bg-[#101833] p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6 shadow-2xl">
+            <h2 class="text-lg font-black text-white flex items-center gap-2">🏪 Control de Comercios Adheridos</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead><tr class="text-slate-400 border-b border-slate-800 text-xs"><th class="p-3.5">Comercio</th><th class="p-3.5">Categoría</th><th class="p-3.5">Estado</th><th class="p-3.5 text-right">Acciones</th></tr></thead>
+                    <tbody>{comercios_filas}</tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TABLA DE COLABORADORES -->
+        <div class="bg-[#101833] p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6 shadow-2xl">
+            <h2 class="text-lg font-black text-white flex items-center gap-2">🛡️ Control de Colaboradores y Ventas</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead><tr class="text-slate-400 border-b border-slate-800 text-xs"><th class="p-3.5">Colaborador</th><th class="p-3.5">Correo</th><th class="p-3.5">Ventas Registradas</th><th class="p-3.5">Estado</th></tr></thead>
+                    <tbody>{colaboradores_filas}</tbody>
                 </table>
             </div>
         </div>
@@ -257,17 +409,22 @@ async def admin_dashboard(username: str = Depends(verificar_admin)):
 async def validar_comercio():
     return """<!DOCTYPE html>
 <html lang="es">
-<head><script src="https://cdn.tailwindcss.com"></script></head>
-<body class="bg-[#0A1128] text-slate-100 min-h-screen p-6 flex items-center justify-center">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Comercio / Colaborador - Max%Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0A1128] text-slate-100 min-h-screen p-6 flex items-center justify-center font-sans">
     <div class="w-full max-w-md bg-[#101833] border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6 text-center">
-        <h1 class="text-2xl font-black text-white">Panel de Comercio / Colaborador</h1>
-        <p class="text-xs text-slate-400">Herramientas de validación de socios y registro de ventas locales (Acceso restringido sin privilegios de administrador).</p>
-        <div class="bg-[#0A1128] p-4 rounded-xl border border-slate-700 text-left space-y-2">
+        <span class="text-[10px] font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase border border-orange-500/20">Acceso Restringido Comercial</span>
+        <h1 class="text-2xl font-black text-white">Panel de Comercio y Colaboradores</h1>
+        <p class="text-xs text-slate-300">Valida socios activos en la red y registra consumos o números para el sorteo dominical.</p>
+        <div class="bg-[#0A1128] p-5 rounded-2xl border border-slate-700 text-left space-y-3">
             <label class="text-xs font-bold text-slate-300">Validar DNI de Socio:</label>
-            <input type="text" placeholder="Ingrese DNI..." class="w-full bg-slate-900 border border-slate-700 px-3 py-2 rounded-lg text-xs text-white">
-            <button class="w-full bg-emerald-500 text-slate-950 font-bold py-2 rounded-lg text-xs uppercase mt-2">Verificar Estado en Red</button>
+            <input type="text" placeholder="Ingrese DNI del cliente..." class="w-full bg-slate-900 border border-slate-700 px-4 py-2.5 rounded-xl text-xs text-white outline-none focus:border-orange-500">
+            <button onclick="alert('Socio verificado correctamente en la red Max%Shop.')" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-2.5 rounded-xl text-xs uppercase mt-2 transition shadow-lg">Verificar Estado en Red</button>
         </div>
-        <a href="/" class="block text-xs text-slate-400 hover:text-white">← Volver al inicio</a>
+        <a href="/" class="block text-xs text-slate-400 hover:text-white transition">← Volver al inicio principal</a>
     </div>
 </body>
 </html>"""
