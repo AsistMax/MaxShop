@@ -1,5 +1,7 @@
 import os
+import random
 import urllib.parse
+from datetime import datetime
 from fastapi import FastAPI, HTTPException, Depends, status, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -11,7 +13,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="23.0.0"
+    version="25.0.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -39,6 +41,9 @@ DB_MOCK = {
     "pozo_acumulado": 900000,
     "usuarios": [
         {"dni": "12345678", "nombre": "Juan Pérez", "email": "juan@mail.com", "telefono": "3834123456", "ciudad": "Catamarca (Capital)", "suscripcion": "Activa ($10M)"}
+    ],
+    "apuestas_semanales": [
+        {"id": 1, "dni": "12345678", "nombre": "Juan Pérez", "numeros": [7, 14, 22, 33, 41], "comercio": "App Digital Directa", "fecha": "2026-06-07"}
     ],
     "colaboradores": [
         {"id": 1, "nombre": "Carlos Gómez", "email": "carlos@colab.com", "ventas": 12, "estado": "Activo"}
@@ -92,7 +97,6 @@ DB_MOCK = {
 async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capital)", mensaje: str = None):
     pozo_actual = DB_MOCK["pozo_acumulado"]
     
-    # Filtrar comercios locales o mostrar nacionales si está vacío
     comercios_filtrados = [c for c in DB_MOCK["comercios"] if ciudad_filtro.lower() in c["ciudad"].lower()]
     
     lista_comercios_html = ""
@@ -115,11 +119,10 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </div>
             """
     else:
-        # Si la ciudad no tiene comercios locales, mostramos la red nacional de respaldo solicitada
         lista_comercios_html = f"""
         <div class="col-span-full bg-orange-500/10 border border-orange-500/30 p-6 rounded-3xl text-center space-y-2 mb-4">
             <h4 class="text-white font-bold text-sm">ℹ️ No hay comercios locales registrados aún en {ciudad_filtro}.</h4>
-            <p class="text-xs text-slate-300">¡Pero tienes cobertura total habilitada con nuestra Red de Comercios y Supermercados Nacionales!</p>
+            <p class="text-xs text-slate-300">¡Pero tienes cobertura total habilitada con nuestra Red de Comercios, Supermercados y Farmacias Nacionales!</p>
         </div>
         """
         for com in DB_MOCK["comercios_nacionales"]:
@@ -153,22 +156,54 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Max%Shop - Club de Beneficios y Cobertura Nacional</title>
+    <title>Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         ::-webkit-scrollbar {{ width: 8px; height: 8px; }}
         ::-webkit-scrollbar-track {{ background: #0A1128; }}
         ::-webkit-scrollbar-thumb {{ background: #1E293B; border-radius: 4px; }}
+        
+        .wheel-container-wrapper {{ text-align: center; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }}
+        .wheel-container {{
+            position: relative; width: 220px; height: 220px; border-radius: 50%; border: 8px solid #cbd5e1;
+            background: conic-gradient(
+                #ef4444 0deg 36deg, #f97316 36deg 72deg, #eab308 72deg 108deg,
+                #84cc16 108deg 144deg, #10b981 144deg 180deg, #06b6d4 180deg 216deg,
+                #3b82f6 216deg 252deg, #8b5cf6 252deg 288deg, #ec4899 288deg 324deg, #f43f5e 324deg 360deg
+            );
+            box-shadow: 0 0 25px rgba(249, 115, 22, 0.4);
+            display: flex; align-items: center; justify-content: center;
+        }}
+        .wheel-center {{
+            width: 45px; height: 45px; background: #0f172a; border-radius: 50%; border: 4px solid #fff;
+            display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 9px; color: #f97316;
+        }}
+        .pointer {{
+            width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid #f97316;
+            margin-bottom: -8px; z-index: 20; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+        }}
+
+        .bolillero-cage {{
+            width: 160px; height: 160px; border-radius: 50%; border: 4px solid rgba(255,255,255,0.2);
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(15,23,42,0.9));
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 0 30px rgba(249,115,22,0.3);
+            display: flex; align-items: center; justify-content: center; position: relative; margin: 0 auto;
+        }}
+        .bolilla {{
+            width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffedd5, #f97316);
+            color: #0f172a; font-weight: 900; font-size: 14px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(0,0,0,0.3);
+        }}
     </style>
 </head>
 <body class="bg-[#0A1128] text-slate-100 min-h-screen font-sans selection:bg-orange-500 selection:text-white antialiased">
 
-    <!-- BARRA SUPERIOR CON CIUDAD DETECTADA Y BUSCADOR -->
+    <!-- BARRA SUPERIOR CON CIUDAD ACTIVA Y BUSCADOR INTELIGENTE -->
     <div class="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 text-xs py-3 px-4 sm:px-8 flex flex-col lg:flex-row justify-between items-center gap-4 border-b border-slate-800">
         <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
             <span class="font-black text-orange-400 flex items-center gap-1.5 text-sm">📍 Ciudad Actual: <span id="lblCiudadActiva" class="text-white underline">{ciudad_filtro}</span></span>
             <div class="flex items-center gap-2">
-                <input type="text" id="inputBuscadorCiudad" placeholder="Buscar ciudad (Ej: Córdoba, Río Tercero)..." class="bg-slate-900 border border-slate-700 text-white text-xs rounded-xl px-3 py-1.5 outline-none focus:border-orange-500 w-48 sm:w-60">
+                <input type="text" id="inputBuscadorCiudad" placeholder="Buscar ciudad..." class="bg-slate-900 border border-slate-700 text-white text-xs rounded-xl px-3 py-1.5 outline-none focus:border-orange-500 w-44 sm:w-56">
                 <button onclick="buscarCiudadManual()" class="bg-orange-500 hover:bg-orange-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl transition">Ir</button>
             </div>
         </div>
@@ -179,55 +214,30 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                 </button>
                 <div class="absolute right-0 mt-2 w-56 bg-[#101833] border border-slate-700 rounded-2xl shadow-2xl hidden group-hover:block z-50 p-2 space-y-1">
                     <a href="/comercio/validar" class="block px-4 py-3 text-xs text-slate-300 hover:bg-slate-800 rounded-xl transition font-bold">🛡️ Panel Comercio / Colaboradores</a>
-                    <a href="/admin" class="block px-4 py-3 text-xs text-orange-400 hover:bg-slate-800 rounded-xl font-bold transition">⚙️ Panel Administrador (Super)</a>
+                    <a href="/admin" class="block px-4 py-3 text-xs text-orange-400 hover:bg-slate-800 rounded-xl font-bold transition">⚙️ Panel Administrador</a>
                 </div>
             </div>
             <button onclick="abrirModalRegistro()" class="text-xs font-bold bg-orange-500 hover:bg-orange-400 text-slate-950 px-5 py-2 rounded-xl uppercase shadow-lg transition">Registrarse / Ingresar</button>
         </div>
     </div>
 
-    <!-- MAPA INTERACTIVO GIGANTE Y ELEGANTE -->
-    <div class="w-full bg-[#070C1E] border-b border-slate-800 py-4 px-6">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <span class="text-orange-400 font-black text-sm flex items-center gap-2">🗺️ Mapa de Red Georreferenciada Activa:</span>
-                <span class="text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 font-bold">🟢 GPS Sincronizado</span>
-            </div>
-            <div class="flex flex-wrap gap-2 text-xs">
-                <button onclick="cambiarCiudadSelect('Catamarca (Capital)')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl font-bold text-slate-300 transition">Catamarca</button>
-                <button onclick="cambiarCiudadSelect('Córdoba')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl font-bold text-slate-300 transition">Córdoba</button>
-                <button onclick="cambiarCiudadSelect('Río Tercero')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl font-bold text-slate-300 transition">Río Tercero</button>
-                <button onclick="cambiarCiudadSelect('Buenos Aires')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl font-bold text-slate-300 transition">Buenos Aires</button>
-            </div>
-        </div>
-        <!-- Contenedor Visual de Mapa Grande Estilo App -->
-        <div class="max-w-7xl mx-auto mt-3 h-36 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center relative overflow-hidden shadow-inner">
-            <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#f97316_1px,transparent_1px)] [background-size:16px_16px]"></div>
-            <div class="text-center z-10 space-y-1">
-                <p class="text-xs text-orange-400 font-bold uppercase tracking-widest">Radar de Comercios y Cobertura Activa</p>
-                <h3 class="text-lg font-black text-white">Explorando red para: <span class="text-orange-400">{ciudad_filtro}</span></h3>
-                <p class="text-[11px] text-slate-400">Haga clic en cualquier zona o busque arriba para cambiar de localidad al instante.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- HEADER / LOGO OFICIAL -->
+    <!-- HEADER OFICIAL -->
     <header class="sticky top-0 z-40 bg-[#0A1128]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-4">
                 <div class="text-2xl sm:text-3xl font-black tracking-tighter text-white flex items-center gap-2">
                     Max<span class="text-orange-500">%</span>Shop
-                    <span class="text-[10px] bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2.5 py-1 rounded-md uppercase hidden sm:inline font-bold">Descuentos y Cobertura</span>
                 </div>
             </div>
             <nav class="hidden md:flex items-center space-x-6 text-xs font-bold text-slate-300">
-                <a href="#comercios" class="hover:text-orange-400 transition">Comercios Adheridos</a>
+                <a href="#comprar" class="hover:text-orange-400 transition">Comprar Números</a>
                 <a href="#bolillero" class="hover:text-orange-400 transition">Bolillero Dominical</a>
-                <a href="#suscripcion" class="hover:text-orange-400 transition">Planes y Cobertura</a>
+                <a href="#comercios" class="hover:text-orange-400 transition">Comercios Adheridos</a>
+                <a href="#ruleta" class="hover:text-orange-400 transition">Ruleta</a>
             </nav>
             <div class="flex items-center space-x-3">
-                <a href="#suscripcion" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl uppercase shadow-lg transition">
-                    Suscribirse $10k+
+                <a href="#comprar" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl uppercase shadow-lg transition">
+                    Participar $1.000
                 </a>
             </div>
         </div>
@@ -237,7 +247,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         
         {alerta_box}
 
-        <!-- HERO / BANNER PRINCIPAL OFICIAL SOLICITADO (DEBAJO DE LA BARRA DE TAREAS) -->
+        <!-- HERO / BANNER PRINCIPAL -->
         <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center">
             <div class="max-w-3xl mx-auto space-y-4">
                 <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-4 py-2 rounded-full border border-orange-500/20 uppercase shadow">
@@ -248,18 +258,66 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                 </h1>
                 <p class="text-slate-300 text-sm leading-relaxed">Disfruta de la red de comercios más grande, obtén cobertura de hasta 30 millones y participa por el bolillero dominical.</p>
             </div>
+        </div>
 
-            <!-- Imagen principal cargada perfectamente -->
-            <div class="rounded-3xl overflow-hidden border border-slate-700 shadow-2xl relative bg-slate-900 max-h-[500px]">
-                <img src="/static/uploads/hero_banner.png" alt="Max%Shop Banner" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200'">
+        <!-- SECCIÓN 1: COMPRAR NÚMEROS EN LA APP -->
+        <div id="comprar" class="bg-gradient-to-r from-emerald-950/30 via-[#101833] to-[#0A1128] border border-emerald-500/40 rounded-3xl p-8 shadow-2xl space-y-6">
+            <div class="max-w-xl space-y-2">
+                <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase border border-emerald-500/20">Autogestión de Socio</span>
+                <h3 class="text-2xl font-black text-white">Comprar Números Directo en la App ($1.000 c/u)</h3>
+                <p class="text-xs text-slate-400">Ingresá tus datos, elegí tus números preferidos y abona online para participar este domingo en el pozo acumulado.</p>
+            </div>
+            
+            <form action="/app/comprar-jugada" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
+                <input type="text" name="dni" required placeholder="Tu DNI de Socio" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
+                <input type="text" name="nombre" required placeholder="Tu Nombre y Apellido" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
+                <input type="text" name="numeros" required placeholder="Ej: 3, 19, 27, 35, 42" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
+                <div class="sm:col-span-3">
+                    <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg">
+                        💳 Pagar Online y Participar este Domingo
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SECCIÓN 2: EL BOLILLERO VIRTUAL REAL -->
+        <div id="bolillero" class="bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-orange-500/30 rounded-3xl p-8 shadow-2xl space-y-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div class="space-y-2 max-w-xl">
+                    <span class="text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase border border-orange-500/20">Sorteo Dominical Estilo Telekino</span>
+                    <h3 class="text-3xl font-black text-white">El Bolillero Virtual de Max%Shop</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">Nuestro bolillero electrónico sortea semanalmente las bolillas ganadoras. Si tus números coinciden, te llevas el pozo acumulado.</p>
+                </div>
+                <div class="bg-[#0A1128] border border-orange-500/40 p-6 rounded-2xl text-center shadow-xl w-full md:w-auto">
+                    <p class="text-xs text-slate-400">POZO ACUMULADO ACTUAL</p>
+                    <p class="text-3xl font-black text-emerald-400 mt-1">${pozo_actual:,.0f}</p>
+                </div>
+            </div>
+
+            <div class="bg-[#0A1128] border border-slate-800 p-8 rounded-2xl text-center space-y-6">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Últimas Bolillas Sorteadas del Bolillero</p>
+                <div class="flex justify-center items-center gap-4 flex-wrap">
+                    <div class="bolilla">07</div>
+                    <div class="bolilla">14</div>
+                    <div class="bolilla">22</div>
+                    <div class="bolilla">33</div>
+                    <div class="bolilla">41</div>
+                </div>
+                <div class="pt-2">
+                    <form action="/bolillero/sortear" method="POST">
+                        <button type="submit" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black px-8 py-3 rounded-xl text-xs uppercase shadow-lg">
+                            🎲 Girar Bolillero y Simular Sorteo Dominical
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 
-        <!-- SECCIÓN DE COMERCIOS ADHERIDOS Y NACIONALES -->
+        <!-- SECCIÓN 3: COMERCIOS ADHERIDOS Y NACIONALES -->
         <div id="comercios" class="space-y-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div class="space-y-2">
-                    <span class="text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full uppercase border border-blue-500/20">Red Georreferenciada</span>
+                    <span class="text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full uppercase border border-blue-500/20">Geolocalización Activa</span>
                     <h3 class="text-3xl font-black text-white">Comercios en <span class="text-orange-400">{ciudad_filtro}</span></h3>
                     <p class="text-xs text-slate-400">Cupones instantáneos y beneficios activos con tu membresía.</p>
                 </div>
@@ -269,9 +327,29 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </div>
         </div>
 
+        <!-- SECCIÓN 4: RULETA COMERCIAL -->
+        <div id="ruleta" class="bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-slate-800 rounded-3xl p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
+            <div class="space-y-4 max-w-lg">
+                <span class="text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full uppercase border border-blue-500/20">Ruleta de Descuentos</span>
+                <h3 class="text-3xl font-black text-white">Gira por Beneficios Directos</h3>
+                <p class="text-sm text-slate-400 leading-relaxed">Los socios activos pueden girar la ruleta para ganar premios instantáneos en los comercios adheridos de la red.</p>
+                <form action="/ruleta/iniciar-pago" method="POST">
+                    <button type="submit" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-3 rounded-xl transition text-xs uppercase border border-slate-700">
+                        Girar Ruleta Comercial ($1.000)
+                    </button>
+                </form>
+            </div>
+            <div class="wheel-container-wrapper">
+                <div class="pointer"></div>
+                <div class="wheel-container">
+                    <div class="wheel-center">MAX%</div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
-    <!-- MODAL DE REGISTRO / SUSCRIPCIÓN A PANTALLA COMPLETA (ESTILO APP CÓMODO) -->
+    <!-- MODAL DE REGISTRO / SUSCRIPCIÓN A PANTALLA COMPLETA -->
     <div id="modalRegistro" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-[#101833] border border-slate-700 rounded-3xl max-w-xl w-full p-8 sm:p-10 shadow-2xl space-y-6 relative my-8">
             <button onclick="cerrarModalRegistro()" class="absolute top-6 right-6 text-slate-400 hover:text-white text-xl font-bold bg-slate-900 w-10 h-10 rounded-full flex items-center justify-center border border-slate-800">✕</button>
@@ -327,9 +405,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         function cerrarModalRegistro() {{
             document.getElementById('modalRegistro').classList.add('hidden');
         }}
-        function cambiarCiudadSelect(ciudad) {{
-            window.location.href = "/?ciudad_filtro=" + encodeURIComponent(ciudad);
-        }}
         function buscarCiudadManual() {{
             const val = document.getElementById('inputBuscadorCiudad').value.trim();
             if(val) {{
@@ -361,6 +436,72 @@ async def registrar_usuario(
     })
     mensaje = f"¡Registro exitoso, {nombre}! Tu cuenta y notificaciones han sido activadas correctamente."
     return RedirectResponse(url=f"/?mensaje={urllib.parse.quote(mensaje)}", status_code=303)
+
+@app.post("/app/comprar-jugada", response_class=HTMLResponse)
+async def comprar_jugada_app(
+    dni: str = Form(...),
+    nombre: str = Form(...),
+    numeros: str = Form(...)
+):
+    try:
+        lista_nums = [int(n.strip()) for n in numeros.split(",") if n.strip().isdigit()]
+    except:
+        lista_nums = [4, 15, 26, 38, 49]
+
+    nueva_apuesta = {
+        "id": len(DB_MOCK["apuestas_semanales"]) + 1,
+        "dni": dni,
+        "nombre": nombre,
+        "numeros": lista_nums,
+        "comercio": "App Digital Directa",
+        "fecha": datetime.now().strftime("%Y-%m-%d")
+    }
+    DB_MOCK["apuestas_semanales"].append(nueva_apuesta)
+    
+    monto_agregado = len(lista_nums) * 1000
+    DB_MOCK["pozo_acumulado"] += monto_agregado
+
+    mensaje = f"¡Compra exitosa! Se procesaron ${monto_agregado} y tus números ya participan para este domingo."
+    return RedirectResponse(url=f"/?mensaje={urllib.parse.quote(mensaje)}#bolillero", status_code=303)
+
+@app.post("/bolillero/sortear", response_class=HTMLResponse)
+async def simular_sorteo():
+    ganadores_sorteo = sorted(random.sample(range(1, 51), 5))
+    
+    ganador_encontrado = None
+    for ap in DB_MOCK["apuestas_semanales"]:
+        aciertos = len(set(ap["numeros"]).intersection(set(ganadores_sorteo)))
+        if aciertos >= 3: 
+            ganador_encontrado = ap["nombre"]
+            break
+
+    pozo_actual = DB_MOCK["pozo_acumulado"]
+    if ganador_encontrado:
+        mensaje = f"¡SORTEO REALIZADO! Bolillas: {ganadores_sorteo}. ¡Ganador del pozo de ${pozo_actual:,.0f}: {ganador_encontrado}!"
+        DB_MOCK["pozo_acumulado"] = 200000 
+        DB_MOCK["apuestas_semanales"] = [] 
+    else:
+        DB_MOCK["pozo_acumulado"] += 150000 
+        mensaje = f"¡SORTEO REALIZADO! Bolillas: {ganadores_sorteo}. Pozo VACANTE. ¡Se acumulan $150.000 más para el próximo domingo!"
+
+    return RedirectResponse(url=f"/?mensaje={urllib.parse.quote(mensaje)}#bolillero", status_code=303)
+
+@app.post("/ruleta/iniciar-pago", response_class=HTMLResponse)
+async def iniciar_pago():
+    return HTMLResponse(content="""
+    <!DOCTYPE html>
+    <html lang="es">
+    <head><script src="https://cdn.tailwindcss.com"></script></head>
+    <body class="bg-[#0A1128] flex items-center justify-center h-screen">
+        <div class="bg-[#101833] p-10 rounded-3xl border border-slate-800 text-center space-y-4 shadow-2xl max-w-sm">
+            <h3 class="text-orange-500 font-bold text-xl">💳 Redirigiendo a Pasarela</h3>
+            <div class="w-10 h-10 border-4 border-slate-700 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
+            <p class="text-slate-400 text-xs">Procesando pago de ruleta...</p>
+        </div>
+        <script>setTimeout(() => { window.location.href = "/#ruleta"; }, 2000);</script>
+    </body>
+    </html>
+    """)
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(username: str = Depends(verificar_admin)):
