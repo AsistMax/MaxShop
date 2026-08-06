@@ -221,13 +221,13 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         </div>
     </div>
 
-    <!-- HEADER OFICIAL -->
+    <!-- HEADER OFICIAL CON TU LOGO DE DRIVE -->
     <header class="sticky top-0 z-40 bg-[#0A1128]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
-                <div class="text-2xl sm:text-3xl font-black tracking-tighter text-white flex items-center gap-2">
-                    Max<span class="text-orange-500">%</span>Shop
-                </div>
+                <a href="/">
+                    <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="Max%Shop Logo" class="h-10 sm:h-12 w-auto object-contain">
+                </a>
             </div>
             <nav class="hidden md:flex items-center space-x-6 text-xs font-bold text-slate-300">
                 <a href="#comprar" class="hover:text-orange-400 transition">Comprar Números</a>
@@ -247,8 +247,11 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         
         {alerta_box}
 
-        <!-- HERO / BANNER PRINCIPAL -->
-        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center">
+        <!-- HERO / BANNER PRINCIPAL CON TU ILUSTRACIÓN DE DRIVE -->
+        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center overflow-hidden">
+            <div class="max-w-4xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-slate-700">
+                <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Banner Principal" class="w-full h-auto object-cover opacity-95 hover:scale-105 transition duration-500">
+            </div>
             <div class="max-w-3xl mx-auto space-y-4">
                 <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-4 py-2 rounded-full border border-orange-500/20 uppercase shadow">
                     <span>🔥</span> <span>Club de Beneficios, Cobertura y Sorteos Semanales</span>
