@@ -13,7 +13,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="25.0.0"
+    version="25.0.1"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -183,13 +183,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             margin-bottom: -8px; z-index: 20; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
         }}
 
-        .bolillero-cage {{
-            width: 160px; height: 160px; border-radius: 50%; border: 4px solid rgba(255,255,255,0.2);
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(15,23,42,0.9));
-            box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 0 30px rgba(249,115,22,0.3);
-            display: flex; align-items: center; justify-content: center; position: relative; margin: 0 auto;
-        }}
-        .bolilla {{
+        .bolillera {{
             width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffedd5, #f97316);
             color: #0f172a; font-weight: 900; font-size: 14px; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(0,0,0,0.3);
@@ -221,7 +215,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         </div>
     </div>
 
-    <!-- HEADER OFICIAL CON LOGOTIPO / BANNER SUPERIOR -->
+    <!-- HEADER OFICIAL CON LOGOTIPO -->
     <header class="sticky top-0 z-40 bg-[#0A1128]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
@@ -247,11 +241,11 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         
         {alerta_box}
 
-        <!-- HERO / BANNER PRINCIPAL (Aquí puedes colocar tu primera imagen o banner principal) -->
+        <!-- HERO / BANNER PRINCIPAL (Usando tu primera imagen de Google Drive) -->
         <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center overflow-hidden">
-            <!-- Si deseas usar una imagen como banner principal, puedes descomentar la siguiente línea y colocar la ruta: -->
-            <!-- <img src="/static/uploads/tu_banner_1.jpg" alt="Banner Principal" class="w-full h-64 object-cover rounded-2xl mb-6"> -->
-            
+            <div class="max-w-4xl mx-auto">
+                <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="Banner Principal Max%Shop" class="w-full max-h-[420px] object-cover rounded-2xl shadow-2xl border border-slate-700 mb-8">
+            </div>
             <div class="max-w-3xl mx-auto space-y-4">
                 <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-4 py-2 rounded-full border border-orange-500/20 uppercase shadow">
                     <span>🔥</span> <span>Club de Beneficios, Cobertura y Sorteos Semanales</span>
@@ -263,11 +257,12 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </div>
         </div>
 
-        <!-- SEGUNDO BANNER (Aquí puedes colocar la segunda imagen adaptada como banner) -->
-        <div class="relative bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl overflow-hidden">
-            <!-- Si deseas usar tu segunda imagen como banner secundario, puedes descomentar y ajustar aquí: -->
-            <!-- <img src="/static/uploads/tu_banner_2.jpg" alt="Banner Secundario" class="w-full h-48 object-cover rounded-2xl mb-4"> -->
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <!-- SEGUNDO BANNER (Usando tu segunda imagen de Google Drive) -->
+        <div class="relative bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl overflow-hidden space-y-6 text-center">
+            <div class="max-w-4xl mx-auto">
+                <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Banner Promoción Secundario" class="w-full max-h-[380px] object-cover rounded-2xl shadow-2xl border border-slate-700">
+            </div>
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 max-w-4xl mx-auto">
                 <div class="space-y-2 text-center md:text-left">
                     <span class="text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase border border-orange-500/20">Banner de Promoción</span>
                     <h3 class="text-2xl font-black text-white">¡Nuevos Beneficios Disponibles en Tu Zona!</h3>
@@ -314,11 +309,11 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             <div class="bg-[#0A1128] border border-slate-800 p-8 rounded-2xl text-center space-y-6">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Últimas Bolillas Sorteadas del Bolillero</p>
                 <div class="flex justify-center items-center gap-4 flex-wrap">
-                    <div class="bolilla">07</div>
-                    <div class="bolilla">14</div>
-                    <div class="bolilla">22</div>
-                    <div class="bolilla">33</div>
-                    <div class="bolilla">41</div>
+                    <div class="bolillera">07</div>
+                    <div class="bolillera">14</div>
+                    <div class="bolillera">22</div>
+                    <div class="bolillera">33</div>
+                    <div class="bolillera">41</div>
                 </div>
                 <div class="pt-2">
                     <form action="/bolillero/sortear" method="POST">
@@ -366,7 +361,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
 
     </main>
 
-    <!-- MODAL DE REGISTRO / SUSCRIPCIÓN A PANTALLA COMPLETA -->
+    <!-- MODAL DE REGISTRO / SUSCRIPCIÓN -->
     <div id="modalRegistro" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-[#101833] border border-slate-700 rounded-3xl max-w-xl w-full p-8 sm:p-10 shadow-2xl space-y-6 relative my-8">
             <button onclick="cerrarModalRegistro()" class="absolute top-6 right-6 text-slate-400 hover:text-white text-xl font-bold bg-slate-900 w-10 h-10 rounded-full flex items-center justify-center border border-slate-800">✕</button>
