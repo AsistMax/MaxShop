@@ -13,7 +13,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="28.0.0"
+    version="29.0.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -221,7 +221,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         </div>
     </div>
 
-    <!-- HEADER OFICIAL CON EL LOGOTIPO ARRIBA -->
+    <!-- HEADER OFICIAL CON EL LOGOTIPO -->
     <header class="sticky top-0 z-40 bg-[#0A1128]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
@@ -247,10 +247,10 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         
         {alerta_box}
 
-        <!-- TARJETA PRINCIPAL CON EL LOGO ANTERIOR Y EL POZO ACUMULADO -->
+        <!-- TARJETA PRINCIPAL CON EL LOGO Y EL POZO ACUMULADO -->
         <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center overflow-hidden">
             <div class="max-w-md mx-auto bg-white rounded-3xl p-6 shadow-2xl border border-slate-200">
-                <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Logo Anterior" class="w-full h-auto object-contain hover:scale-102 transition duration-500">
+                <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Logo Principal" class="w-full h-auto object-contain hover:scale-102 transition duration-500">
             </div>
             
             <div class="max-w-3xl mx-auto space-y-4">
@@ -262,11 +262,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                 </h1>
                 <p class="text-slate-300 text-sm leading-relaxed">Disfruta de la red de comercios más grande, obtén cobertura de hasta 30 millones y participa por el bolillero dominical.</p>
             </div>
-        </div>
-
-        <!-- BANNER GRANDE UBICADO JUSTO ABAJO DEL POZO -->
-        <div class="max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-slate-700">
-            <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Banner Grande" class="w-full h-auto object-cover opacity-95 hover:scale-102 transition duration-500">
         </div>
 
         <!-- SECCIÓN 1: COMPRAR NÚMEROS EN LA APP -->
