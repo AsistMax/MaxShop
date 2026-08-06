@@ -13,7 +13,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="26.0.0"
+    version="27.0.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -221,7 +221,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         </div>
     </div>
 
-    <!-- HEADER OFICIAL CON TU LOGOTIPO LIMPIO ARRIBA -->
+    <!-- HEADER OFICIAL CON EL LOGOTIPO ARRIBA -->
     <header class="sticky top-0 z-40 bg-[#0A1128]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
@@ -247,7 +247,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         
         {alerta_box}
 
-        <!-- HERO / BANNER PRINCIPAL GIGANTE ARRIBA DE TODO -->
+        <!-- BANNER GRANDE EN LA PARTE SUPERIOR -->
         <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center overflow-hidden">
             <div class="max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-slate-700">
                 <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Banner Gigante" class="w-full h-auto object-cover opacity-95 hover:scale-102 transition duration-500">
@@ -352,7 +352,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
 
     </main>
 
-    <!-- MODAL DE REGISTRO / SUSCRIPCIÓN A PANTALLA COMPLETA -->
+    <!-- MODAL DE REGISTRO -->
     <div id="modalRegistro" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-[#101833] border border-slate-700 rounded-3xl max-w-xl w-full p-8 sm:p-10 shadow-2xl space-y-6 relative my-8">
             <button onclick="cerrarModalRegistro()" class="absolute top-6 right-6 text-slate-400 hover:text-white text-xl font-bold bg-slate-900 w-10 h-10 rounded-full flex items-center justify-center border border-slate-800">✕</button>
