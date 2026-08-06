@@ -221,7 +221,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         </div>
     </div>
 
-    <!-- HEADER OFICIAL CON TU LOGO DE DRIVE -->
+    <!-- HEADER OFICIAL CON TU LOGO ARRIBA -->
     <header class="sticky top-0 z-40 bg-[#0A1128]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
@@ -247,10 +247,10 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         
         {alerta_box}
 
-        <!-- HERO / BANNER PRINCIPAL CON TU ILUSTRACIÓN DE DRIVE -->
+        <!-- HERO / BANNER PRINCIPAL MÁS GRANDE E INTEGRADO ARRIBA -->
         <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center overflow-hidden">
-            <div class="max-w-4xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-slate-700">
-                <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Banner Principal" class="w-full h-auto object-cover opacity-95 hover:scale-105 transition duration-500">
+            <div class="max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-slate-700">
+                <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Banner Gigante" class="w-full h-auto object-cover opacity-95 hover:scale-102 transition duration-500">
             </div>
             <div class="max-w-3xl mx-auto space-y-4">
                 <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-4 py-2 rounded-full border border-orange-500/20 uppercase shadow">
