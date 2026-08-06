@@ -13,7 +13,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="30.0.0"
+    version="25.0.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -221,13 +221,13 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         </div>
     </div>
 
-    <!-- HEADER OFICIAL CON EL LOGOTIPO ORIGINAL -->
+    <!-- HEADER OFICIAL -->
     <header class="sticky top-0 z-40 bg-[#0A1128]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
-                <a href="/">
-                    <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Logo" class="h-10 sm:h-12 w-auto object-contain">
-                </a>
+                <div class="text-2xl sm:text-3xl font-black tracking-tighter text-white flex items-center gap-2">
+                    Max<span class="text-orange-500">%</span>Shop
+                </div>
             </div>
             <nav class="hidden md:flex items-center space-x-6 text-xs font-bold text-slate-300">
                 <a href="#comprar" class="hover:text-orange-400 transition">Comprar Números</a>
@@ -247,16 +247,16 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         
         {alerta_box}
 
-        <!-- TARJETA PRINCIPAL DEL POZO ACUMULADO -->
-        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-8 md:p-14 shadow-2xl space-y-6 text-center overflow-hidden">
+        <!-- HERO / BANNER PRINCIPAL -->
+        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center">
             <div class="max-w-3xl mx-auto space-y-4">
                 <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-4 py-2 rounded-full border border-orange-500/20 uppercase shadow">
-                    <span>🔥</span> <span>CLUB DE BENEFICIOS, COBERTURA Y SORTEOS SEMANALES</span>
+                    <span>🔥</span> <span>Club de Beneficios, Cobertura y Sorteos Semanales</span>
                 </span>
                 <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
                     Pozo Acumulado <span class="text-orange-500">${pozo_actual:,.0f}</span>
                 </h1>
-                <p class="text-slate-300 text-sm leading-relaxed max-w-xl mx-auto">Disfruta de la red de comercios más grande, obtén cobertura de hasta 30 millones y participa por el bolillero dominical.</p>
+                <p class="text-slate-300 text-sm leading-relaxed">Disfruta de la red de comercios más grande, obtén cobertura de hasta 30 millones y participa por el bolillero dominical.</p>
             </div>
         </div>
 
@@ -349,7 +349,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
 
     </main>
 
-    <!-- MODAL DE REGISTRO -->
+    <!-- MODAL DE REGISTRO / SUSCRIPCIÓN A PANTALLA COMPLETA -->
     <div id="modalRegistro" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-[#101833] border border-slate-700 rounded-3xl max-w-xl w-full p-8 sm:p-10 shadow-2xl space-y-6 relative my-8">
             <button onclick="cerrarModalRegistro()" class="absolute top-6 right-6 text-slate-400 hover:text-white text-xl font-bold bg-slate-900 w-10 h-10 rounded-full flex items-center justify-center border border-slate-800">✕</button>
