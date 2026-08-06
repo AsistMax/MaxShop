@@ -13,7 +13,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="27.0.0"
+    version="28.0.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -247,20 +247,26 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         
         {alerta_box}
 
-        <!-- BANNER GRANDE EN LA PARTE SUPERIOR -->
+        <!-- TARJETA PRINCIPAL CON EL LOGO ANTERIOR Y EL POZO ACUMULADO -->
         <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center overflow-hidden">
-            <div class="max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-slate-700">
-                <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Banner Gigante" class="w-full h-auto object-cover opacity-95 hover:scale-102 transition duration-500">
+            <div class="max-w-md mx-auto bg-white rounded-3xl p-6 shadow-2xl border border-slate-200">
+                <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Logo Anterior" class="w-full h-auto object-contain hover:scale-102 transition duration-500">
             </div>
+            
             <div class="max-w-3xl mx-auto space-y-4">
                 <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-4 py-2 rounded-full border border-orange-500/20 uppercase shadow">
-                    <span>🔥</span> <span>Club de Beneficios, Cobertura y Sorteos Semanales</span>
+                    <span>🔥</span> <span>CLUB DE BENEFICIOS, COBERTURA Y SORTEOS SEMANALES</span>
                 </span>
                 <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
                     Pozo Acumulado <span class="text-orange-500">${pozo_actual:,.0f}</span>
                 </h1>
                 <p class="text-slate-300 text-sm leading-relaxed">Disfruta de la red de comercios más grande, obtén cobertura de hasta 30 millones y participa por el bolillero dominical.</p>
             </div>
+        </div>
+
+        <!-- BANNER GRANDE UBICADO JUSTO ABAJO DEL POZO -->
+        <div class="max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-slate-700">
+            <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Banner Grande" class="w-full h-auto object-cover opacity-95 hover:scale-102 transition duration-500">
         </div>
 
         <!-- SECCIÓN 1: COMPRAR NÚMEROS EN LA APP -->
