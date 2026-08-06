@@ -221,7 +221,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         </div>
     </div>
 
-    <!-- HEADER OFICIAL -->
+    <!-- HEADER OFICIAL CON LOGOTIPO / BANNER SUPERIOR -->
     <header class="sticky top-0 z-40 bg-[#0A1128]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
@@ -247,8 +247,11 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         
         {alerta_box}
 
-        <!-- HERO / BANNER PRINCIPAL -->
-        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center">
+        <!-- HERO / BANNER PRINCIPAL (Aquí puedes colocar tu primera imagen o banner principal) -->
+        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center overflow-hidden">
+            <!-- Si deseas usar una imagen como banner principal, puedes descomentar la siguiente línea y colocar la ruta: -->
+            <!-- <img src="/static/uploads/tu_banner_1.jpg" alt="Banner Principal" class="w-full h-64 object-cover rounded-2xl mb-6"> -->
+            
             <div class="max-w-3xl mx-auto space-y-4">
                 <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-4 py-2 rounded-full border border-orange-500/20 uppercase shadow">
                     <span>🔥</span> <span>Club de Beneficios, Cobertura y Sorteos Semanales</span>
@@ -257,6 +260,20 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                     Pozo Acumulado <span class="text-orange-500">${pozo_actual:,.0f}</span>
                 </h1>
                 <p class="text-slate-300 text-sm leading-relaxed">Disfruta de la red de comercios más grande, obtén cobertura de hasta 30 millones y participa por el bolillero dominical.</p>
+            </div>
+        </div>
+
+        <!-- SEGUNDO BANNER (Aquí puedes colocar la segunda imagen adaptada como banner) -->
+        <div class="relative bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl overflow-hidden">
+            <!-- Si deseas usar tu segunda imagen como banner secundario, puedes descomentar y ajustar aquí: -->
+            <!-- <img src="/static/uploads/tu_banner_2.jpg" alt="Banner Secundario" class="w-full h-48 object-cover rounded-2xl mb-4"> -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="space-y-2 text-center md:text-left">
+                    <span class="text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase border border-orange-500/20">Banner de Promoción</span>
+                    <h3 class="text-2xl font-black text-white">¡Nuevos Beneficios Disponibles en Tu Zona!</h3>
+                    <p class="text-xs text-slate-400">Aprovecha cupones exclusivos de nuestra red de comercios adheridos.</p>
+                </div>
+                <a href="#comercios" class="bg-orange-500 hover:bg-orange-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-xs uppercase shadow-lg transition">Ver Comercios</a>
             </div>
         </div>
 
