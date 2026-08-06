@@ -13,7 +13,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="29.0.0"
+    version="30.0.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -221,12 +221,12 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         </div>
     </div>
 
-    <!-- HEADER OFICIAL CON EL LOGOTIPO -->
+    <!-- HEADER OFICIAL CON EL LOGOTIPO ORIGINAL -->
     <header class="sticky top-0 z-40 bg-[#0A1128]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
                 <a href="/">
-                    <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="Max%Shop Logo" class="h-10 sm:h-12 w-auto object-contain">
+                    <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Logo" class="h-10 sm:h-12 w-auto object-contain">
                 </a>
             </div>
             <nav class="hidden md:flex items-center space-x-6 text-xs font-bold text-slate-300">
@@ -247,12 +247,8 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         
         {alerta_box}
 
-        <!-- TARJETA PRINCIPAL CON EL LOGO Y EL POZO ACUMULADO -->
-        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center overflow-hidden">
-            <div class="max-w-md mx-auto bg-white rounded-3xl p-6 shadow-2xl border border-slate-200">
-                <img src="https://lh3.googleusercontent.com/d/1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="Max%Shop Logo Principal" class="w-full h-auto object-contain hover:scale-102 transition duration-500">
-            </div>
-            
+        <!-- TARJETA PRINCIPAL DEL POZO ACUMULADO -->
+        <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-8 md:p-14 shadow-2xl space-y-6 text-center overflow-hidden">
             <div class="max-w-3xl mx-auto space-y-4">
                 <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-4 py-2 rounded-full border border-orange-500/20 uppercase shadow">
                     <span>🔥</span> <span>CLUB DE BENEFICIOS, COBERTURA Y SORTEOS SEMANALES</span>
@@ -260,7 +256,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                 <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
                     Pozo Acumulado <span class="text-orange-500">${pozo_actual:,.0f}</span>
                 </h1>
-                <p class="text-slate-300 text-sm leading-relaxed">Disfruta de la red de comercios más grande, obtén cobertura de hasta 30 millones y participa por el bolillero dominical.</p>
+                <p class="text-slate-300 text-sm leading-relaxed max-w-xl mx-auto">Disfruta de la red de comercios más grande, obtén cobertura de hasta 30 millones y participa por el bolillero dominical.</p>
             </div>
         </div>
 
