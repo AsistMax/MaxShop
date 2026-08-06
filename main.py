@@ -1,9 +1,9 @@
 import os
-from datetime import datetime, date
+from datetime import datetime
 from typing import Optional
 import mercadopago
 
-from fastapi import FastAPI, Depends, HTTPException, Form, Request, status, BackgroundTasks
+from fastapi import FastAPI, Form, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel, Session, create_engine, select
@@ -41,15 +41,15 @@ class Usuario(SQLModel, table=True):
     password: str
     dni: Optional[str] = None
     telefono: Optional[str] = None
-    estado_suscripcion: str = Field(default="Inactivo") # Inactivo, Activo
+    estado_suscripcion: str = Field(default="Inactivo")
     monto_suscripcion: float = Field(default=0.0)
 
 class Transaccion(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     usuario_id: int
-    tipo: str # "Numero_Bolillero" o "Suscripcion"
+    tipo: str
     monto: float
-    estado: str # "Pendiente", "approved", "rejected"
+    estado: str
     payment_id: Optional[str] = Field(default=None, index=True)
     fecha: str
 
@@ -84,22 +84,27 @@ def index():
     <html lang="es">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Max%Shop - Descuentos y Sorteos</title>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body class="bg-slate-900 text-slate-100 min-h-screen">
-        <header class="bg-slate-800 border-b border-slate-700 p-4 flex justify-between items-center px-8">
-            <h1 class="text-xl font-bold text-orange-400">Max % Shop</h1>
-            <a href="/login" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded font-bold text-sm">Registrarse / Ingresar</a>
+    <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
+        <header class="bg-slate-800 border-b border-slate-700 px-4 py-4 flex justify-between items-center w-full">
+            <h1 class="text-lg sm:text-xl font-bold text-orange-400">Max % Shop</h1>
+            <a href="/login" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded font-bold text-xs sm:text-sm transition">Registrarse / Ingresar</a>
         </header>
 
-        <main class="container mx-auto p-6 space-y-8">
-            <div class="bg-slate-800 border border-slate-700 rounded-xl p-12 text-center space-y-6 shadow-xl">
-                <h2 class="text-4xl font-extrabold text-white">Pozo Acumulado <span class="text-orange-400">$900,000</span></h2>
-                <p class="text-slate-300 max-w-xl mx-auto text-lg">Disfruta de la red de comercios más grande, obtén cobertura de hasta 30 millones y participa por el bolillero dominical de forma totalmente integrada y segura.</p>
-                <a href="/login" class="inline-block bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-bold text-lg shadow-lg">Comenzar Ahora</a>
+        <main class="container mx-auto px-4 py-8 flex-grow flex items-center justify-center">
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 sm:p-10 text-center space-y-6 shadow-xl w-full max-w-2xl mx-auto">
+                <h2 class="text-2xl sm:text-4xl font-extrabold text-white">Pozo Acumulado <span class="text-orange-400 block sm:inline">$900,000</span></h2>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed">Disfruta de la red de comercios más grande, obtén cobertura de hasta 30 millones y participa por el bolillero dominical de forma totalmente integrada y segura.</p>
+                <a href="/login" class="inline-block w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-bold text-base shadow-lg transition">Comenzar Ahora</a>
             </div>
         </main>
+        
+        <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800">
+            Max%Shop &copy; 2026 - Todos los derechos reservados.
+        </footer>
     </body>
     </html>
     """)
@@ -111,22 +116,23 @@ def login_get():
     <html lang="es">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Max%Shop - Ingreso</title>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body class="bg-slate-900 flex items-center justify-center h-screen text-slate-100">
-        <div class="bg-slate-800 p-8 rounded-xl shadow-2xl w-96 border border-slate-700 space-y-6">
+    <body class="bg-slate-900 flex items-center justify-center h-screen text-slate-100 px-4">
+        <div class="bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-sm border border-slate-700 space-y-6">
             <h2 class="text-2xl font-bold text-orange-400 text-center">Acceso a Socio</h2>
             <form action="/login" method="POST" class="space-y-4">
                 <div>
                     <label class="block text-sm mb-1 text-slate-300">Correo Electrónico</label>
-                    <input type="email" name="email" required class="w-full p-2 bg-slate-900 border border-slate-700 rounded text-white focus:outline-none focus:border-orange-500">
+                    <input type="email" name="email" required class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded text-white focus:outline-none focus:border-orange-500">
                 </div>
                 <div>
                     <label class="block text-sm mb-1 text-slate-300">Contraseña</label>
-                    <input type="password" name="password" required class="w-full p-2 bg-slate-900 border border-slate-700 rounded text-white focus:outline-none focus:border-orange-500">
+                    <input type="password" name="password" required class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded text-white focus:outline-none focus:border-orange-500">
                 </div>
-                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 py-2 rounded font-bold text-white transition">Ingresar / Registrarse</button>
+                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 py-2.5 rounded font-bold text-white transition">Ingresar / Registrarse</button>
             </form>
         </div>
     </body>
@@ -167,28 +173,27 @@ def dashboard(user_id: int):
         <html lang="es">
         <head>
             <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Panel de Socio - Max%Shop</title>
             <script src="https://cdn.tailwindcss.com"></script>
             <script src="https://sdk.mercadopago.com/js/v2"></script>
         </head>
         <body class="bg-slate-900 text-slate-100 min-h-screen">
-            <nav class="bg-slate-800 border-b border-slate-700 px-8 py-4 flex justify-between items-center">
-                <h1 class="text-xl font-bold text-orange-400">Panel de Socio: {user.nombre}</h1>
+            <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h1 class="text-lg font-bold text-orange-400">Panel: {user.nombre}</h1>
                 <div class="flex items-center space-x-4">
                     <span class="text-xs bg-slate-700 px-3 py-1 rounded-full text-slate-300">Estado: <strong class="text-emerald-400">{user.estado_suscripcion}</strong></span>
                     <a href="/" class="text-red-400 hover:text-red-300 font-semibold text-sm">Cerrar Sesión</a>
                 </div>
             </nav>
 
-            <main class="container mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Compra Bolillero -->
+            <main class="container mx-auto p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow space-y-4">
                     <h3 class="text-lg font-bold text-orange-300">Comprar Número Directo ($1.000)</h3>
                     <p class="text-sm text-slate-400">Participa en el pozo acumulado dominical abonando online.</p>
                     <button onclick="iniciarPago('Numero_Bolillero', 1000)" class="w-full bg-orange-500 hover:bg-orange-600 py-2.5 rounded font-bold text-white transition">Pagar Número ($1.000)</button>
                 </div>
 
-                <!-- Selección de Suscripción -->
                 <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow space-y-4">
                     <h3 class="text-lg font-bold text-orange-300">Gestión de Suscripción y Cobertura</h3>
                     <p class="text-sm text-slate-400">Selecciona tu nivel mensual:</p>
@@ -200,13 +205,11 @@ def dashboard(user_id: int):
                     <button onclick="iniciarSuscripcion()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded font-bold text-white transition">Suscribirse al Monto Seleccionado</button>
                 </div>
 
-                <!-- Checkout Bricks Container -->
                 <div class="md:col-span-2 bg-slate-800 p-6 rounded-xl border border-slate-700 shadow space-y-4">
                     <h3 class="text-lg font-bold text-white">Pasarela de Pago Integrada</h3>
                     <div id="paymentBrick_container" class="min-h-[350px]"></div>
                 </div>
 
-                <!-- Historial de Transacciones -->
                 <div class="md:col-span-2 bg-slate-800 p-6 rounded-xl border border-slate-700 shadow space-y-4">
                     <h3 class="text-lg font-bold text-white">Historial de Transacciones</h3>
                     <div class="overflow-x-auto">
@@ -256,7 +259,6 @@ def dashboard(user_id: int):
                             onReady: () => {{}},
                             onSubmit: (formData) => {{
                                 return new Promise((resolve, reject) => {{
-                                    // Enviamos los datos del brick junto al contexto del usuario
                                     fetch('/procesar_pago_brick', {{
                                         method: 'POST',
                                         headers: {{ 'Content-Type': 'application/json' }},
@@ -321,7 +323,6 @@ class PagoBrickRequest(BaseModel):
 
 @app.post("/procesar_pago_brick")
 def procesar_pago_brick(data: PagoBrickRequest):
-    # Procesar el pago directamente usando los datos recolectados por el Brick
     payment_response = sdk.payment().create(data.payment_data)
     payment = payment_response.get("response", {})
     
@@ -330,7 +331,6 @@ def procesar_pago_brick(data: PagoBrickRequest):
     hoy = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     with Session(engine) as session:
-        # Registrar la transacción en la base de datos de manera robusta
         nueva_transaccion = Transaccion(
             usuario_id=data.user_id,
             tipo=data.tipo,
@@ -341,7 +341,6 @@ def procesar_pago_brick(data: PagoBrickRequest):
         )
         session.add(nueva_transaccion)
 
-        # Si el pago se aprueba y es una suscripción, actualizamos el estado del usuario
         if status_pago == "approved" and data.tipo == "Suscripcion":
             user = session.get(Usuario, data.user_id)
             if user:
@@ -353,17 +352,7 @@ def procesar_pago_brick(data: PagoBrickRequest):
 
     return {"status": status_pago, "payment_id": payment_id}
 
-@app.post("/webhook")
-async def mercadopago_webhook(request: Request):
-    """
-    Webhook opcional para que Mercado Pago avise de forma asíncrona
-    el estado de los pagos al servidor.
-    """
-    body = await request.json()
-    if body.get("type") == "payment":
-        payment_id = body.get("data", {}).get("id")
-        if payment_id:
-            payment_info = sdk.payment().get(payment_id)
-            payment = payment_info.get("response", {})
-            # Aquí podrías sincronizar estados ante eventos externos
-    return {"status": "ok"}
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
