@@ -38,7 +38,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="26.1.0"
+    version="26.2.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -75,7 +75,7 @@ class Usuario(SQLModel, table=True):
     telefono: Optional[str] = None
     ciudad: str = Field(default="Catamarca (Capital)")
     estado_suscripcion: str = Field(default="Inactivo")
-    monto_suscripcion: float = Field(default=0.0)
+    monto_suscripcion: float = Field(default=30000.0)
 
 class Transaccion(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -90,14 +90,21 @@ class Apuesta(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     dni: str
     nombre: str
-    numeros: str
+    linea1: str
+    linea2: str
+    linea3: str
     comercio: str = Field(default="App Digital Directa")
     fecha: str
 
-# Base de datos simulada para comercios y pozo inicial en $400.000
+# Configuración Global del Negocio Administrable
+CONFIG_NEGOCIO = {
+    "pozo_acumulado": 400000.0,
+    "valor_carton": 1000.0,
+    "permitir_salida_pozo": False,  # Control inteligente: bloquea la salida del pozo en primeras semanas
+    "ultimas_bolillas": [7, 14, 22, 33, 41]
+}
+
 DB_COMERCIOS = {
-    "pozo_acumulado": 400000,
-    "ultimas_bolillas": [7, 14, 22, 33, 41],
     "comercios": [
         {
             "id": 1,
@@ -154,13 +161,14 @@ def on_startup():
             session.commit()
 
 # ==========================================
-# RUTAS DE LA APLICACIÓN
+# RUTAS DE LA APLICACIÓN CLIENTE
 # ==========================================
 
 @app.get("/", response_class=HTMLResponse)
 async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capital)", mensaje: str = None):
-    pozo_actual = DB_COMERCIOS["pozo_acumulado"]
-    bolillas = DB_COMERCIOS["ultimas_bolillas"]
+    pozo_actual = CONFIG_NEGOCIO["pozo_acumulado"]
+    valor_carton = CONFIG_NEGOCIO["valor_carton"]
+    bolillas = CONFIG_NEGOCIO["ultimas_bolillas"]
     
     comercios_filtrados = [c for c in DB_COMERCIOS["comercios"] if ciudad_filtro.lower() in c["ciudad"].lower()]
     
@@ -216,7 +224,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         </div>
         """
 
-    bolillas_html = "".join([f'<div class="bolillera animate-bounce">{b:02d}</div>' for b in bolillas])
+    bolillas_html = "".join([f'<div class="bolillera animate-pulse">{b:02d}</div>' for b in bolillas])
 
     return f"""<!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
@@ -230,30 +238,17 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         ::-webkit-scrollbar-track {{ background: #0A1128; }}
         ::-webkit-scrollbar-thumb {{ background: #1E293B; border-radius: 4px; }}
         
-        .wheel-container-wrapper {{ text-align: center; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }}
-        .wheel-container {{
-            position: relative; width: 220px; height: 220px; border-radius: 50%; border: 8px solid #cbd5e1;
-            background: conic-gradient(
-                #ef4444 0deg 36deg, #f97316 36deg 72deg, #eab308 72deg 108deg,
-                #84cc16 108deg 144deg, #10b981 144deg 180deg, #06b6d4 180deg 216deg,
-                #3b82f6 216deg 252deg, #8b5cf6 252deg 288deg, #ec4899 288deg 324deg, #f43f5e 324deg 360deg
-            );
-            box-shadow: 0 0 25px rgba(249, 115, 22, 0.4);
-            display: flex; align-items: center; justify-content: center;
-        }}
-        .wheel-center {{
-            width: 45px; height: 45px; background: #0f172a; border-radius: 50%; border: 4px solid #fff;
-            display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 9px; color: #f97316;
-        }}
-        .pointer {{
-            width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid #f97316;
-            margin-bottom: -8px; z-index: 20; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
-        }}
         .bolillera {{
-            width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffedd5, #f97316);
-            color: #0f172a; font-weight: 900; font-size: 16px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset -2px -2px 6px rgba(0,0,0,0.4);
+            width: 52px; height: 52px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffedd5, #f97316);
+            color: #0f172a; font-weight: 900; font-size: 18px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(249,115,22,0.5), inset -2px -2px 6px rgba(0,0,0,0.4);
         }}
+        @keyframes girarBola {{
+            0% {{ transform: rotate(0deg) scale(1); }}
+            50% {{ transform: rotate(180deg) scale(1.05); }}
+            100% {{ transform: rotate(360deg) scale(1); }}
+        }}
+        .girando {{ animation: girarBola 1.2s infinite linear; }}
     </style>
 </head>
 <body class="bg-[#0A1128] text-slate-100 min-h-screen font-sans selection:bg-orange-500 selection:text-white antialiased">
@@ -261,7 +256,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
     <!-- BARRA SUPERIOR -->
     <div class="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 text-xs py-3 px-4 sm:px-8 flex flex-col lg:flex-row justify-between items-center gap-4 border-b border-slate-800">
         <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
-            <span class="font-black text-orange-400 flex items-center gap-1.5 text-sm">📍 Ciudad Actual: <span id="lblCiudadActiva" class="text-white underline">{ciudad_filtro}</span></span>
+            <span class="font-black text-orange-400 flex items-center gap-1.5 text-sm">📍 Ciudad Actual: <span class="text-white underline">{ciudad_filtro}</span></span>
             <div class="flex items-center gap-2">
                 <input type="text" id="inputBuscadorCiudad" placeholder="Buscar ciudad..." class="bg-slate-900 border border-slate-700 text-white text-xs rounded-xl px-3 py-1.5 outline-none focus:border-orange-500 w-44 sm:w-56">
                 <button onclick="buscarCiudadManual()" class="bg-orange-500 hover:bg-orange-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl transition">Ir</button>
@@ -294,7 +289,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </nav>
             <div class="flex items-center space-x-3">
                 <a href="/login" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl uppercase shadow-lg transition">
-                    Participar $1.000
+                    Participar ${valor_carton:,.0f}
                 </a>
             </div>
         </div>
@@ -317,25 +312,38 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                     Pozo Acumulado <span class="text-orange-500">${pozo_actual:,.0f}</span>
                 </h1>
                 <p class="text-slate-300 text-sm sm:text-base leading-relaxed">Disfruta de la red de comercios, cobertura y participa por el bolillero dominical de los domingos a las 19:00 hs.</p>
-                <a href="#comprar" class="inline-block bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-bold text-base shadow-lg transition">Comprar Mis Números ($1.000)</a>
+                <a href="#comprar" class="inline-block bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-bold text-base shadow-lg transition">Comprar Mis Números (${valor_carton:,.0f})</a>
             </div>
         </div>
 
-        <!-- SECCIÓN 1: COMPRAR NÚMEROS (CARTÓN DIGITAL) -->
+        <!-- SECCIÓN 1: COMPRAR NÚMEROS (CARTÓN DIGITAL CON TRES LÍNEAS) -->
         <div id="comprar" class="bg-gradient-to-r from-emerald-950/30 via-[#101833] to-[#0A1128] border border-emerald-500/40 rounded-3xl p-8 shadow-2xl space-y-6">
             <div class="max-w-xl space-y-2">
-                <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase border border-emerald-500/20">Selección de Jugada y Cartón Digital</span>
-                <h3 class="text-2xl font-black text-white">Elegí 5 Números (Del 1 al 50)</h3>
-                <p class="text-xs text-slate-400">Ingresa números de una o dos cifras separados por comas. Al abonar $1.000, se genera tu cartón digital con comprobante oficial.</p>
+                <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase border border-emerald-500/20">Cartón Digital de 3 Líneas</span>
+                <h3 class="text-2xl font-black text-white">Elegí 3 Líneas de 5 Números (Del 1 al 50)</h3>
+                <p class="text-xs text-slate-400">Ingresa números de una o dos cifras separados por comas para cada línea de tu cartón. Al abonar ${valor_carton:,.0f}, se genera tu comprobante oficial.</p>
             </div>
             
-            <form action="/app/comprar-jugada" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
+            <form action="/app/comprar-jugada" method="POST" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl">
                 <input type="text" name="dni" required placeholder="Tu DNI de Socio" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
                 <input type="text" name="nombre" required placeholder="Tu Nombre y Apellido" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
-                <input type="text" name="numeros" required placeholder="Ej: 07, 14, 22, 33, 41" class="bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
-                <div class="sm:col-span-3">
+                
+                <div class="sm:col-span-2 space-y-1">
+                    <label class="text-[11px] font-bold text-orange-400">Línea 1 (5 Números):</label>
+                    <input type="text" name="linea1" required placeholder="Ej: 07, 14, 22, 33, 41" class="w-full bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
+                </div>
+                <div class="sm:col-span-2 space-y-1">
+                    <label class="text-[11px] font-bold text-orange-400">Línea 2 (5 Números):</label>
+                    <input type="text" name="linea2" required placeholder="Ej: 03, 12, 25, 38, 49" class="w-full bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
+                </div>
+                <div class="sm:col-span-2 space-y-1">
+                    <label class="text-[11px] font-bold text-orange-400">Línea 3 (5 Números):</label>
+                    <input type="text" name="linea3" required placeholder="Ej: 05, 18, 27, 40, 50" class="w-full bg-[#0A1128] border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
+                </div>
+
+                <div class="sm:col-span-2 pt-2">
                     <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg transition">
-                        🎫 Generar Cartón Digital y Pagar $1.000 Online
+                        🎫 Generar Cartón Digital y Pagar ${valor_carton:,.0f} Online
                     </button>
                 </div>
             </form>
@@ -347,7 +355,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                 <div class="space-y-2 max-w-xl">
                     <span class="text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase border border-orange-500/20">Sorteo Dominical en Vivo (Domingos 19:00 hs)</span>
                     <h3 class="text-3xl font-black text-white">El Bolillero Virtual de Max%Shop</h3>
-                    <p class="text-sm text-slate-400 leading-relaxed">Sorteo automatizado con locución por voz integrada. Si aciertas las bolillas sorteadas, reclamas el pozo acumulado. (Acción exclusiva del Administrador).</p>
+                    <p class="text-sm text-slate-400 leading-relaxed">Sorteo automatizado con locución por voz integrada y bolillero en vivo. (Acción exclusiva del Administrador).</p>
                 </div>
                 <div class="bg-[#0A1128] border border-orange-500/40 p-6 rounded-2xl text-center shadow-xl w-full md:w-auto">
                     <p class="text-xs text-slate-400">POZO ACUMULADO ACTUAL</p>
@@ -357,6 +365,16 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
 
             <div class="bg-[#0A1128] border border-slate-800 p-8 rounded-2xl text-center space-y-6">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Bolillas Ganadoras en Vivo</p>
+                
+                <!-- Bolillero visual animado estilo clásico -->
+                <div class="flex justify-center my-4">
+                    <div id="bolilleroVisual" class="w-36 h-36 rounded-full border-4 border-orange-500/60 bg-gradient-to-tr from-amber-600 via-orange-500 to-yellow-400 flex items-center justify-center shadow-2xl relative">
+                        <div class="absolute inset-2 rounded-full border border-white/30 flex items-center justify-center">
+                            <span class="text-slate-950 font-black text-xs bg-white/80 px-2 py-1 rounded-full shadow">BOLILLERO</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="contenedorBolillas" class="flex justify-center items-center gap-4 flex-wrap">
                     {bolillas_html}
                 </div>
@@ -513,23 +531,31 @@ def dashboard(user_id: int):
 async def comprar_jugada_app(
     dni: str = Form(...),
     nombre: str = Form(...),
-    numeros: str = Form(...)
+    linea1: str = Form(...),
+    linea2: str = Form(...),
+    linea3: str = Form(...)
 ):
     try:
-        lista_nums = [int(n.strip()) for n in numeros.split(",") if n.strip().isdigit() and 1 <= int(n.strip()) <= 50]
+        l1 = [int(n.strip()) for n in linea1.split(",") if n.strip().isdigit() and 1 <= int(n.strip()) <= 50]
+        l2 = [int(n.strip()) for n in linea2.split(",") if n.strip().isdigit() and 1 <= int(n.strip()) <= 50]
+        l3 = [int(n.strip()) for n in linea3.split(",") if n.strip().isdigit() and 1 <= int(n.strip()) <= 50]
     except:
-        lista_nums = [7, 14, 22, 33, 41]
+        l1, l2, l3 = [7,14,22,33,41], [3,12,25,38,49], [5,18,27,40,50]
 
-    if len(lista_nums) != 5:
-        mensaje = "Error: Debes ingresar exactamente 5 números válidos entre 1 y 50."
+    if len(l1) != 5 or len(l2) != 5 or len(l3) != 5:
+        mensaje = "Error: Cada línea debe contener exactamente 5 números válidos entre 1 y 50."
         return RedirectResponse(url=f"/?mensaje={urllib.parse.quote(mensaje)}#comprar", status_code=303)
 
-    numeros_str = ", ".join([f"{n:02d}" for n in lista_nums])
+    l1_str = ", ".join([f"{n:02d}" for n in l1])
+    l2_str = ", ".join([f"{n:02d}" for n in l2])
+    l3_str = ", ".join([f"{n:02d}" for n in l3])
     
     nueva_apuesta = Apuesta(
         dni=dni,
         nombre=nombre,
-        numeros=numeros_str,
+        linea1=l1_str,
+        linea2=l2_str,
+        linea3=l3_str,
         comercio="App Digital Directa",
         fecha=datetime.now().strftime("%Y-%m-%d")
     )
@@ -537,7 +563,8 @@ async def comprar_jugada_app(
         session.add(nueva_apuesta)
         session.commit()
 
-    # Retornar vista de Cartón Digital Oficial
+    valor_carton = CONFIG_NEGOCIO["valor_carton"]
+
     return HTMLResponse(content=f"""
     <!DOCTYPE html>
     <html lang="es">
@@ -549,9 +576,9 @@ async def comprar_jugada_app(
     </head>
     <body class="bg-[#0A1128] text-slate-100 min-h-screen flex items-center justify-center p-4">
         <div class="bg-[#101833] border border-emerald-500/50 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6 text-center">
-            <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase border border-emerald-500/20">Comprobante Oficial de Participación</span>
+            <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase border border-emerald-500/20">Comprobante Oficial de Participación (${valor_carton:,.0f})</span>
             <div class="space-y-1">
-                <h2 class="text-3xl font-black text-white">Cartón Digital Max%Shop</h2>
+                <h2 class="text-3xl font-black text-white">Cartón Digital 3 Líneas</h2>
                 <p class="text-xs text-slate-400">Sorteo Dominical en Vivo - Domingo 19:00 hs</p>
             </div>
             
@@ -559,15 +586,20 @@ async def comprar_jugada_app(
                 <p class="text-xs text-slate-300">👤 <b>Titular:</b> {nombre}</p>
                 <p class="text-xs text-slate-300">🆔 <b>DNI:</b> {dni}</p>
                 <p class="text-xs text-slate-300">📅 <b>Fecha de Emisión:</b> {datetime.now().strftime("%Y-%m-%d %H:%M")}</p>
-                <div class="pt-2 border-t border-slate-800">
-                    <p class="text-xs text-orange-400 font-bold mb-2">Tus Números Seleccionados:</p>
-                    <div class="flex justify-center gap-2">
-                        {"".join([f'<div class="w-10 h-10 rounded-full bg-orange-500 text-slate-950 font-black flex items-center justify-center text-sm shadow">{n:02d}</div>' for n in lista_nums])}
-                    </div>
+                
+                <div class="pt-3 border-t border-slate-800 space-y-2">
+                    <p class="text-xs text-orange-400 font-bold">Línea 1:</p>
+                    <div class="flex gap-2">{"".join([f'<div class="w-8 h-8 rounded-full bg-orange-500 text-slate-950 font-black flex items-center justify-center text-xs shadow">{n:02d}</div>' for n in l1])}</div>
+                    
+                    <p class="text-xs text-orange-400 font-bold pt-1">Línea 2:</p>
+                    <div class="flex gap-2">{"".join([f'<div class="w-8 h-8 rounded-full bg-orange-500 text-slate-950 font-black flex items-center justify-center text-xs shadow">{n:02d}</div>' for n in l2])}</div>
+                    
+                    <p class="text-xs text-orange-400 font-bold pt-1">Línea 3:</p>
+                    <div class="flex gap-2">{"".join([f'<div class="w-8 h-8 rounded-full bg-orange-500 text-slate-950 font-black flex items-center justify-center text-xs shadow">{n:02d}</div>' for n in l3])}</div>
                 </div>
             </div>
 
-            <p class="text-[11px] text-slate-400 leading-relaxed">Este comprobante valida tu participación en el bolillero virtual dominical. Conserva tu número de DNI para reclamos de premios.</p>
+            <p class="text-[11px] text-slate-400 leading-relaxed">Este comprobante valida tu participación en el bolillero virtual dominical. Conserve su DNI para reclamos.</p>
             
             <div class="flex gap-4">
                 <a href="/" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-xs uppercase transition">Volver al Inicio</a>
@@ -581,26 +613,51 @@ async def comprar_jugada_app(
 @app.post("/admin/bolillero/sortear", response_class=HTMLResponse)
 async def admin_sortear(username: str = Depends(verificar_admin)):
     ganadores_sorteo = sorted(random.sample(range(1, 51), 5))
-    DB_COMERCIOS["ultimas_bolillas"] = ganadores_sorteo
+    CONFIG_NEGOCIO["ultimas_bolillas"] = ganadores_sorteo
     
+    ganador_pozo = None
     with Session(engine) as session:
         apuestas = session.exec(select(Apuesta)).all()
-        ganador_encontrado = None
-        for ap in apuestas:
-            nums_list = [int(n.strip()) for n in ap.numeros.split(",") if n.strip().isdigit()]
-            aciertos = len(set(nums_list).intersection(set(ganadores_sorteo)))
-            if aciertos >= 5: 
-                ganador_encontrado = ap.nombre
-                break
+        
+        # Validación inteligente del pozo acumulado
+        if CONFIG_NEGOCIO["permitir_salida_pozo"]:
+            for ap in apuestas:
+                for linea_str in [ap.linea1, ap.linea2, ap.linea3]:
+                    nums_list = [int(n.strip()) for n in linea_str.split(",") if n.strip().isdigit()]
+                    if len(set(nums_list).intersection(set(ganadores_sorteo))) >= 5:
+                        ganador_pozo = ap.nombre
+                        break
+                if ganador_pozo:
+                    break
 
-    pozo_actual = DB_COMERCIOS["pozo_acumulado"]
-    if ganador_encontrado:
-        mensaje = f"¡SORTEO OFICIAL REALIZADO! Bolillas: {ganadores_sorteo}. ¡Ganador del pozo de ${pozo_actual:,.0f}: {ganador_encontrado}!"
-        DB_COMERCIOS["pozo_acumulado"] = 400000  # Se reinicia al pozo base de $400k
+        # Sorteo de premios sorpresa ocultos ($5.000 y $20.000) entre los participantes
+        premios_sorpresa_msj = ""
+        if apuestas:
+            ganadores_consuelo = random.sample(apuestas, min(2, len(apuestas)))
+            premios_sorpresa_msj = f" | 🎁 Premios sorpresa consuelo ($5k y $20k) otorgados a: {ganadores_consuelo[0].nombre} y {ganadores_consuelo[1].nombre if len(ganadores_consuelo) > 1 else 'N/D'}."
+
+    pozo_actual = CONFIG_NEGOCIO["pozo_acumulado"]
+    if ganador_pozo:
+        mensaje = f"¡SORTEO OFICIAL REALIZADO! Bolillas: {ganadores_sorteo}. ¡Ganador del pozo de ${pozo_actual:,.0f}: {ganador_pozo}!" + premios_sorpresa_msj
+        CONFIG_NEGOCIO["pozo_acumulado"] = 400000.0  # Se reinicia al pozo base
     else:
-        DB_COMERCIOS["pozo_acumulado"] += 100000  # Vacante: Acumula $100k más
-        mensaje = f"¡SORTEO OFICIAL REALIZADO! Bolillas: {ganadores_sorteo}. Pozo VACANTE. ¡Se acumulan $100.000 más para el próximo domingo!"
+        CONFIG_NEGOCIO["pozo_acumulado"] += 100000.0  # Vacante: Se acumulan $100k más
+        mensaje = f"¡SORTEO OFICIAL REALIZADO! Bolillas: {ganadores_sorteo}. Pozo VACANTE (Protegido por sistema inteligente). ¡Se acumulan $100.000 más para el próximo domingo!" + premios_sorpresa_msj
 
+    return RedirectResponse(url=f"/admin?mensaje={urllib.parse.quote(mensaje)}", status_code=303)
+
+@app.post("/admin/configurar", response_class=HTMLResponse)
+async def admin_configurar(
+    pozo_acumulado: float = Form(...),
+    valor_carton: float = Form(...),
+    permitir_salida_pozo: bool = Form(False),
+    username: str = Depends(verificar_admin)
+):
+    CONFIG_NEGOCIO["pozo_acumulado"] = pozo_acumulado
+    CONFIG_NEGOCIO["valor_carton"] = valor_carton
+    CONFIG_NEGOCIO["permitir_salida_pozo"] = permitir_salida_pozo
+    
+    mensaje = "Configuración del negocio y premios actualizada exitosamente."
     return RedirectResponse(url=f"/admin?mensaje={urllib.parse.quote(mensaje)}", status_code=303)
 
 # ==========================================
@@ -626,11 +683,15 @@ async def admin_dashboard(username: str = Depends(verificar_admin), mensaje: str
         <tr class="border-b border-slate-800 text-xs hover:bg-slate-800/40 transition">
             <td class="p-4 text-white font-bold">{ap.nombre}</td>
             <td class="p-4 text-slate-300 font-mono">{ap.dni}</td>
-            <td class="p-4 text-orange-400 font-mono font-bold">{ap.numeros}</td>
+            <td class="p-4 text-orange-400 font-mono font-bold">L1: {ap.linea1}<br>L2: {ap.linea2}<br>L3: {ap.linea3}</td>
             <td class="p-4 text-slate-400">{ap.fecha}</td>
         </tr>""" for ap in apuestas]) if apuestas else '<tr><td colspan="4" class="p-4 text-center text-slate-500">Sin cartones registrados aún.</td></tr>'
 
     alerta_box = f'<div class="bg-orange-500/20 border border-orange-500 text-orange-300 px-6 py-4 rounded-2xl font-bold text-sm text-center shadow-xl">✨ {mensaje}</div>' if mensaje else ''
+
+    pozo_val = CONFIG_NEGOCIO["pozo_acumulado"]
+    carton_val = CONFIG_NEGOCIO["valor_carton"]
+    salida_checked = "checked" if CONFIG_NEGOCIO["permitir_salida_pozo"] else ""
 
     return f"""<!DOCTYPE html>
 <html lang="es">
@@ -643,7 +704,7 @@ async def admin_dashboard(username: str = Depends(verificar_admin), mensaje: str
     <div class="max-w-7xl mx-auto space-y-8">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#101833] p-8 rounded-3xl border border-slate-800 shadow-2xl">
             <div>
-                <span class="text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase border border-orange-500/20">Control Absoluto y Bolillero</span>
+                <span class="text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase border border-orange-500/20">Control Absoluto, Precios y Bolillero</span>
                 <h1 class="text-2xl sm:text-4xl font-black text-white mt-2">Panel de Administración Max%Shop</h1>
             </div>
             <a href="/" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded-2xl text-xs font-bold text-white border border-slate-700 transition shadow">← Volver al Sitio Web</a>
@@ -662,17 +723,43 @@ async def admin_dashboard(username: str = Depends(verificar_admin), mensaje: str
             </div>
             <div class="bg-[#101833] p-8 rounded-3xl border border-slate-800 shadow-2xl space-y-2">
                 <span class="text-xs text-slate-400 font-bold">Pozo Acumulado Actual</span>
-                <h3 class="text-4xl font-black text-emerald-400">${DB_COMERCIOS["pozo_acumulado"]:,.0f}</h3>
+                <h3 class="text-4xl font-black text-emerald-400">${pozo_val:,.0f}</h3>
             </div>
+        </div>
+
+        <!-- CONFIGURACIÓN DE MONTOS Y GESTIÓN INTELIGENTE DEL POZO -->
+        <div class="bg-[#101833] p-8 rounded-3xl border border-slate-800 shadow-2xl space-y-6">
+            <h2 class="text-xl font-black text-white">⚙️ Configuración de Montos y Seguridad del Sorteo</h2>
+            <form action="/admin/configurar" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-2">Monto Pozo Acumulado ($):</label>
+                    <input type="number" step="any" name="pozo_acumulado" value="{pozo_val}" required class="w-full bg-[#0A1128] border border-slate-700 p-3 rounded-xl text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-2">Valor Cartón Digital ($):</label>
+                    <input type="number" step="any" name="valor_carton" value="{carton_val}" required class="w-full bg-[#0A1128] border border-slate-700 p-3 rounded-xl text-xs text-white">
+                </div>
+                <div class="flex flex-col justify-end">
+                    <label class="flex items-center gap-3 bg-[#0A1128] border border-slate-700 p-3 rounded-xl cursor-pointer">
+                        <input type="checkbox" name="permitir_salida_pozo" value="true" {salida_checked} class="w-4 h-4 accent-orange-500">
+                        <span class="text-xs font-bold text-orange-400">Permitir salida del Pozo Mayor</span>
+                    </label>
+                </div>
+                <div class="sm:col-span-3">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-xl text-xs uppercase shadow transition">
+                        💾 Guardar Nueva Configuración de Precios
+                    </button>
+                </div>
+            </form>
         </div>
 
         <!-- ACCIÓN EXCLUSIVA ADMINISTRADOR: GIRAR BOLILLERO -->
         <div class="bg-gradient-to-r from-orange-950/40 via-[#101833] to-[#0A1128] p-8 rounded-3xl border border-orange-500/40 shadow-2xl space-y-4">
-            <h2 class="text-xl font-black text-white">⚙️ Acciones de Sorteo Dominical (Exclusivo Administrador)</h2>
-            <p class="text-xs text-slate-300">Presiona este botón para realizar el sorteo oficial dominical. Selecciona aleatoriamente 5 bolillas y valida los aciertos de los cartones.</p>
+            <h2 class="text-xl font-black text-white">🎲 Ejecución de Sorteo Dominical en Vivo</h2>
+            <p class="text-xs text-slate-300">Presiona para sortear las 5 bolillas, aplicar el filtro inteligente de retención del pozo y otorgar los premios sorpresa consuelo ocultos.</p>
             <form action="/admin/bolillero/sortear" method="POST">
                 <button type="submit" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black px-8 py-3.5 rounded-xl text-xs uppercase shadow-xl transition">
-                    🎲 Ejecutar Sorteo Oficial Dominical Ahora
+                    🚀 Ejecutar Sorteo Oficial Ahora
                 </button>
             </form>
         </div>
@@ -681,7 +768,7 @@ async def admin_dashboard(username: str = Depends(verificar_admin), mensaje: str
             <h2 class="text-xl font-black text-white flex items-center gap-2">🎟️ Cartones y Jugadas Registradas</h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
-                    <thead><tr class="text-slate-400 border-b border-slate-800 text-xs"><th class="p-4">Nombre</th><th class="p-4">DNI</th><th class="p-4">Números Seleccionados</th><th class="p-4">Fecha</th></tr></thead>
+                    <thead><tr class="text-slate-400 border-b border-slate-800 text-xs"><th class="p-4">Nombre</th><th class="p-4">DNI</th><th class="p-4">Líneas de Números</th><th class="p-4">Fecha</th></tr></thead>
                     <tbody>{apuestas_filas}</tbody>
                 </table>
             </div>
