@@ -38,7 +38,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="26.4.0"
+    version="26.5.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -100,7 +100,8 @@ CONFIG_NEGOCIO = {
     "pozo_acumulado": 400000.0,
     "valor_carton": 1000.0,
     "permitir_salida_pozo": False,
-    "ultimas_bolillas": [7, 14, 22, 33, 41]
+    # 15 bolillas ganadoras divididas en 3 líneas de 5
+    "ultimas_bolillas": [7, 14, 22, 33, 41, 3, 12, 25, 38, 49, 5, 18, 27, 40, 50]
 }
 
 DB_COMERCIOS = {
@@ -223,7 +224,26 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         </div>
         """
 
-    bolillas_html = "".join([f'<div class="bolillera">{b:02d}</div>' for b in bolillas])
+    # Dividimos las 15 bolillas en 3 líneas de 5 elementos cada una
+    linea1_bolillas = bolillas[0:5]
+    linea2_bolillas = bolillas[5:10]
+    linea3_bolillas = bolillas[10:15]
+
+    def generar_fila_bolillas(nums):
+        return "".join([f'<div class="bolillera">{n:02d}</div>' for n in nums])
+
+    bolillas_html = f"""
+    <div class="space-y-3">
+        <div class="text-[11px] font-bold text-orange-400 uppercase tracking-widest">Línea 1</div>
+        <div class="flex justify-center items-center gap-3 flex-wrap">{generar_fila_bolillas(linea1_bolillas)}</div>
+        
+        <div class="text-[11px] font-bold text-orange-400 uppercase tracking-widest pt-2">Línea 2</div>
+        <div class="flex justify-center items-center gap-3 flex-wrap">{generar_fila_bolillas(linea2_bolillas)}</div>
+        
+        <div class="text-[11px] font-bold text-orange-400 uppercase tracking-widest pt-2">Línea 3</div>
+        <div class="flex justify-center items-center gap-3 flex-wrap">{generar_fila_bolillas(linea3_bolillas)}</div>
+    </div>
+    """
 
     return f"""<!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
@@ -238,12 +258,12 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         ::-webkit-scrollbar-thumb {{ background: #1E293B; border-radius: 4px; }}
         
         .bolillera {{
-            width: 52px; height: 52px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffedd5, #f97316);
-            color: #0f172a; font-weight: 900; font-size: 18px; display: flex; align-items: center; justify-content: center;
+            width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffedd5, #f97316);
+            color: #0f172a; font-weight: 900; font-size: 16px; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 15px rgba(249,115,22,0.5), inset -2px -2px 6px rgba(0,0,0,0.4);
         }}
 
-        /* BOLILLERO VIRTUAL 3D CON SOPORTE Y REBOTE CAÓTICO */
+        /* BOLILLERO VIRTUAL 3D CON MÁS BOLILLAS Y SOPORTE */
         .bolillero-wrapper {{
             display: flex;
             flex-direction: column;
@@ -252,14 +272,14 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         }}
         .cage-container {{
             position: relative;
-            width: 170px;
-            height: 170px;
+            width: 180px;
+            height: 180px;
         }}
         .bolillero-cage {{
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), rgba(0,0,0,0.7));
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), rgba(0,0,0,0.75));
             border: 4px solid #f59e0b;
             box-shadow: 0 0 25px rgba(245, 158, 11, 0.4), inset 0 0 20px rgba(0,0,0,0.9);
             position: relative;
@@ -293,30 +313,34 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         .inner-balls {{
             position: absolute;
             inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }}
         .mini-ball {{
             position: absolute;
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, #ffffff, #f97316);
             color: #000;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 900;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 6px rgba(0,0,0,0.6);
         }}
-        /* Animaciones individuales de rebote caótico */
-        .mb-1 {{ animation: rebotar1 2.2s infinite ease-in-out; top: 30%; left: 25%; }}
-        .mb-2 {{ animation: rebotar2 1.8s infinite ease-in-out; top: 60%; left: 40%; }}
-        .mb-3 {{ animation: rebotar3 2.5s infinite ease-in-out; top: 20%; left: 60%; }}
-        .mb-4 {{ animation: rebotar1 2.0s infinite ease-in-out; top: 55%; left: 65%; }}
-        .mb-5 {{ animation: rebotar2 2.7s infinite ease-in-out; top: 40%; left: 45%; }}
+        /* 12 mini bolillas con animaciones y posiciones dispersas */
+        .mb-1  {{ animation: rebotar1 2.2s infinite ease-in-out; top: 25%; left: 20%; }}
+        .mb-2  {{ animation: rebotar2 1.8s infinite ease-in-out; top: 55%; left: 35%; }}
+        .mb-3  {{ animation: rebotar3 2.5s infinite ease-in-out; top: 15%; left: 55%; }}
+        .mb-4  {{ animation: rebotar1 2.0s infinite ease-in-out; top: 50%; left: 65%; }}
+        .mb-5  {{ animation: rebotar2 2.7s infinite ease-in-out; top: 35%; left: 40%; }}
+        .mb-6  {{ animation: rebotar3 2.1s infinite ease-in-out; top: 70%; left: 25%; }}
+        .mb-7  {{ animation: rebotar1 2.4s infinite ease-in-out; top: 20%; left: 38%; }}
+        .mb-8  {{ animation: rebotar2 1.9s infinite ease-in-out; top: 65%; left: 55%; }}
+        .mb-9  {{ animation: rebotar3 2.3s infinite ease-in-out; top: 40%; left: 15%; }}
+        .mb-10 {{ animation: rebotar1 2.6s infinite ease-in-out; top: 75%; left: 45%; }}
+        .mb-11 {{ animation: rebotar2 2.0s infinite ease-in-out; top: 30%; left: 70%; }}
+        .mb-12 {{ animation: rebotar3 2.2s infinite ease-in-out; top: 50%; left: 50%; }}
 
         @keyframes girarJaula {{
             0% {{ transform: rotate(0deg); }}
@@ -324,23 +348,23 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         }}
         @keyframes rebotar1 {{
             0% {{ transform: translate(0, 0) scale(1); }}
-            25% {{ transform: translate(15px, -20px) scale(1.05); }}
-            50% {{ transform: translate(-10px, 15px) scale(0.95); }}
-            75% {{ transform: translate(20px, 10px) scale(1.02); }}
+            25% {{ transform: translate(14px, -18px) scale(1.05); }}
+            50% {{ transform: translate(-10px, 14px) scale(0.95); }}
+            75% {{ transform: translate(18px, 10px) scale(1.02); }}
             100% {{ transform: translate(0, 0) scale(1); }}
         }}
         @keyframes rebotar2 {{
             0% {{ transform: translate(0, 0) scale(1); }}
-            30% {{ transform: translate(-18px, -15px) scale(0.98); }}
-            60% {{ transform: translate(15px, -25px) scale(1.06); }}
-            90% {{ transform: translate(-10px, 20px) scale(0.95); }}
+            30% {{ transform: translate(-16px, -14px) scale(0.98); }}
+            60% {{ transform: translate(14px, -22px) scale(1.06); }}
+            90% {{ transform: translate(-8px, 18px) scale(0.95); }}
             100% {{ transform: translate(0, 0) scale(1); }}
         }}
         @keyframes rebotar3 {{
             0% {{ transform: translate(0, 0) scale(1); }}
-            20% {{ transform: translate(22px, 15px) scale(1.04); }}
-            50% {{ transform: translate(-15px, -20px) scale(0.96); }}
-            80% {{ transform: translate(10px, 22px) scale(1.02); }}
+            20% {{ transform: translate(20px, 14px) scale(1.04); }}
+            50% {{ transform: translate(-14px, -18px) scale(0.96); }}
+            80% {{ transform: translate(8px, 20px) scale(1.02); }}
             100% {{ transform: translate(0, 0) scale(1); }}
         }}
 
@@ -481,7 +505,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             <div class="bg-[#0A1128] border border-slate-800 p-8 rounded-2xl text-center space-y-6">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">BOLILLERO</p>
                 
-                <!-- Bolillero 3D con Soporte y Bolillas Rebotando Caóticamente -->
+                <!-- Bolillero 3D con Soporte y 12 Bolillas Rebotando -->
                 <div class="bolillero-wrapper">
                     <div class="cage-container">
                         <div class="bolillero-cage">
@@ -493,6 +517,13 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                                 <div class="mini-ball mb-3">19</div>
                                 <div class="mini-ball mb-4">28</div>
                                 <div class="mini-ball mb-5">35</div>
+                                <div class="mini-ball mb-6">08</div>
+                                <div class="mini-ball mb-7">15</div>
+                                <div class="mini-ball mb-8">23</div>
+                                <div class="mini-ball mb-9">31</div>
+                                <div class="mini-ball mb-10">42</div>
+                                <div class="mini-ball mb-11">47</div>
+                                <div class="mini-ball mb-12">50</div>
                             </div>
                         </div>
                     </div>
@@ -501,8 +532,8 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                     </div>
                 </div>
 
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest pt-4">Bolillas Ganadoras Extraídas</p>
-                <div id="contenedorBolillas" class="flex justify-center items-center gap-4 flex-wrap">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest pt-4">Bolillas Ganadoras Extraídas (3 Líneas de 5)</p>
+                <div id="contenedorBolillas" class="space-y-4">
                     {bolillas_html}
                 </div>
                 
@@ -740,7 +771,8 @@ async def comprar_jugada_app(
 
 @app.post("/admin/bolillero/sortear", response_class=HTMLResponse)
 async def admin_sortear(username: str = Depends(verificar_admin)):
-    ganadores_sorteo = sorted(random.sample(range(1, 51), 5))
+    # Genera 15 bolillas únicas sorteadas del 1 al 50
+    ganadores_sorteo = sorted(random.sample(range(1, 51), 15))
     CONFIG_NEGOCIO["ultimas_bolillas"] = ganadores_sorteo
     
     ganador_pozo = None
@@ -764,11 +796,11 @@ async def admin_sortear(username: str = Depends(verificar_admin)):
 
     pozo_actual = CONFIG_NEGOCIO["pozo_acumulado"]
     if ganador_pozo:
-        mensaje = f"¡SORTEO OFICIAL REALIZADO! Bolillas: {ganadores_sorteo}. ¡Ganador del pozo de ${pozo_actual:,.0f}: {ganador_pozo}!" + premios_sorpresa_msj
+        mensaje = f"¡SORTEO OFICIAL REALIZADO! 15 Bolillas sorteadas. ¡Ganador del pozo de ${pozo_actual:,.0f}: {ganador_pozo}!" + premios_sorpresa_msj
         CONFIG_NEGOCIO["pozo_acumulado"] = 400000.0
     else:
         CONFIG_NEGOCIO["pozo_acumulado"] += 100000.0
-        mensaje = f"¡SORTEO OFICIAL REALIZADO! Bolillas: {ganadores_sorteo}. Pozo VACANTE. ¡Se acumulan $100.000 más para el próximo domingo!" + premios_sorpresa_msj
+        mensaje = f"¡SORTEO OFICIAL REALIZADO! 15 Bolillas sorteadas. Pozo VACANTE. ¡Se acumulan $100.000 más para el próximo domingo!" + premios_sorpresa_msj
 
     return RedirectResponse(url=f"/admin?mensaje={urllib.parse.quote(mensaje)}", status_code=303)
 
@@ -880,7 +912,7 @@ async def admin_dashboard(username: str = Depends(verificar_admin), mensaje: str
 
         <div class="bg-gradient-to-r from-orange-950/40 via-[#101833] to-[#0A1128] p-8 rounded-3xl border border-orange-500/40 shadow-2xl space-y-4">
             <h2 class="text-xl font-black text-white">🎲 Ejecución de Sorteo Dominical en Vivo</h2>
-            <p class="text-xs text-slate-300">Presiona para sortear las 5 bolillas, aplicar el filtro inteligente de retención del pozo y otorgar los premios sorpresa ocultos ($5k y $20k).</p>
+            <p class="text-xs text-slate-300">Presiona para sortear las 15 bolillas (3 líneas de 5), aplicar el filtro inteligente de retención del pozo y otorgar los premios sorpresa ocultos ($5k y $20k).</p>
             <form action="/admin/bolillero/sortear" method="POST">
                 <button type="submit" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black px-8 py-3.5 rounded-xl text-xs uppercase shadow-xl transition">
                     🚀 Ejecutar Sorteo Oficial Ahora
