@@ -38,7 +38,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="26.2.0"
+    version="26.3.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -100,7 +100,7 @@ class Apuesta(SQLModel, table=True):
 CONFIG_NEGOCIO = {
     "pozo_acumulado": 400000.0,
     "valor_carton": 1000.0,
-    "permitir_salida_pozo": False,  # Control inteligente: bloquea la salida del pozo en primeras semanas
+    "permitir_salida_pozo": False,  # Control inteligente: protege el pozo en primeras semanas
     "ultimas_bolillas": [7, 14, 22, 33, 41]
 }
 
@@ -224,7 +224,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         </div>
         """
 
-    bolillas_html = "".join([f'<div class="bolillera animate-pulse">{b:02d}</div>' for b in bolillas])
+    bolillas_html = "".join([f'<div class="bolillera">{b:02d}</div>' for b in bolillas])
 
     return f"""<!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
@@ -243,12 +243,87 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             color: #0f172a; font-weight: 900; font-size: 18px; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 15px rgba(249,115,22,0.5), inset -2px -2px 6px rgba(0,0,0,0.4);
         }}
-        @keyframes girarBola {{
+
+        /* BOLILLERO VIRTUAL 3D REALISTA ESTILO JAULA METÁLICA */
+        .cage-container {{
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto;
+        }}
+        .bolillero-cage {{
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(0,0,0,0.6));
+            border: 4px solid #d97706;
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.4), inset 0 0 20px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+            animation: girarJaula 4s infinite linear;
+        }}
+        .cage-bars {{
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 14px,
+                rgba(251, 191, 36, 0.45) 14px,
+                rgba(251, 191, 36, 0.45) 18px
+            );
+        }}
+        .cage-bars-vertical {{
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 14px,
+                rgba(251, 191, 36, 0.45) 14px,
+                rgba(251, 191, 36, 0.45) 18px
+            );
+        }}
+        .inner-balls {{
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 25px;
+            animation: girarBolasInternas 2.5s infinite linear reverse;
+        }}
+        .mini-ball {{
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #f97316);
+            color: #000;
+            font-size: 10px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }}
+        @keyframes girarJaula {{
+            0% {{ transform: rotate(0deg); }}
+            100% {{ transform: rotate(360deg); }}
+        }}
+        @keyframes girarBolasInternas {{
             0% {{ transform: rotate(0deg) scale(1); }}
             50% {{ transform: rotate(180deg) scale(1.05); }}
             100% {{ transform: rotate(360deg) scale(1); }}
         }}
-        .girando {{ animation: girarBola 1.2s infinite linear; }}
+        .activo-sorteo {{
+            animation: girarJaula 0.6s infinite linear !important;
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 35px rgba(239, 68, 68, 0.8), inset 0 0 25px rgba(0,0,0,0.9);
+        }}
     </style>
 </head>
 <body class="bg-[#0A1128] text-slate-100 min-h-screen font-sans selection:bg-orange-500 selection:text-white antialiased">
@@ -316,7 +391,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </div>
         </div>
 
-        <!-- SECCIÓN 1: COMPRAR NÚMEROS (CARTÓN DIGITAL CON TRES LÍNEAS) -->
+        <!-- SECCIÓN 1: COMPRAR NÚMEROS (CARTÓN DIGITAL DE TRES LÍNEAS) -->
         <div id="comprar" class="bg-gradient-to-r from-emerald-950/30 via-[#101833] to-[#0A1128] border border-emerald-500/40 rounded-3xl p-8 shadow-2xl space-y-6">
             <div class="max-w-xl space-y-2">
                 <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase border border-emerald-500/20">Cartón Digital de 3 Líneas</span>
@@ -349,13 +424,13 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </form>
         </div>
 
-        <!-- SECCIÓN 2: EL BOLILLERO VIRTUAL EN VIVO -->
+        <!-- SECCIÓN 2: EL BOLILLERO VIRTUAL 3D EN VIVO -->
         <div id="bolillero" class="bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-orange-500/30 rounded-3xl p-8 shadow-2xl space-y-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div class="space-y-2 max-w-xl">
                     <span class="text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase border border-orange-500/20">Sorteo Dominical en Vivo (Domingos 19:00 hs)</span>
                     <h3 class="text-3xl font-black text-white">El Bolillero Virtual de Max%Shop</h3>
-                    <p class="text-sm text-slate-400 leading-relaxed">Sorteo automatizado con locución por voz integrada y bolillero en vivo. (Acción exclusiva del Administrador).</p>
+                    <p class="text-sm text-slate-400 leading-relaxed">Sorteo automatizado con locución por voz integrada y bolillero en vivo continuo.</p>
                 </div>
                 <div class="bg-[#0A1128] border border-orange-500/40 p-6 rounded-2xl text-center shadow-xl w-full md:w-auto">
                     <p class="text-xs text-slate-400">POZO ACUMULADO ACTUAL</p>
@@ -364,26 +439,38 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </div>
 
             <div class="bg-[#0A1128] border border-slate-800 p-8 rounded-2xl text-center space-y-6">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Bolillas Ganadoras en Vivo</p>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Bolillero 3D en Movimiento Continuo</p>
                 
-                <!-- Bolillero visual animado estilo clásico -->
-                <div class="flex justify-center my-4">
-                    <div id="bolilleroVisual" class="w-36 h-36 rounded-full border-4 border-orange-500/60 bg-gradient-to-tr from-amber-600 via-orange-500 to-yellow-400 flex items-center justify-center shadow-2xl relative">
-                        <div class="absolute inset-2 rounded-full border border-white/30 flex items-center justify-center">
-                            <span class="text-slate-950 font-black text-xs bg-white/80 px-2 py-1 rounded-full shadow">BOLILLERO</span>
+                <!-- Bolillero 3D Estilo Jaula Metálica Giratoria -->
+                <div class="cage-container">
+                    <div id="bolilleroCage" class="bolillero-cage">
+                        <div class="cage-bars"></div>
+                        <div class="cage-bars-vertical"></div>
+                        <div class="inner-balls">
+                            <div class="mini-ball">04</div>
+                            <div class="mini-ball">12</div>
+                            <div class="mini-ball">19</div>
+                            <div class="mini-ball">28</div>
+                            <div class="mini-ball">35</div>
+                            <div class="mini-ball">42</div>
                         </div>
                     </div>
                 </div>
 
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest pt-2">Bolillas Ganadoras Extraídas</p>
                 <div id="contenedorBolillas" class="flex justify-center items-center gap-4 flex-wrap">
                     {bolillas_html}
                 </div>
+                
                 <div class="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <button onclick="simularSorteoEnVivo()" class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 text-white font-bold px-6 py-2.5 rounded-xl text-xs uppercase shadow transition">
+                        🎲 Simular Giro y Sorteo En Vivo
+                    </button>
                     <button onclick="reproducirVozBolillas()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded-xl text-xs uppercase shadow transition">
-                        🔊 Escuchar Bolillas en Vivo (Audio)
+                        🔊 Escuchar Bolillas (Audio)
                     </button>
                     <a href="#comprar" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black px-8 py-3 rounded-xl text-xs uppercase shadow-lg transition">
-                        🎟️ Comprar Número para el Sorteo
+                        🎟️ Comprar Número
                     </a>
                 </div>
             </div>
@@ -420,10 +507,24 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             }}
         }}
 
+        function simularSorteoEnVivo() {{
+            const cage = document.getElementById('bolilleroCage');
+            cage.classList.add('activo-sorteo');
+            if ('speechSynthesis' in window) {{
+                const inicioMsg = new SpeechSynthesisUtterance("Comienza el sorteo del bolillero dominical. Girando bolillero en vivo.");
+                inicioMsg.lang = 'es-AR';
+                window.speechSynthesis.speak(inicioMsg);
+            }}
+            setTimeout(() => {{
+                cage.classList.remove('activo-sorteo');
+                reproducirVozBolillas();
+            }}, 3500);
+        }}
+
         function reproducirVozBolillas() {{
             if ('speechSynthesis' in window) {{
                 const bolillasTexto = "{', '.join(map(str, bolillas))}";
-                const mensaje = new SpeechSynthesisUtterance("Atención socios de Max%Shop. Las bolillas sorteadas en el bolillero dominical son: " + bolillasTexto);
+                const mensaje = new SpeechSynthesisUtterance("Atención socios de Max%Shop. Las bolillas sorteadas son: " + bolillasTexto);
                 mensaje.lang = 'es-AR';
                 window.speechSynthesis.speak(mensaje);
             }} else {{
@@ -630,11 +731,11 @@ async def admin_sortear(username: str = Depends(verificar_admin)):
                 if ganador_pozo:
                     break
 
-        # Sorteo de premios sorpresa ocultos ($5.000 y $20.000) entre los participantes
+        # Sorteo de premios sorpresa ocultos ($5.000 y $20.000)
         premios_sorpresa_msj = ""
         if apuestas:
             ganadores_consuelo = random.sample(apuestas, min(2, len(apuestas)))
-            premios_sorpresa_msj = f" | 🎁 Premios sorpresa consuelo ($5k y $20k) otorgados a: {ganadores_consuelo[0].nombre} y {ganadores_consuelo[1].nombre if len(ganadores_consuelo) > 1 else 'N/D'}."
+            premios_sorpresa_msj = f" | 🎁 Premios sorpresa ocultos ($5k y $20k) adjudicados a: {ganadores_consuelo[0].nombre} y {ganadores_consuelo[1].nombre if len(ganadores_consuelo) > 1 else 'N/D'}."
 
     pozo_actual = CONFIG_NEGOCIO["pozo_acumulado"]
     if ganador_pozo:
@@ -756,7 +857,7 @@ async def admin_dashboard(username: str = Depends(verificar_admin), mensaje: str
         <!-- ACCIÓN EXCLUSIVA ADMINISTRADOR: GIRAR BOLILLERO -->
         <div class="bg-gradient-to-r from-orange-950/40 via-[#101833] to-[#0A1128] p-8 rounded-3xl border border-orange-500/40 shadow-2xl space-y-4">
             <h2 class="text-xl font-black text-white">🎲 Ejecución de Sorteo Dominical en Vivo</h2>
-            <p class="text-xs text-slate-300">Presiona para sortear las 5 bolillas, aplicar el filtro inteligente de retención del pozo y otorgar los premios sorpresa consuelo ocultos.</p>
+            <p class="text-xs text-slate-300">Presiona para sortear las 5 bolillas, aplicar el filtro inteligente de retención del pozo y otorgar los premios sorpresa ocultos ($5k y $20k).</p>
             <form action="/admin/bolillero/sortear" method="POST">
                 <button type="submit" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black px-8 py-3.5 rounded-xl text-xs uppercase shadow-xl transition">
                     🚀 Ejecutar Sorteo Oficial Ahora
