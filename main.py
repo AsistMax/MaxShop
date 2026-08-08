@@ -37,8 +37,8 @@ ADMIN_USER = "admin"
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
-    title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="26.4.0"
+    title="Max%Shop - Club de Beneficios, Cobertura, Bolillero Semanal y Pagos Integrados",
+    version="26.5.0"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -160,7 +160,7 @@ def on_startup():
             session.commit()
 
 # ==========================================
-# RUTAS DE LA APLICACIÓN CLIENTE
+# RUTAS DE LA APLICACIÓN CLIENTE (CON CHECKOUT INTEGRADO)
 # ==========================================
 
 @app.get("/", response_class=HTMLResponse)
@@ -232,6 +232,8 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SDK de Mercado Pago Checkout Bricks -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
     <style>
         ::-webkit-scrollbar {{ width: 8px; height: 8px; }}
         ::-webkit-scrollbar-track {{ background: #0A1128; }}
@@ -243,7 +245,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             box-shadow: 0 4px 15px rgba(249,115,22,0.5), inset -2px -2px 6px rgba(0,0,0,0.4);
         }}
 
-        /* BOLILLERO VIRTUAL 3D CON SOPORTE Y REBOTE CAÓTICO */
         .bolillero-wrapper {{
             display: flex;
             flex-direction: column;
@@ -311,7 +312,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             justify-content: center;
             box-shadow: 0 2px 6px rgba(0,0,0,0.6);
         }}
-        /* Animaciones individuales de rebote caótico */
         .mb-1 {{ animation: rebotar1 2.2s infinite ease-in-out; top: 30%; left: 25%; }}
         .mb-2 {{ animation: rebotar2 1.8s infinite ease-in-out; top: 60%; left: 40%; }}
         .mb-3 {{ animation: rebotar3 2.5s infinite ease-in-out; top: 20%; left: 60%; }}
@@ -344,7 +344,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             100% {{ transform: translate(0, 0) scale(1); }}
         }}
 
-        /* SOPORTE / PIES DE LA ESFERA (BASE METÁLICA) */
         .bolillero-base {{
             width: 70px;
             height: 14px;
@@ -401,6 +400,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                 <a href="#comprar" class="hover:text-orange-400 transition">Comprar Números</a>
                 <a href="#bolillero" class="hover:text-orange-400 transition">Bolillero Dominical</a>
                 <a href="#comercios" class="hover:text-orange-400 transition">Comercios Adheridos</a>
+                <a href="#pago-integrado" class="hover:text-orange-400 transition text-emerald-400">💳 Pago Rápido MP</a>
             </nav>
             <div class="flex items-center space-x-3">
                 <a href="/login" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl uppercase shadow-lg transition">
@@ -464,6 +464,20 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </form>
         </div>
 
+        <!-- SECCIÓN NUEVA: CHECKOUT BRICKS DE MERCADO PAGO INTEGRADO -->
+        <div id="pago-integrado" class="bg-gradient-to-r from-blue-950/40 via-[#101833] to-[#0A1128] border border-blue-500/40 rounded-3xl p-8 shadow-2xl space-y-6">
+            <div class="max-w-xl space-y-2">
+                <span class="text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full uppercase border border-blue-500/20">Pasarela de Pagos Segura</span>
+                <h3 class="text-2xl font-black text-white">Pagar Membresía o Cartón con Mercado Pago</h3>
+                <p class="text-xs text-slate-400">Utiliza nuestro sistema de Checkout Bricks integrado para completar tu pago de forma instantánea y segura sin salir de la plataforma.</p>
+            </div>
+            
+            <div class="bg-[#0A1128] border border-slate-800 p-6 rounded-2xl max-w-xl mx-auto text-center space-y-4">
+                <p class="text-xs text-slate-300">Monto a abonar: <b class="text-emerald-400 text-base">${valor_carton:,.0f}</b></p>
+                <div id="wallet_container"></div>
+            </div>
+        </div>
+
         <!-- SECCIÓN 2: EL BOLILLERO VIRTUAL 3D EN VIVO -->
         <div id="bolillero" class="bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-orange-500/30 rounded-3xl p-8 shadow-2xl space-y-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -481,7 +495,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             <div class="bg-[#0A1128] border border-slate-800 p-8 rounded-2xl text-center space-y-6">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">BOLILLERO</p>
                 
-                <!-- Bolillero 3D con Soporte y Bolillas Rebotando Caóticamente -->
                 <div class="bolillero-wrapper">
                     <div class="cage-container">
                         <div class="bolillero-cage">
@@ -558,10 +571,65 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                 alert("Tu navegador no soporta reproducción de audio inteligente.");
             }}
         }}
+
+        // Inicialización de Mercado Pago Brick en el cliente
+        const mp = new MercadoPago('{PUBLIC_KEY}', {{
+            locale: 'es-AR'
+        }});
+        
+        // Renderizado del botón de pago si está configurado en el backend
+        fetch('/api/crear-preferencia', {{
+            method: 'POST',
+            headers: {{ 'Content-Type': 'application/json' }},
+            body: JSON.stringify({{ title: 'Cartón Digital Max%Shop', price: {valor_carton} }})
+        }})
+        .then(response => response.json())
+        .then(preference => {{
+            if(preference.id) {{
+                mp.bricks().create("wallet", "wallet_container", {{
+                    initialization: {{
+                        preferenceId: preference.id,
+                    }},
+                }});
+            }}
+        }}).catch(err => console.error("Error cargando pasarela MP:", err));
     </script>
 </body>
 </html>
 """
+
+# ==========================================
+# RUTAS DE API PARA MERCADO PAGO Y PAGOS
+# ==========================================
+
+class PreferenceRequest(BaseModel):
+    title: str
+    price: float
+
+@app.post("/api/crear-preferencia")
+def crear_preferencia(data: PreferenceRequest):
+    preference_data = {
+        "items": [
+            {
+                "title": data.title,
+                "quantity": 1,
+                "unit_price": float(data.price)
+            }
+        ],
+        "back_urls": {
+            "success": "http://localhost:8000/",
+            "failure": "http://localhost:8000/",
+            "pending": "http://localhost:8000/"
+        },
+        "auto_return": "approved",
+    }
+    
+    try:
+        preference_response = sdk.preference().create(preference_data)
+        preference = preference_response["response"]
+        return {"id": preference["id"]}
+    except Exception as e:
+        return {"error": str(e)}
 
 # ==========================================
 # RUTAS DE LOGIN Y DASHBOARD DE SOCIO
