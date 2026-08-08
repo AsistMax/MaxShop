@@ -35,7 +35,7 @@ def verificar_admin(credentials: HTTPBasicCredentials = Depends(security)):
         raise HTTPException(status_code=401, detail="Acceso no autorizado")
     return credentials.username
 
-# Plantilla HTML completa y estructurada con todas las secciones originales
+# Plantilla HTML completa y estructurada original
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="es">
@@ -167,7 +167,7 @@ HTML_TEMPLATE = """
     <div class="container">
         <div class="pozo-title" style="font-size: 22px;">Gira por Cobertura Familiar</div>
         <div class="pozo-desc">
-            Gira por ${valor_ruleta} (Cobertura familiar). Límite temporal máximo: ${limite_cobertura_fmt}.
+            Gira por ${valor_ruleta} (Cobertura familiar). Límite temporal máximo: {limite_cobertura_fmt}.
         </div>
 
         <form action="/girar_ruleta" method="POST">
