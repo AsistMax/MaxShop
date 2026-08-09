@@ -38,7 +38,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="26.5.0"
+    version="26.5.1"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -257,7 +257,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
 
     bolillas_html = "".join([f'<div class="bolillera">{b:02d}</div>' for b in bolillas])
 
-    # Generar segmentos visuales para la Ruleta en HTML/CSS
+    # Generar segmentos visuales para la Ruleta optimizados y legibles
     segmentos_ruleta_html = ""
     colores_segmentos = ["#f97316", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#f59e0b", "#06b6d4", "#6366f1", "#14b8a6", "#eab308"]
     for i, item in enumerate(RULETA_PREMIOS):
@@ -314,7 +314,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             color: #000; font-size: 8px; font-weight: 900; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.6);
         }}
-        .mb-1 {{ animation: rebotar1 2.1s infinite ease-in-out; top: 25% * ; left: 20%; }}
+        .mb-1 {{ animation: rebotar1 2.1s infinite ease-in-out; top: 25%; left: 20%; }}
         .mb-2 {{ animation: rebotar2 1.7s infinite ease-in-out; top: 55%; left: 35%; }}
         .mb-3 {{ animation: rebotar3 2.4s infinite ease-in-out; top: 15%; left: 55%; }}
         .mb-4 {{ animation: rebotar1 1.9s infinite ease-in-out; top: 65%; left: 60%; }}
@@ -355,9 +355,9 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             margin: 0 auto; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;
         }}
 
-        /* ESTILOS RULETA DE COBERTURAS (10 TRIÁNGULOS) */
+        /* ESTILOS RULETA DE COBERTURAS (10 TRIÁNGULOS OPTIMIZADOS) */
         .ruleta-container {{
-            position: relative; width: 280px; height: 280px; margin: 0 auto;
+            position: relative; width: 300px; height: 300px; margin: 0 auto;
         }}
         .ruleta-wheel {{
             width: 100%; height: 100%; border-radius: 50%; border: 6px solid #f59e0b;
@@ -367,11 +367,11 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         .ruleta-segmento {{
             position: absolute; top: 0; left: 50%; width: 50%; height: 100%;
             transform-origin: left center; clip-path: polygon(0 50%, 100% 0, 100% 100%);
-            display: flex; align-items: center; justify-content: flex-end; padding-right: 20px;
+            display: flex; align-items: center; justify-content: flex-end; padding-right: 32px;
         }}
         .segmento-texto {{
             color: #fff; font-size: 11px; font-weight: 900; text-shadow: 0 1px 3px rgba(0,0,0,0.9);
-            transform: rotate(18deg) translateY(-50%);
+            transform: rotate(90deg) translateY(2px); text-align: right; white-space: nowrap;
         }}
         .ruleta-puntero {{
             position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
@@ -380,7 +380,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         }}
         .ruleta-centro {{
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 50px; height: 50px; background: radial-gradient(circle, #f59e0b, #78350f);
+            width: 55px; height: 55px; background: radial-gradient(circle, #f59e0b, #78350f);
             border-radius: 50%; border: 3px solid #fff; z-index: 11;
             display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 10px; color: #000;
         }}
@@ -439,7 +439,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         {alerta_box}
         {resultado_ruleta_box}
 
-        <!-- HERO PRINCIPAL -->
+        <!-- HERO PRINCIPAL (IMAGEN 100% ESTÁTICA Y LIMPIA) -->
         <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center overflow-hidden">
             <div class="max-w-4xl mx-auto">
                 <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="Banner Principal Max%Shop" class="w-full max-h-[420px] object-cover rounded-2xl shadow-2xl border border-slate-700 mb-8">
@@ -475,7 +475,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
 
             <div class="bg-[#0A1128] border border-slate-800 p-8 rounded-2xl text-center space-y-6">
                 
-                <!-- Ruleta Visual Interactiva -->
+                <!-- Ruleta Visual Interactiva con Textos Legibles -->
                 <div class="ruleta-container">
                     <div class="ruleta-puntero"></div>
                     <div id="ruletaWheel" class="ruleta-wheel">
@@ -495,7 +495,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                     </div>
                 </form>
 
-                <!-- Botón de Solicitar Comprobante (habilitado si ya giró/pagó) -->
+                <!-- Botón de Solicitar Comprobante -->
                 <div class="pt-4 border-t border-slate-800">
                     <form action="/app/solicitar-comprobante-ruleta" method="POST" class="max-w-md mx-auto flex gap-2">
                         <input type="text" name="dni" required placeholder="Ingresa tu DNI para Comprobante" class="flex-1 bg-slate-900 border border-slate-700 px-4 py-2.5 rounded-xl text-xs text-white">
@@ -675,7 +675,6 @@ async def solicitar_comprobante_ruleta(dni: str = Form(...)):
             mensaje = "No se encontraron registros de giros para este DNI. Debe girar primero."
             return RedirectResponse(url=f"/?mensaje={urllib.parse.quote(mensaje)}#ruleta", status_code=303)
         
-        # Seleccionar la póliza más alta entre todos sus intentos
         max_registro = max(registros, key=lambda r: r.monto_poliza)
         max_registro.comprobante_solicitado = True
         session.add(max_registro)
