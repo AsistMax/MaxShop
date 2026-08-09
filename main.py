@@ -38,7 +38,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="26.5.1"
+    version="26.5.2"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -109,10 +109,10 @@ CONFIG_NEGOCIO = {
     "valor_carton": 1000.0,
     "valor_giro_ruleta": 5000.0,
     "permitir_salida_pozo": False,
-    "ultimas_bolillas": [7, 14, 22, 33, 41]
+    # 15 bolillas por defecto para que coincida con la cantidad de cada cartón
+    "ultimas_bolillas": [3, 7, 12, 14, 18, 22, 25, 27, 33, 38, 40, 41, 45, 48, 50]
 }
 
-# 10 Triángulos / Casilleros de la Ruleta (Límite temporal máximo de $20.000.000)
 RULETA_PREMIOS = [
     {"label": "$2.000.000", "valor": 2000000},
     {"label": "$4.000.000", "valor": 4000000},
@@ -182,10 +182,6 @@ def on_startup():
             session.add(admin_user)
             session.commit()
 
-# ==========================================
-# RUTAS DE LA APLICACIÓN CLIENTE
-# ==========================================
-
 @app.get("/", response_class=HTMLResponse)
 async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capital)", mensaje: str = None, resultado_ruleta: str = None):
     pozo_actual = CONFIG_NEGOCIO["pozo_acumulado"]
@@ -242,7 +238,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
     alerta_box = ""
     if mensaje:
         alerta_box = f"""
-        <div class="bg-orange-500/20 border border-orange-500 text-orange-300 px-6 py-4 rounded-2xl font-bold text-sm text-center shadow-2xl animate-pulse">
+        <div class="bg-orange-500/20 border border-orange-500 text-orange-300 px-6 py-4 rounded-2xl font-bold text-sm text-center shadow-2xl">
             ✨ {mensaje}
         </div>
         """
@@ -250,14 +246,14 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
     resultado_ruleta_box = ""
     if resultado_ruleta:
         resultado_ruleta_box = f"""
-        <div class="bg-emerald-500/20 border border-emerald-500 text-emerald-300 px-6 py-5 rounded-2xl font-black text-base text-center shadow-2xl animate-bounce">
+        <div class="bg-emerald-500/20 border border-emerald-500 text-emerald-300 px-6 py-5 rounded-2xl font-black text-base text-center shadow-2xl">
             🎉 ¡Felicitaciones! Obtuviste {resultado_ruleta} en tu póliza para tu grupo familiar.
         </div>
         """
 
+    # Generar las 15 bolillas ganadoras de forma limpia
     bolillas_html = "".join([f'<div class="bolillera">{b:02d}</div>' for b in bolillas])
 
-    # Generar segmentos visuales para la Ruleta optimizados y legibles
     segmentos_ruleta_html = ""
     colores_segmentos = ["#f97316", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#f59e0b", "#06b6d4", "#6366f1", "#14b8a6", "#eab308"]
     for i, item in enumerate(RULETA_PREMIOS):
@@ -282,12 +278,11 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         ::-webkit-scrollbar-thumb {{ background: #1E293B; border-radius: 4px; }}
         
         .bolillera {{
-            width: 52px; height: 52px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffedd5, #f97316);
-            color: #0f172a; font-weight: 900; font-size: 18px; display: flex; align-items: center; justify-content: center;
+            width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffedd5, #f97316);
+            color: #0f172a; font-weight: 900; font-size: 16px; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 15px rgba(249,115,22,0.5), inset -2px -2px 6px rgba(0,0,0,0.4);
         }}
 
-        /* BOLILLERO VIRTUAL 3D CON MAS BOLILLAS Y REBOTE CAÓTICO */
         .bolillero-wrapper {{
             display: flex; flex-direction: column; align-items: center; margin: 0 auto;
         }}
@@ -355,7 +350,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             margin: 0 auto; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;
         }}
 
-        /* ESTILOS RULETA DE COBERTURAS (10 TRIÁNGULOS OPTIMIZADOS) */
+        /* RULETA DE COBERTURAS CON TEXTOS PERFECTAMENTE ALINEADOS */
         .ruleta-container {{
             position: relative; width: 300px; height: 300px; margin: 0 auto;
         }}
@@ -367,11 +362,11 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         .ruleta-segmento {{
             position: absolute; top: 0; left: 50%; width: 50%; height: 100%;
             transform-origin: left center; clip-path: polygon(0 50%, 100% 0, 100% 100%);
-            display: flex; align-items: center; justify-content: flex-end; padding-right: 32px;
+            display: flex; align-items: center; justify-content: flex-end; padding-right: 24px;
         }}
         .segmento-texto {{
-            color: #fff; font-size: 11px; font-weight: 900; text-shadow: 0 1px 3px rgba(0,0,0,0.9);
-            transform: rotate(90deg) translateY(2px); text-align: right; white-space: nowrap;
+            color: #fff; font-size: 10px; font-weight: 900; text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+            transform: rotate(90deg); transform-origin: center right; text-align: right; white-space: nowrap;
         }}
         .ruleta-puntero {{
             position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
@@ -439,7 +434,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         {alerta_box}
         {resultado_ruleta_box}
 
-        <!-- HERO PRINCIPAL (IMAGEN 100% ESTÁTICA Y LIMPIA) -->
+        <!-- HERO PRINCIPAL 100% ESTÁTICO (SIN REBOTE) -->
         <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center overflow-hidden">
             <div class="max-w-4xl mx-auto">
                 <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="Banner Principal Max%Shop" class="w-full max-h-[420px] object-cover rounded-2xl shadow-2xl border border-slate-700 mb-8">
@@ -459,13 +454,13 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </div>
         </div>
 
-        <!-- SECCIÓN RULETA DE COBERTURAS FAMILIARES -->
+        <!-- SECCIÓN RULETA DE COBERTURAS -->
         <div id="ruleta" class="bg-gradient-to-r from-blue-950/40 via-[#101833] to-[#0A1128] border border-blue-500/40 rounded-3xl p-8 shadow-2xl space-y-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div class="space-y-2 max-w-xl">
                     <span class="text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full uppercase border border-blue-500/20">Cobertura Integral Grupo Familiar</span>
                     <h3 class="text-3xl font-black text-white">Ruleta de Cobertura Max%Shop</h3>
-                    <p class="text-sm text-slate-400 leading-relaxed">Gira por ${valor_giro:,.0f} y obtén tu monto de póliza familiar. (Los giros múltiples no son acumulativos por defecto; se conserva el último intento o puedes solicitar comprobante para fijar la póliza más alta).</p>
+                    <p class="text-sm text-slate-400 leading-relaxed">Gira por ${valor_giro:,.0f} y obtén tu monto de póliza familiar.</p>
                 </div>
                 <div class="bg-[#0A1128] border border-blue-500/40 p-6 rounded-2xl text-center shadow-xl w-full md:w-auto">
                     <p class="text-xs text-slate-400">COSTO POR GIRO</p>
@@ -474,8 +469,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </div>
 
             <div class="bg-[#0A1128] border border-slate-800 p-8 rounded-2xl text-center space-y-6">
-                
-                <!-- Ruleta Visual Interactiva con Textos Legibles -->
                 <div class="ruleta-container">
                     <div class="ruleta-puntero"></div>
                     <div id="ruletaWheel" class="ruleta-wheel">
@@ -487,15 +480,11 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                 <form action="/app/girar-ruleta" method="POST" class="max-w-md mx-auto space-y-4 pt-4">
                     <input type="text" name="dni" required placeholder="Tu DNI de Socio" class="w-full bg-slate-900 border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
                     <input type="text" name="nombre" required placeholder="Tu Nombre y Apellido" class="w-full bg-slate-900 border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
-                    
-                    <div class="flex gap-4">
-                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition">
-                            🎡 Girar Ruleta (${valor_giro:,.0f})
-                        </button>
-                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition">
+                        🎡 Girar Ruleta (${valor_giro:,.0f})
+                    </button>
                 </form>
 
-                <!-- Botón de Solicitar Comprobante -->
                 <div class="pt-4 border-t border-slate-800">
                     <form action="/app/solicitar-comprobante-ruleta" method="POST" class="max-w-md mx-auto flex gap-2">
                         <input type="text" name="dni" required placeholder="Ingresa tu DNI para Comprobante" class="flex-1 bg-slate-900 border border-slate-700 px-4 py-2.5 rounded-xl text-xs text-white">
@@ -504,11 +493,10 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                         </button>
                     </form>
                 </div>
-
             </div>
         </div>
 
-        <!-- SECCIÓN 1: COMPRAR NÚMEROS (CARTÓN DIGITAL DE TRES LÍNEAS) -->
+        <!-- SECCIÓN COMPRAR NÚMEROS -->
         <div id="comprar" class="bg-gradient-to-r from-emerald-950/30 via-[#101833] to-[#0A1128] border border-emerald-500/40 rounded-3xl p-8 shadow-2xl space-y-6">
             <div class="max-w-xl space-y-2">
                 <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full uppercase border border-emerald-500/20">Cartón Digital de 3 Líneas</span>
@@ -541,13 +529,13 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </form>
         </div>
 
-        <!-- SECCIÓN 2: EL BOLILLERO VIRTUAL 3D EN VIVO -->
+        <!-- SECCIÓN BOLILLERO VIRTUAL 3D CON LAS 15 BOLILLAS -->
         <div id="bolillero" class="bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-orange-500/30 rounded-3xl p-8 shadow-2xl space-y-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div class="space-y-2 max-w-xl">
                     <span class="text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full uppercase border border-orange-500/20">Sorteo Dominical en Vivo (Domingos 19:00 hs)</span>
                     <h3 class="text-3xl font-black text-white">El Bolillero Virtual de Max%Shop</h3>
-                    <p class="text-sm text-slate-400 leading-relaxed">Sorteo automatizado con locución por voz integrada y bolillero en vivo con múltiples bolillas.</p>
+                    <p class="text-sm text-slate-400 leading-relaxed">Sorteo automatizado con locución por voz integrada y bolillero en vivo.</p>
                 </div>
                 <div class="bg-[#0A1128] border border-orange-500/40 p-6 rounded-2xl text-center shadow-xl w-full md:w-auto">
                     <p class="text-xs text-slate-400">POZO ACUMULADO ACTUAL</p>
@@ -558,7 +546,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             <div class="bg-[#0A1128] border border-slate-800 p-8 rounded-2xl text-center space-y-6">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">BOLILLERO</p>
                 
-                <!-- Bolillero 3D con Soporte y Bolillas Rebotando Caóticamente -->
                 <div class="bolillero-wrapper">
                     <div class="cage-container">
                         <div class="bolillero-cage">
@@ -581,8 +568,9 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                     </div>
                 </div>
 
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest pt-4">Bolillas Ganadoras Extraídas</p>
-                <div id="contenedorBolillas" class="flex justify-center items-center gap-4 flex-wrap">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest pt-4">Las 15 Bolillas Ganadoras Extraídas</p>
+                <!-- Contenedor adaptado para mostrar las 15 bolillas ordenadas -->
+                <div id="contenedorBolillas" class="flex justify-center items-center gap-2 sm:gap-3 flex-wrap max-w-3xl mx-auto">
                     {bolillas_html}
                 </div>
                 
@@ -597,7 +585,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </div>
         </div>
 
-        <!-- SECCIÓN 3: COMERCIOS ADHERIDOS (CON LOGO OFICIAL INCLUIDO) -->
+        <!-- SECCIÓN COMERCIOS ADHERIDOS -->
         <div id="comercios" class="space-y-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div class="space-y-2 flex items-center gap-4">
@@ -616,7 +604,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
 
     </main>
 
-    <!-- FOOTER -->
     <footer class="border-t border-slate-800 bg-[#070C1E] mt-20 py-10 text-center text-xs text-slate-500">
         <p>Max%Shop © 2026 - Cobertura Georreferenciada Nacional y Sorteos Dominicales Automatizados.</p>
     </footer>
@@ -645,10 +632,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
 </body>
 </html>
 """
-
-# ==========================================
-# RUTA DE LA RULETA (GIRO Y COMPROBANTE)
-# ==========================================
 
 @app.post("/app/girar-ruleta", response_class=HTMLResponse)
 async def girar_ruleta_app(dni: str = Form(...), nombre: str = Form(...)):
@@ -719,10 +702,6 @@ async def solicitar_comprobante_ruleta(dni: str = Form(...)):
     </body>
     </html>
     """)
-
-# ==========================================
-# RUTAS DE LOGIN Y DASHBOARD DE SOCIO
-# ==========================================
 
 @app.get("/login", response_class=HTMLResponse)
 def login_get():
@@ -808,10 +787,6 @@ def dashboard(user_id: int):
         </html>
         """)
 
-# ==========================================
-# RUTAS DE CARTÓN DIGITAL Y SORTEO AUTOMÁTICO
-# ==========================================
-
 @app.post("/app/comprar-jugada", response_class=HTMLResponse)
 async def comprar_jugada_app(
     dni: str = Form(...),
@@ -893,7 +868,8 @@ async def comprar_jugada_app(
 
 @app.post("/admin/bolillero/sortear", response_class=HTMLResponse)
 async def admin_sortear(username: str = Depends(verificar_admin)):
-    ganadores_sorteo = sorted(random.sample(range(1, 51), 5))
+    # Sorteo de 15 bolillas ganadoras
+    ganadores_sorteo = sorted(random.sample(range(1, 51), 15))
     CONFIG_NEGOCIO["ultimas_bolillas"] = ganadores_sorteo
     
     ganador_pozo = None
@@ -913,15 +889,15 @@ async def admin_sortear(username: str = Depends(verificar_admin)):
         premios_sorpresa_msj = ""
         if apuestas:
             ganadores_consuelo = random.sample(apuestas, min(2, len(apuestas)))
-            premios_sorpresa_msj = f" | 🎁 Premios sorpresa ocultos ($5k y $20k) adjudicados a: {ganadores_consuelo[0].nombre}."
+            premios_sorpresa_msj = f" | 🎁 Premios sorpresa ocultos adjudicados a: {ganadores_consuelo[0].nombre}."
 
     pozo_actual = CONFIG_NEGOCIO["pozo_acumulado"]
     if ganador_pozo:
-        mensaje = f"¡SORTEO OFICIAL REALIZADO! Bolillas: {ganadores_sorteo}. ¡Ganador del pozo de ${pozo_actual:,.0f}: {ganador_pozo}!" + premios_sorpresa_msj
+        mensaje = f"¡SORTEO OFICIAL REALIZADO! ¡Ganador del pozo de ${pozo_actual:,.0f}: {ganador_pozo}!" + premios_sorpresa_msj
         CONFIG_NEGOCIO["pozo_acumulado"] = 400000.0
     else:
         CONFIG_NEGOCIO["pozo_acumulado"] += 100000.0
-        mensaje = f"¡SORTEO OFICIAL REALIZADO! Bolillas: {ganadores_sorteo}. Pozo VACANTE. ¡Se acumulan $100.000 más para el próximo domingo!" + premios_sorpresa_msj
+        mensaje = f"¡SORTEO OFICIAL REALIZADO! Pozo VACANTE. ¡Se acumulan $100.000 más para el próximo domingo!" + premios_sorpresa_msj
 
     return RedirectResponse(url=f"/admin?mensaje={urllib.parse.quote(mensaje)}", status_code=303)
 
@@ -940,10 +916,6 @@ async def admin_configurar(
     
     mensaje = "Configuración del negocio, precios y ruleta actualizada exitosamente."
     return RedirectResponse(url=f"/admin?mensaje={urllib.parse.quote(mensaje)}", status_code=303)
-
-# ==========================================
-# PANEL DE ADMINISTRACIÓN
-# ==========================================
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(username: str = Depends(verificar_admin), mensaje: str = None):
@@ -1053,7 +1025,7 @@ async def admin_dashboard(username: str = Depends(verificar_admin), mensaje: str
 
         <div class="bg-gradient-to-r from-orange-950/40 via-[#101833] to-[#0A1128] p-8 rounded-3xl border border-orange-500/40 shadow-2xl space-y-4">
             <h2 class="text-xl font-black text-white">🎲 Ejecución de Sorteo Dominical en Vivo</h2>
-            <p class="text-xs text-slate-300">Presiona para sortear las bolillas, aplicar el filtro inteligente y otorgar los premios sorpresa ocultos ($5k y $20k).</p>
+            <p class="text-xs text-slate-300">Presiona para sortear las 15 bolillas oficiales y aplicar el filtro de premios.</p>
             <form action="/admin/bolillero/sortear" method="POST">
                 <button type="submit" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 text-slate-950 font-black px-8 py-3.5 rounded-xl text-xs uppercase shadow-xl transition">
                     🚀 Ejecutar Sorteo Oficial Ahora
