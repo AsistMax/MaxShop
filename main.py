@@ -38,7 +38,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MaxShop2026")
 
 app = FastAPI(
     title="Max%Shop - Club de Beneficios, Cobertura y Bolillero Semanal",
-    version="26.5.4"
+    version="26.5.5"
 )
 
 UPLOAD_DIR = "static/uploads"
@@ -83,7 +83,7 @@ class Transaccion(SQLModel, table=True):
     dni: str = Field(index=True)
     tipo: str # "carton" o "ruleta"
     monto: float
-    estado: str = Field(default="pendiente") # pendiente, aprobado
+    estado: str = Field(default="pendiente")
     preference_id: Optional[str] = None
     payment_id: Optional[str] = Field(default=None, index=True)
     fecha: str
@@ -279,6 +279,17 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         ::-webkit-scrollbar-track {{ background: #0A1128; }}
         ::-webkit-scrollbar-thumb {{ background: #1E293B; border-radius: 4px; }}
         
+        /* ESTILO ESTRICTO PARA BANNER ESTÁTICO (SIN MOVIMIENTO NI ZOOM) */
+        .banner-estatico-total {{
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 1rem;
+            transform: none !important;
+            animation: none !important;
+            transition: none !important;
+        }}
+
         .bolillera {{
             width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffedd5, #f97316);
             color: #0f172a; font-weight: 900; font-size: 16px; display: flex; align-items: center; justify-content: center;
@@ -435,10 +446,10 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
         {alerta_box}
         {resultado_ruleta_box}
 
-        <!-- HERO PRINCIPAL (BANNER ESTÁTICO CORREGIDO) -->
+        <!-- HERO PRINCIPAL (BANNER ESTÁTICO FIJO) -->
         <div class="relative bg-gradient-to-br from-[#131E3E] via-[#0F1730] to-[#0A1128] border border-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl space-y-8 text-center overflow-hidden">
             <div class="max-w-4xl mx-auto">
-                <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="Banner Principal Max%Shop" class="w-full max-h-[420px] object-cover rounded-2xl shadow-2xl border border-slate-700 mb-8 static-banner">
+                <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="Banner Principal Max%Shop" class="banner-estatico-total shadow-2xl border border-slate-700 mb-8">
             </div>
             <div class="max-w-3xl mx-auto space-y-4">
                 <span class="inline-flex items-center space-x-2 bg-orange-500/10 text-orange-400 text-xs font-bold px-4 py-2 rounded-full border border-orange-500/20 uppercase shadow">
@@ -455,7 +466,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </div>
         </div>
 
-        <!-- SECCIÓN RULETA DE COBERTURAS (CON GIRO VISUAL EN JS) -->
+        <!-- SECCIÓN RULETA DE COBERTURAS -->
         <div id="ruleta" class="bg-gradient-to-r from-blue-950/40 via-[#101833] to-[#0A1128] border border-blue-500/40 rounded-3xl p-8 shadow-2xl space-y-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div class="space-y-2 max-w-xl">
@@ -478,7 +489,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
                     <div class="ruleta-centro" onclick="girarRuletaVisual()">GIRAR</div>
                 </div>
 
-                <!-- Formulario de Pago y Giro seguro -->
                 <form id="formRuleta" action="/app/pagar-ruleta" method="POST" class="max-w-md mx-auto space-y-4 pt-4" onsubmit="return prepararGiro(event)">
                     <input type="text" name="dni" id="ruletaDni" required placeholder="Tu DNI de Socio" class="w-full bg-slate-900 border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
                     <input type="text" name="nombre" id="ruletaNombre" required placeholder="Tu Nombre y Apellido" class="w-full bg-slate-900 border border-slate-700 px-4 py-3 rounded-xl text-xs text-white">
@@ -531,7 +541,7 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </form>
         </div>
 
-        <!-- SECCIÓN BOLILLERO VIRTUAL 3D (VALIDACIÓN DOMINICAL Y COMPRA) -->
+        <!-- SECCIÓN BOLILLERO VIRTUAL 3D -->
         <div id="bolillero" class="bg-gradient-to-r from-[#1E293B] to-[#0F172A] border border-orange-500/30 rounded-3xl p-8 shadow-2xl space-y-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div class="space-y-2 max-w-xl">
@@ -546,7 +556,6 @@ async def client_landing(request: Request, ciudad_filtro: str = "Catamarca (Capi
             </div>
 
             <div class="bg-[#0A1128] border border-slate-800 p-8 rounded-2xl text-center space-y-6">
-                <!-- Panel de validación por DNI para ver el bolillero en tiempo real -->
                 <div class="max-w-md mx-auto bg-slate-900 border border-slate-700 p-6 rounded-2xl space-y-4">
                     <h4 class="text-xs font-bold text-orange-400 uppercase">Validar Acceso al Sorteo Dominical</h4>
                     <p class="text-[11px] text-slate-400">Ingrese su DNI para comprobar que adquirió su cartón digital y que el sorteo se encuentra en horario (Domingos 19hs).</p>
@@ -745,7 +754,6 @@ async def comprar_jugada_app(
 @app.get("/api/verificar-bolillero")
 async def verificar_bolillero(dni: str):
     ahora = datetime.now()
-    # Validación dominical: 6 corresponde a Domingo en datetime.weekday() (lunes=0 ... domingo=6)
     es_domingo = ahora.weekday() == 6
     es_horario = ahora.hour >= 19
 
