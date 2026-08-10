@@ -8,4 +8,5 @@ supabase
 pydantic[email]
 psycopg2-binary
 jinja2
-Flask==3.0.3
+flask==3.0.3
+apscheduler
