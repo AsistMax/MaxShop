@@ -1,12 +1,14 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="AsistMax-cobros API", version="1.0")
+app = FastAPI(title="AsistMax-cobros", version="1.0")
 
-# Permitir que la interfaz web se comunique con este servidor (CORS)
+# Permitir conexiones externas
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,35 +17,40 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Conexión a Supabase usando las credenciales seguras de Render
+# Conectar archivos estáticos si existe la carpeta 'static'
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Conexión con Supabase
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-if not SUPABASE_URL or not SUPABASE_KEY:
-    # Nota: En desarrollo local puedes poner tus credenciales directas aquí si gustas, 
-    # pero en Render siempre deben ir en las "Environment Variables".
-    supabase = None
-else:
+if SUPABASE_URL and SUPABASE_KEY:
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+else:
+    supabase = None
 
 class TransaccionRequest(BaseModel):
     monto_bruto: float
     comercio_id: str
     cliente_id: str
 
-@app.get("/")
-def leer_raiz():
-    return {
-        "status": "online", 
-        "servicio": "AsistMax-cobros API", 
-        "mensaje": "Servidor funcionando al 100% y listo para operar."
-    }
+# 1. RUTA PRINCIPAL: Muestra la interfaz gráfica (Billetera)
+@app.get("/", response_class=HTMLResponse)
+def mostrar_interfaz():
+    # Si subiste el index.html dentro de la carpeta static/
+    if os.path.exists("static/index.html"):
+        return FileResponse("static/index.html")
+    # Si subiste el index.html en la raíz del proyecto
+    elif os.path.exists("index.html"):
+        return FileResponse("index.html")
+    else:
+        return "<h1>AsistMax API Online</h1><p>Sube el archivo index.html para ver la billetera.</p>"
 
-# Endpoint para que la app consulte las promociones activas desde Supabase
+# 2. RUTAS DE API (Backend)
 @app.get("/api/promociones")
 def obtener_promociones():
     if not supabase:
-        # Respuesta simulada por si aún no configuraste las variables en local
         return {
             "success": True,
             "promociones": [
@@ -51,19 +58,16 @@ def obtener_promociones():
                 {"id": 2, "comercio": "Red AsistMax", "beneficio": "Beneficio exclusivo digital"}
             ]
         }
-    
     try:
         response = supabase.table("promociones").select("*").eq("activa", True).execute()
         return {"success": True, "promociones": response.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Endpoint para registrar el inicio de un pago / cobro
 @app.post("/api/procesar-cobro")
 def procesar_cobro(datos: TransaccionRequest):
     if not supabase:
         raise HTTPException(status_code=500, detail="Base de datos no configurada.")
-        
     try:
         nueva_transaccion = {
             "monto_bruto": datos.monto_bruto,
@@ -71,13 +75,7 @@ def procesar_cobro(datos: TransaccionRequest):
             "cliente_id": datos.cliente_id,
             "estado": "pendiente"
         }
-        
         resultado = supabase.table("transacciones").insert(nueva_transaccion).execute()
-        
-        return {
-            "success": True, 
-            "mensaje": "Transacción registrada con éxito en el sistema",
-            "data": resultado.data
-        }
+        return {"success": True, "mensaje": "Transacción registrada", "data": resultado.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
