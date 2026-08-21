@@ -1,14 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
 app = FastAPI(title="AsistMax-cobros", version="1.0")
 
-# Permitir conexiones externas
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,11 +15,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Conectar archivos estáticos si existe la carpeta 'static'
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Conexión con Supabase
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
@@ -35,47 +28,76 @@ class TransaccionRequest(BaseModel):
     comercio_id: str
     cliente_id: str
 
-# 1. RUTA PRINCIPAL: Muestra la interfaz gráfica (Billetera)
+# RUTA PRINCIPAL: Muestra la interfaz gráfica directamente
 @app.get("/", response_class=HTMLResponse)
 def mostrar_interfaz():
-    # Si subiste el index.html dentro de la carpeta static/
-    if os.path.exists("static/index.html"):
-        return FileResponse("static/index.html")
-    # Si subiste el index.html en la raíz del proyecto
-    elif os.path.exists("index.html"):
-        return FileResponse("index.html")
-    else:
-        return "<h1>AsistMax API Online</h1><p>Sube el archivo index.html para ver la billetera.</p>"
+    return """
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AsistMax - Billetera y Cobros</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950">
+        <header class="w-full px-6 py-4 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+            <div class="flex items-center space-x-2">
+                <div class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></div>
+                <span class="text-lg font-black tracking-wider bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">ASISTMAX</span>
+            </div>
+            <div class="text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+                ● Red Segura
+            </div>
+        </header>
+        <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1 flex flex-col justify-center">
+            <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-2xl"></div>
+                <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Beneficios Disponibles</p>
+                <h2 class="text-2xl font-bold text-white mt-1">Red de Comercios Adheridos</h2>
+                <p class="text-xs text-cyan-400 mt-2">✨ Escanea el QR en el local para activar tus descuentos.</p>
+            </div>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center px-1">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">🔥 Promociones Destacadas</h3>
+                    <span class="text-[10px] text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/50">Conectado a Supabase</span>
+                </div>
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between hover:border-cyan-500/40 transition-all">
+                    <div>
+                        <span class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded font-semibold">Comercios AsistMax</span>
+                        <h4 class="text-sm font-bold text-white mt-1">Hasta 20% OFF en caja</h4>
+                        <p class="text-xs text-slate-400">Aplicado automáticamente al pagar.</p>
+                    </div>
+                    <div class="text-cyan-400 font-bold text-lg">→</div>
+                </div>
+            </div>
+            <div class="pt-4">
+                <button onclick="escanearQR()" class="w-full group relative inline-flex items-center justify-center px-8 py-4 text-base font-bold text-slate-950 transition-all duration-200 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20 active:scale-95">
+                    <span class="mr-2 text-xl">📷</span> Escanear QR del Comercio
+                </button>
+                <p class="text-center text-[11px] text-slate-500 mt-3">
+                    Pagos seguros respaldados por infraestructura digital.
+                </p>
+            </div>
+        </main>
+        <footer class="w-full text-center py-4 border-t border-slate-900 text-[11px] text-slate-600">
+            AsistMax-cobros &copy; 2026 - Todos los derechos reservados
+        </footer>
+        <script>
+            function escanearQR() {
+                alert("Activando cámara para leer el código QR del comercio adherido...");
+            }
+        </script>
+    </body>
+    </html>
+    """
 
-# 2. RUTAS DE API (Backend)
 @app.get("/api/promociones")
 def obtener_promociones():
     if not supabase:
-        return {
-            "success": True,
-            "promociones": [
-                {"id": 1, "comercio": "Comercio Adherido A", "beneficio": "20% OFF en caja"},
-                {"id": 2, "comercio": "Red AsistMax", "beneficio": "Beneficio exclusivo digital"}
-            ]
-        }
+        return {"success": True, "promociones": []}
     try:
         response = supabase.table("promociones").select("*").eq("activa", True).execute()
         return {"success": True, "promociones": response.data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/procesar-cobro")
-def procesar_cobro(datos: TransaccionRequest):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Base de datos no configurada.")
-    try:
-        nueva_transaccion = {
-            "monto_bruto": datos.monto_bruto,
-            "comercio_id": datos.comercio_id,
-            "cliente_id": datos.cliente_id,
-            "estado": "pendiente"
-        }
-        resultado = supabase.table("transacciones").insert(nueva_transaccion).execute()
-        return {"success": True, "mensaje": "Transacción registrada", "data": resultado.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
