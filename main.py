@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="AsistMax-cobros", version="3.4")
+app = FastAPI(title="AsistMax-cobros", version="3.5")
 
 app.add_middleware(
     CORSMiddleware,
@@ -77,6 +77,18 @@ def mostrar_interfaz():
 
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
+
+            <!-- Tarjeta de Progreso / Nivel del Cliente (Simulada para usuario logueado) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 shadow-xl flex items-center justify-between">
+                <div class="space-y-1">
+                    <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-800/50">Mi Nivel Actual</span>
+                    <h3 class="text-sm font-bold text-white">Nivel Plata • 450 Puntos</h3>
+                    <p class="text-[11px] text-slate-400">Te faltan 55p para el Nivel Oro</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-slate-950 font-black text-lg shadow-lg">
+                    🥈
+                </div>
+            </div>
 
             <!-- Banner Principal Escáner -->
             <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/40 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
@@ -190,14 +202,14 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL REGISTRO USUARIO + SUSCRIPCIÓN -->
+        <!-- MODAL REGISTRO USUARIO + SUSCRIPCIÓN MERCADO PAGO -->
         <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
                     <h3 class="text-base font-bold text-white">👤 Crear Cuenta & Suscripción</h3>
                     <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                <p class="text-[11px] text-blue-400 bg-blue-950/40 p-2.5 rounded-xl border border-blue-800/30">Membresía mensual de $10.000. Puede abonar online por Mercado Pago o en efectivo directamente en un comercio adherido (informando su ID para activación por el Administrador).</p>
+                <p class="text-[11px] text-blue-400 bg-blue-950/40 p-2.5 rounded-xl border border-blue-800/30">Membresía mensual de $10.000. Al registrarse será redirigido automáticamente a Mercado Pago para abonar su suscripción.</p>
                 <form id="formUsuario" onsubmit="enviarUsuario(event)" class="space-y-3">
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Nombre Completo</label>
@@ -223,12 +235,12 @@ def mostrar_interfaz():
                         <label class="text-[11px] font-semibold text-slate-400">Correo Electrónico</label>
                         <input type="email" id="u_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 outline-none mt-1">
                     </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Registrarse y Seleccionar Pago</button>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Pagar Suscripción en Mercado Pago</button>
                 </form>
             </div>
         </div>
 
-        <!-- MODAL PANEL DE ADMINISTRADOR Y COLABORADORES -->
+        <!-- MODAL PANEL DE ADMINISTRADOR Y COLABORADORES SEPARADO Y ORDENADO -->
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -239,7 +251,7 @@ def mostrar_interfaz():
                     <button onclick="cerrarAdmin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
 
-                <!-- Barra o contador superior de niveles y estadísticas -->
+                <!-- Contadores superiores -->
                 <div class="grid grid-cols-3 gap-3">
                     <div class="bg-slate-950 border border-slate-800 p-3 rounded-2xl text-center">
                         <span class="text-[10px] text-slate-400 uppercase font-semibold">Comercios Activos</span>
@@ -255,22 +267,23 @@ def mostrar_interfaz():
                     </div>
                 </div>
 
-                <!-- Controles de Administración / Colaborador -->
-                <div class="space-y-3 pt-2">
-                    <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-bold text-slate-300 uppercase">📊 Bases de Datos y Exportación</h4>
-                        <div class="space-x-2">
-                            <button onclick="exportarExcel()" class="text-[11px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/30 font-semibold">📥 Exportar Excel</button>
-                            <button onclick="exportarPDF()" class="text-[11px] bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-2.5 py-1 rounded-lg border border-rose-500/30 font-semibold">📄 Exportar PDF</button>
-                        </div>
-                    </div>
+                <!-- Pestañas de Navegación del Panel -->
+                <div class="flex border-b border-slate-800 space-x-4 pt-2">
+                    <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 text-xs font-bold text-cyan-400 border-b-2 border-cyan-400 transition">🏪 Gestión de Comercios</button>
+                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition">👤 Gestión de Usuarios</button>
+                </div>
 
-                    <!-- Tabla de gestión rápida simulada -->
+                <!-- SECCIÓN COMERCIOS -->
+                <div id="seccionComerciosAdmin" class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Listado y Ventas de Comercios</h4>
+                        <button onclick="exportarCSV('comercios')" class="text-[11px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-2.5 py-1 rounded-lg border border-cyan-500/30 font-semibold">📥 Descargar CSV Comercios</button>
+                    </div>
                     <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden p-3 space-y-2">
                         <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800 pb-2">
-                            <span>Cliente / Comercio</span>
-                            <span>Tipo / Nivel</span>
-                            <span>Estado / Suscripción</span>
+                            <span>Comercio (ID)</span>
+                            <span>Estrella / Nivel</span>
+                            <span>Ventas / Monto</span>
                             <span>Acción</span>
                         </div>
                         <div class="flex justify-between items-center text-xs text-white py-1">
@@ -278,21 +291,38 @@ def mostrar_interfaz():
                                 <p class="font-bold">Café Central</p>
                                 <p class="text-[10px] text-slate-400">ID: #102</p>
                             </div>
-                            <span class="text-cyan-400">Comercios (Estrella 2)</span>
-                            <span class="text-emerald-400">Activo</span>
-                            <button onclick="cambiarEstado('Comercio #102')" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded border border-slate-700">Pausar / Activar</button>
+                            <span class="text-cyan-400">Estrella 2</span>
+                            <span class="text-emerald-400">140 ventas ($450.000)</span>
+                            <button onclick="cambiarEstadoComercio('Café Central')" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded border border-slate-700">Pausar / Activar</button>
                         </div>
-                        <div class="flex justify-between items-center text-xs text-white py-1 border-t border-slate-900">
+                    </div>
+                </div>
+
+                <!-- SECCIÓN USUARIOS (OCULTA POR DEFECTO) -->
+                <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold text-blue-400 uppercase">📊 Listado, Puntos y Suscripciones de Usuarios</h4>
+                        <button onclick="exportarCSV('usuarios')" class="text-[11px] bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-2.5 py-1 rounded-lg border border-blue-500/30 font-semibold">📥 Descargar CSV Usuarios</button>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden p-3 space-y-2">
+                        <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800 pb-2">
+                            <span>Usuario / DNI</span>
+                            <span>Nivel / Puntos</span>
+                            <span>Suscripción</span>
+                            <span>Acción</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-white py-1">
                             <div>
                                 <p class="font-bold">Juan Pérez</p>
-                                <p class="text-[10px] text-slate-400">DNI: 34... • 450 pts</p>
+                                <p class="text-[10px] text-slate-400">DNI: 34... • wpp: 3834...</p>
                             </div>
-                            <span class="text-blue-400">Usuario (Plata)</span>
-                            <span class="text-amber-400">Pendiente / Pago Efvo</span>
+                            <span class="text-blue-400">Plata (450 pts)</span>
+                            <span class="text-amber-400">Pendiente / Efectivo</span>
                             <button onclick="darDeAlta('Juan Pérez')" class="text-[10px] bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold px-2 py-1 rounded">Dar de Alta</button>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
 
@@ -369,7 +399,6 @@ def mostrar_interfaz():
 
             function abrirAdmin() {
                 let clave = prompt("Ingrese la Clave Única de Administrador o Colaborador:");
-                // Clave segura única para ti y colaboradores con permisos de carga
                 if (clave === "AsistMaxAdmin2026Secure") {
                     document.getElementById('modalAdmin').classList.remove('hidden');
                 } else if (clave !== null) {
@@ -381,26 +410,47 @@ def mostrar_interfaz():
                 document.getElementById('modalAdmin').classList.add('hidden');
             }
 
-            function cambiarEstado(nombre) {
-                alert("Estado modificado para: " + nombre + ". (Pausado / Activo actualizado con éxito).");
+            function cambiarPestanaAdmin(tipo) {
+                const btnComercios = document.getElementById('btnTabComercios');
+                const btnUsuarios = document.getElementById('btnTabUsuarios');
+                const secComercios = document.getElementById('seccionComerciosAdmin');
+                const secUsuarios = document.getElementById('seccionUsuariosAdmin');
+
+                if(tipo === 'comercios') {
+                    btnComercios.className = "pb-2 text-xs font-bold text-cyan-400 border-b-2 border-cyan-400 transition";
+                    btnUsuarios.className = "pb-2 text-xs font-bold text-slate-400 hover:text-white transition";
+                    secComercios.classList.remove('hidden');
+                    secUsuarios.classList.add('hidden');
+                } else {
+                    btnUsuarios.className = "pb-2 text-xs font-bold text-blue-400 border-b-2 border-blue-400 transition";
+                    btnComercios.className = "pb-2 text-xs font-bold text-slate-400 hover:text-white transition";
+                    secUsuarios.classList.remove('hidden');
+                    secComercios.classList.add('hidden');
+                }
+            }
+
+            function cambiarEstadoComercio(nombre) {
+                alert("Estado modificado para el comercio: " + nombre);
             }
 
             function darDeAlta(nombre) {
                 alert("¡Cuenta dada de alta por el Administrador/Colaborador para: " + nombre + "!");
             }
 
-            function exportarExcel() {
-                alert("Generando planilla descargable en formato Excel (.xlsx) con datos de usuarios y comercios...");
-            }
-
-            function exportarPDF() {
-                alert("Generando reporte descargable en formato PDF...");
+            function exportarCSV(tipo) {
+                let contenido = tipo === 'comercios' ? "ID,Comercio,Estrella,Ventas,MontoTotal\\n102,Café Central,2,140,450000" : "ID,Usuario,DNI,Puntos,Nivel,Suscripcion\\n1,Juan Pérez,34000000,450,Plata,Activo";
+                let blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
+                let enlace = document.createElement("a");
+                enlace.href = URL.createObjectURL(blob);
+                enlace.download = `reporte_${tipo}_asistmax.csv`;
+                enlace.click();
+                alert("Archivo CSV descargado con éxito.");
             }
 
             const textosLegales = {
-                terminos: `<b>Términos y Condiciones Generales:</b> AsistMax opera como una red tecnológica B2C de intermediación publicitaria y fidelización comercial. Los comercios adheridos participan de forma gratuita y ofrecen un beneficio mínimo obligatorio del 5% en carácter de contraprestación publicitaria dentro de la red. Los descuentos promocionales especiales determinados por los comercios no son acumulables entre sí salvo expresa indicación del establecimiento o entidades financieras asociadas.`,
-                privacidad: `<b>Política de Privacidad y Confidencialidad:</b> En cumplimiento de las normativas de protección de datos personales y confidencialidad, la información provista por usuarios y comercios se encuentra rigurosamente resguardada. Los datos de contacto y transaccionales no son comercializados a terceros y se utilizan exclusivamente para la gestión de beneficios, validación de niveles y seguridad dentro del ecosistema AsistMax.`,
-                suscripcion: `<b>Condiciones de Suscripción y Período de Gracia:</b> La activación de la cuenta de usuario se encuentra sujeta al abono de la membresía mensual ($10.000). El alta definitiva es efectuada exclusivamente por el Administrador o colaboradores tras verificar el pago digital o en efectivo en los comercios adheridos (informando el ID). En caso de mora, la cuenta ingresará en estado de suspensión temporal (preservando datos y puntos). Si transcurren 15 días corridos desde el vencimiento sin regularizar, el sistema podrá aplicar la pérdida de los puntos acumulados.`
+                terminos: `<b>Términos y Condiciones Generales:</b> AsistMax opera como una red tecnológica B2C de intermediación publicitaria y fidelización comercial. Los comercios adheridos participan de forma gratuita y ofrecen un beneficio mínimo obligatorio del 5% en carácter de contraprestación publicitaria dentro de la red.`,
+                privacidad: `<b>Política de Privacidad y Confidencialidad:</b> En cumplimiento de las normativas de protección de datos personales y confidencialidad, la información provista por usuarios y comercios se encuentra rigurosamente resguardada.`,
+                suscripcion: `<b>Condiciones de Suscripción y Período de Gracia:</b> La activación de la cuenta de usuario se encuentra sujeta al abono de la membresía mensual ($10.000).`
             };
 
             function mostrarLegal(tipo) {
@@ -457,9 +507,8 @@ def mostrar_interfaz():
                 });
                 let json = await res.json();
                 if(json.success) {
-                    alert("¡Pre-registro exitoso! Puede abonar online por Mercado Pago o abonar en efectivo en cualquier comercio adherido informando su ID para que el Administrador active su cuenta y puntos de inmediato.");
-                    cerrarModalUsuario();
-                    document.getElementById('formUsuario').reset();
+                    alert("¡Registro pre-aprobado! Redirigiendo a Mercado Pago para completar la suscripción mensual de $10.000...");
+                    window.location.href = "https://www.mercadopago.com.ar"; // Enlace directo a tu cuenta/suscripción de MP
                 } else {
                     alert("Error al registrar: " + json.detail);
                 }
