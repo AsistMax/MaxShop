@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="AsistMax-cobros", version="3.1")
+app = FastAPI(title="AsistMax-cobros", version="3.2")
 
 app.add_middleware(
     CORSMiddleware,
@@ -51,7 +51,7 @@ def mostrar_interfaz():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>AsistMax - Red de Cobros y Comercios Adheridos</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <!-- Librería para lectura real de códigos QR por cámara -->
+        <!-- Librería oficial para lectura real de códigos QR por cámara -->
         <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </head>
     <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950">
@@ -123,14 +123,15 @@ def mostrar_interfaz():
         </main>
 
         <!-- MODAL CÁMARA ESCÁNER QR REAL -->
-        <div id="modalQR" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
+        <div id="modalQR" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl text-center">
                 <div class="flex justify-between items-center">
                     <h3 class="text-sm font-bold text-white">📷 Escáner de Código QR</h3>
-                    <button onclick="cerrarEscaneoQR()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+                    <button onclick="cerrarEscaneoQR()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
                 </div>
-                <div id="reader" class="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950"></div>
-                <p class="text-[11px] text-slate-400">Enfoque el código QR del comercio con la cámara de su dispositivo.</p>
+                <div id="reader" class="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 min-h-[250px]"></div>
+                <p class="text-[11px] text-slate-400">Enfoque el código QR del comercio con la cámara trasera.</p>
+                <button onclick="cerrarEscaneoQR()" class="w-full py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-700 transition">Cancelar / Cerrar</button>
             </div>
         </div>
 
@@ -243,51 +244,54 @@ def mostrar_interfaz():
             <p class="font-semibold text-slate-400">AsistMax-cobros &copy; 2026</p>
         </footer>
 
-        <!-- Scripts de interacción y cámara QR -->
+        <!-- Scripts de interacción y cámara con control de excepciones -->
         <script>
             let html5QrCode = null;
 
             function iniciarEscaneoQR() {
-                document.getElementById('modalQR').classList.remove('hidden');
-                
+                const modal = document.getElementById('modalQR');
+                modal.classList.remove('hidden');
+
+                // Asegurar que el objeto esté inicializado
                 if (!html5QrCode) {
                     html5QrCode = new Html5Qrcode("reader");
                 }
-                
-                const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-                
+
+                const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
                 html5QrCode.start(
-                    { facingMode: "environment" }, 
+                    { facingMode: "environment" },
                     config,
-                    (decodedText, decodedResult) => {
-                        // Éxito al leer el QR
+                    (decodedText) => {
                         detenerEscaneoQR();
                         if (decodedText.startsWith("http://") || decodedText.startsWith("https://")) {
-                            if (confirm("QR detectado con enlace:\n" + decodedText + "\n\n¿Desea abrir este sitio?")) {
+                            if (confirm("QR detectado con enlace:\\n" + decodedText + "\\n\\n¿Desea abrir este sitio?")) {
                                 window.location.href = decodedText;
                             }
                         } else {
-                            alert("Código QR escaneado con éxito:\n\n" + decodedText);
+                            alert("Código QR escaneado con éxito:\\n\\n" + decodedText);
                         }
                     },
                     (errorMessage) => {
-                        // Errores de escaneo continuo por frame (se pueden ignorar)
+                        // Ignoramos errores de cuadro por cuadro mientras busca el código
                     }
                 ).catch((err) => {
-                    alert("No se pudo acceder a la cámara del dispositivo. Verifique los permisos de su navegador.");
-                    cerrarEscaneoQR();
+                    console.error("Error al iniciar cámara:", err);
+                    alert("No se pudo iniciar la cámara. Asegúrese de otorgar permisos de cámara en su navegador (HTTPS requerido).");
+                    modal.classList.add('hidden');
                 });
             }
 
             function detenerEscaneoQR() {
-                if (html5QrCode && html5QrCode.isScanning) {
+                const modal = document.getElementById('modalQR');
+                if (html5QrCode) {
                     html5QrCode.stop().then(() => {
-                        document.getElementById('modalQR').classList.add('hidden');
+                        modal.classList.add('hidden');
                     }).catch(err => {
-                        document.getElementById('modalQR').classList.add('hidden');
+                        modal.classList.add('hidden');
                     });
                 } else {
-                    document.getElementById('modalQR').classList.add('hidden');
+                    modal.classList.add('hidden');
                 }
             }
 
@@ -297,7 +301,7 @@ def mostrar_interfaz():
 
             function abrirModalComercio() { document.getElementById('modalComercio').classList.remove('hidden'); }
             function cerrarModalComercio() { document.getElementById('modalComercio').classList.add('hidden'); }
-            function abrirModalUsuario() { document.getElementById('modalModalUsuario')?.classList.remove('hidden') || document.getElementById('modalUsuario').classList.remove('hidden'); }
+            function abrirModalUsuario() { document.getElementById('modalUsuario').classList.remove('hidden'); }
             function cerrarModalUsuario() { document.getElementById('modalUsuario').classList.add('hidden'); }
 
             async function enviarComercio(e) {
@@ -364,23 +368,3 @@ def mostrar_interfaz():
     </body>
     </html>
     """
-
-@app.post("/api/registrar-comercio")
-def registrar_comercio(comercio: ComercioModel):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Base de datos no conectada.")
-    try:
-        response = supabase.table("comercios").insert(comercio.dict()).execute()
-        return {"success": True, "data": response.data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/registrar-usuario")
-def registrar_usuario(usuario: UsuarioModel):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Base de datos no conectada.")
-    try:
-        response = supabase.table("usuarios").insert(usuario.dict()).execute()
-        return {"success": True, "data": response.data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
