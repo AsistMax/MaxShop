@@ -41,7 +41,7 @@ def init_db():
 init_db()
 
 # ==========================================
-# MODELOS PYDANTIC (CORREGIDOS Y ESTÁNDAR)
+# MODELOS PYDANTIC
 # ==========================================
 class ComercioModel(BaseModel):
     nombre: str
@@ -131,36 +131,35 @@ def index():
     <!-- CONTENEDOR PRINCIPAL APP MÓVIL / WEB -->
     <div class="w-full max-w-md mx-auto bg-slate-950 min-h-screen flex flex-col shadow-2xl relative border-x border-slate-900">
 
-        <!-- Navbar Superior (LOGO MEJORADO) -->
+        <!-- Navbar Superior (DISEÑO ORIGINAL) -->
         <header class="w-full px-5 py-4 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/90 backdrop-blur-md sticky top-0 z-50 shadow-lg">
-            <div class="flex items-center space-x-3.5">
-                <!-- LOGO MÁS GRANDE Y NITIDO (w-14 h-14) -->
-                <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-14 h-14 rounded-2xl object-cover object-center border-2 border-cyan-500/60 shadow-lg shadow-cyan-500/30 bg-slate-900">
+            <div class="flex items-center space-x-3">
+                <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-10 h-10 rounded-xl object-cover border border-cyan-500/50 shadow-md">
                 <div>
-                    <h1 class="text-lg font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></h1>
-                    <p class="text-[11px] text-cyan-400 font-semibold tracking-widest uppercase">Red B2B & Consumidores</p>
+                    <h1 class="text-xs font-extrabold tracking-wider text-white">MAXSHOP</h1>
+                    <p class="text-[9px] text-cyan-400 font-bold tracking-widest uppercase">AsistMax</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="abrirLogin()" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-2 rounded-xl border border-cyan-500/30 transition font-semibold">
+                <button onclick="abrirLogin()" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-xl border border-cyan-500/30 transition font-semibold">
                     🔑 Login
                 </button>
-                <button onclick="abrirAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-xl border border-slate-700 transition font-medium">
+                <button onclick="abrirAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700 transition font-medium">
                     ⚙️ Admin
                 </button>
             </div>
         </header>
 
         <!-- Contenido Principal -->
-        <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
+        <main class="w-full max-w-md mx-auto px-4 py-5 space-y-5 flex-1">
 
-            <!-- BANNER PRINCIPAL (MÁS ALTO h-64 Y CENTRADO) -->
-            <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl relative bg-slate-900">
-                <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-64 object-cover object-center">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex items-end p-5">
+            <!-- BANNER PRINCIPAL (DISEÑO ORIGINAL) -->
+            <div class="w-full h-48 rounded-2xl overflow-hidden border border-slate-800 shadow-xl relative bg-slate-900">
+                <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex items-end p-4">
                     <div>
-                        <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/90 px-3 py-1 rounded-full border border-cyan-800/50">Comercio Destacado Oficial</span>
-                        <h2 class="text-2xl font-extrabold text-white mt-1.5">MaxShop Red Global</h2>
+                        <span class="text-[9px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/40">Comercio Destacado Oficial</span>
+                        <h2 class="text-xl font-extrabold text-white mt-1">MaxShop Red Global</h2>
                     </div>
                 </div>
             </div>
@@ -184,19 +183,14 @@ def index():
                 </button>
             </div>
 
-            <!-- SECCIÓN MI HISTORIAL (ACTUALIZADA Y DINÁMICA) -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3">
+            <!-- SECCIÓN MI HISTORIAL (OCULTO POR DEFECTO HASTA INICIAR SESIÓN) -->
+            <div id="seccionHistorial" class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3 hidden">
                 <div class="flex justify-between items-center">
                     <!-- Título Dinámico según Sesión -->
-                    <h3 id="tituloHistorial" class="text-xs font-bold uppercase tracking-wider text-slate-400">🧾 Historial (Inicie Sesión)</h3>
+                    <h3 id="tituloHistorial" class="text-xs font-bold uppercase tracking-wider text-slate-400">🧾 Mi Historial</h3>
                 </div>
 
-                <!-- Mensaje de No Logueado por defecto -->
-                <div id="historialVacio" class="text-center py-4 text-[11px] text-slate-500">
-                    Inicie sesión o regístrese para ver sus operaciones.
-                </div>
-
-                <!-- Historial Consumos (Visible solo si es Usuario Consumidor) -->
+                <!-- Historial Consumos (Visible si es Consumidor) -->
                 <div id="historialConsumosContainer" class="space-y-2 hidden">
                     <div class="text-xs bg-slate-950 p-3 rounded-xl border border-slate-800/80 space-y-1">
                         <div class="flex justify-between text-slate-400 text-[10px]">
@@ -211,7 +205,7 @@ def index():
                     </div>
                 </div>
 
-                <!-- Historial Ventas (Visible solo si es Comercio) -->
+                <!-- Historial Ventas (Visible si es Comercio) -->
                 <div id="historialVentasContainer" class="space-y-2 hidden">
                     <div class="text-xs bg-slate-950 p-3 rounded-xl border border-slate-800/80 space-y-1">
                         <div class="flex justify-between text-slate-400 text-[10px]">
@@ -354,30 +348,29 @@ def index():
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Variable global para simular la sesión activa
-        let rolActual = null; // 'consumidor', 'comercio' o null
+        let rolActual = null; // null, 'consumidor', o 'comercio'
 
         function actualizarVistaHistorial() {
+            const seccionHistorial = document.getElementById('seccionHistorial');
             const titulo = document.getElementById('tituloHistorial');
             const contConsumos = document.getElementById('historialConsumosContainer');
             const contVentas = document.getElementById('historialVentasContainer');
-            const contVacio = document.getElementById('historialVacio');
 
             if (rolActual === 'comercio') {
+                seccionHistorial.classList.remove('hidden');
                 titulo.innerText = "🧾 Mi Historial de Ventas";
                 contConsumos.classList.add('hidden');
                 contVentas.classList.remove('hidden');
-                contVacio.classList.add('hidden');
             } else if (rolActual === 'consumidor') {
+                seccionHistorial.classList.remove('hidden');
                 titulo.innerText = "🧾 Mi Historial de Consumos";
                 contConsumos.classList.remove('hidden');
                 contVentas.classList.add('hidden');
-                contVacio.classList.add('hidden');
             } else {
-                titulo.innerText = "🧾 Historial (Inicie Sesión)";
+                // Si no hay sesión, se oculta por completo
+                seccionHistorial.classList.add('hidden');
                 contConsumos.classList.add('hidden');
                 contVentas.classList.add('hidden');
-                contVacio.classList.remove('hidden');
             }
         }
 
@@ -473,7 +466,7 @@ def index():
                     document.getElementById('formComercio').reset();
                     cargarComerciosPublicos();
                     
-                    // Auto-iniciar sesión como comercio registrado
+                    // Auto-iniciar sesión como comercio
                     rolActual = 'comercio';
                     actualizarVistaHistorial();
                 } else {
@@ -505,7 +498,7 @@ def index():
                     document.getElementById('modalOpcionesPago').classList.remove('hidden');
                     document.getElementById('formUsuario').reset();
                     
-                    // Auto-iniciar sesión como consumidor registrado
+                    // Auto-iniciar sesión como consumidor
                     rolActual = 'consumidor';
                     actualizarVistaHistorial();
                 } else {
