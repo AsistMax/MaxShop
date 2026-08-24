@@ -41,21 +41,19 @@ def init_db():
 init_db()
 
 # ==========================================
-# MODELOS PYDANTIC
+# MODELOS PYDANTIC (CORREGIDOS Y ESTÁNDAR)
 # ==========================================
-class ComercioModel(BaseModel.model_config := {}, **{
-    "nombre": str,
-    "cuit": str,
-    "rubro": str,
-    "whatsapp": str,
-    "direccion": str
-})
+class ComercioModel(BaseModel):
+    nombre: str
+    cuit: str
+    rubro: str
+    whatsapp: str
+    direccion: str
 
-class UsuarioModel(BaseModel.model_config := {}, **{
-    "nombre": str,
-    "email": str,
-    "telefono": str
-})
+class UsuarioModel(BaseModel):
+    nombre: str
+    email: str
+    telefono: str
 
 # ==========================================
 # ENDPOINTS API BACKEND
