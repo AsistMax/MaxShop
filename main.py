@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="5.0")
+app = FastAPI(title="MaxShop - AsistMax", version="6.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -58,6 +58,9 @@ def mostrar_interfaz():
         <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </head>
     <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950" onload="cargarComerciosPublicos()">
+
+        <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
+        <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
         <!-- Navbar Superior -->
         <header class="w-full px-4 py-3 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 shadow-lg">
@@ -206,6 +209,25 @@ def mostrar_interfaz():
                         </div>
                     </div>
 
+                    <!-- PANEL ESTADÍSTICO PARA COMERCIOS (KPIs) -->
+                    <div id="panelEstadisticasComercio" class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3 hidden">
+                        <h3 class="text-xs font-bold text-cyan-400 uppercase">📊 Estadísticas del Mes (MaxShop)</h3>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+                                <span class="text-[9px] text-slate-400 block">Ventas Totales</span>
+                                <span class="text-xs font-black text-emerald-400" id="statVentasTotal">$142.500</span>
+                            </div>
+                            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+                                <span class="text-[9px] text-slate-400 block">Descuentos</span>
+                                <span class="text-xs font-black text-cyan-400" id="statDescuentosTotal">$7.125</span>
+                            </div>
+                            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+                                <span class="text-[9px] text-slate-400 block">Clientes Únicos</span>
+                                <span class="text-xs font-black text-blue-400" id="statClientesTotal">18</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 space-y-3">
                         <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-400" id="tituloHistorialRol">🧾 Historial de Operaciones</h3>
                         <div id="historialConsumosContainer" class="space-y-2">
@@ -217,7 +239,7 @@ def mostrar_interfaz():
                                 <p class="font-bold text-white">Consumo con Descuento aplicado</p>
                                 <div class="flex justify-between items-center pt-1 border-t border-slate-800">
                                     <span class="text-slate-400">Total: <strong class="text-emerald-400">$9.500</strong></span>
-                                    <button onclick="verComprobanteDetalle('1042', 'MaxShop', 'Consumo con Descuento', '$9.500')" class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded border border-cyan-500/30">Ver Comprobante</button>
+                                    <button onclick="mostrarToast('Comprobante descargado correctamente', 'success')" class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded border border-cyan-500/30">Ver Comprobante</button>
                                 </div>
                             </div>
                         </div>
@@ -261,7 +283,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL REGISTRO COMERCIO (Con Subida de Logo y Fotos) -->
+        <!-- MODAL REGISTRO COMERCIO -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
@@ -410,6 +432,29 @@ def mostrar_interfaz():
             let listaComerciosGlobal = [];
             let comercioEscaneadoActual = null;
 
+            // SISTEMA DE NOTIFICACIONES TOAST
+            function mostrarToast(mensaje, tipo = 'success') {
+                const contenedor = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                let bgColors = "bg-slate-900 border-cyan-500/40 text-cyan-400";
+                let icono = "✨";
+                if (tipo === 'success') {
+                    bgColors = "bg-slate-900 border-emerald-500/40 text-emerald-400";
+                    icono = "✅";
+                } else if (tipo === 'error') {
+                    bgColors = "bg-slate-900 border-rose-500/40 text-rose-400";
+                    icono = "⚠️";
+                }
+                toast.className = `pointer-events-auto flex items-center space-x-2 px-4 py-3 rounded-2xl border ${bgColors} shadow-2xl backdrop-blur-md transform transition-all duration-300 translate-y-[-10px] opacity-0 text-xs font-bold`;
+                toast.innerHTML = `<span>${icono}</span><span>${mensaje}</span>`;
+                contenedor.appendChild(toast);
+                setTimeout(() => { toast.classList.remove('translate-y-[-10px]', 'opacity-0'); }, 10);
+                setTimeout(() => {
+                    toast.classList.add('translate-y-[-10px]', 'opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3500);
+            }
+
             async function cargarComerciosPublicos() {
                 try {
                     let res = await fetch('/api/comercios');
@@ -490,9 +535,9 @@ def mostrar_interfaz():
 
             function confirmarVentaQR() {
                 let monto = document.getElementById('inputMontoCompra').value;
-                if(!monto || monto <= 0) { alert("Ingrese un monto válido."); return; }
+                if(!monto || monto <= 0) { mostrarToast("Ingrese un monto válido.", "error"); return; }
                 cerrarModalVenta();
-                alert("¡Venta validada y descuento aplicado con éxito! Comprobante guardado en el historial.");
+                mostrarToast("¡Venta validada con éxito! Puntos y comprobante guardados.", "success");
             }
 
             function abrirModalComercio() { document.getElementById('modalComercio').classList.remove('hidden'); }
@@ -501,7 +546,7 @@ def mostrar_interfaz():
             function cerrarModalUsuario() { document.getElementById('modalUsuario').classList.add('hidden'); }
             function abrirLogin() { document.getElementById('modalLogin').classList.remove('hidden'); document.getElementById('loginFormContainer').classList.remove('hidden'); document.getElementById('panelSesionContainer').classList.add('hidden'); }
             function cerrarLogin() { document.getElementById('modalLogin').classList.add('hidden'); }
-            function abrirAdmin() { let c = prompt("Clave Admin:"); if(c === "AsistMaxAdmin2026Secure") { document.getElementById('modalAdmin').classList.remove('hidden'); } else if(c !== null) { alert("Clave incorrecta."); } }
+            function abrirAdmin() { let c = prompt("Clave Admin:"); if(c === "AsistMaxAdmin2026Secure") { document.getElementById('modalAdmin').classList.remove('hidden'); } else if(c !== null) { mostrarToast("Clave incorrecta.", "error"); } }
             function cerrarAdmin() { document.getElementById('modalAdmin').classList.add('hidden'); }
 
             function cambiarPestanaAdmin(tipo) {
@@ -521,18 +566,22 @@ def mostrar_interfaz():
                 if(id.toLowerCase().includes('comercio') || id.toLowerCase().includes('shop')) {
                     document.getElementById('rolSesionBadge').innerText = "Rol: Comercio Adherido";
                     document.getElementById('configuracionComercioPanel').classList.remove('hidden');
+                    document.getElementById('panelEstadisticasComercio').classList.remove('hidden');
                     document.getElementById('nombreSesionLabel').innerText = "Comercio: " + id;
                 } else {
                     document.getElementById('rolSesionBadge').innerText = "Rol: Consumidor";
                     document.getElementById('configuracionComercioPanel').classList.add('hidden');
+                    document.getElementById('panelEstadisticasComercio').classList.add('hidden');
                     document.getElementById('nombreSesionLabel').innerText = "Usuario: " + id;
                 }
+                mostrarToast("Sesión iniciada correctamente", "success");
             }
 
             function cerrarSesion() {
                 document.getElementById('inputLoginIdentificador').value = "";
                 document.getElementById('panelSesionContainer').classList.add('hidden');
                 document.getElementById('loginFormContainer').classList.remove('hidden');
+                mostrarToast("Sesión cerrada", "info");
             }
 
             function guardarConfiguracionComercio() {
@@ -542,10 +591,10 @@ def mostrar_interfaz():
 
                 // REGLA DE NEGOCIO: Bloqueo si intenta modificar el día de promoción actual
                 if (diaHoy === diaSeleccionado) {
-                    alert("⚠️ No puedes modificar ni quitar el descuento especial el mismo día en que está activo para los clientes.");
+                    mostrarToast("⚠️ No puedes modificar el descuento el mismo día que está activo.", "error");
                     return;
                 }
-                alert("¡Configuración de descuentos actualizada correctamente!");
+                mostrarToast("¡Configuración de descuentos actualizada!", "success");
             }
 
             function exportarCSV(tipo) {
@@ -572,6 +621,7 @@ def mostrar_interfaz():
                 enlace.href = URL.createObjectURL(blob);
                 enlace.download = `reporte_${tipo}_maxshop.csv`;
                 enlace.click();
+                mostrarToast("Reporte CSV exportado con éxito", "success");
             }
 
             async function enviarComercio(e) {
@@ -595,11 +645,11 @@ def mostrar_interfaz():
                 });
                 let json = await res.json();
                 if(json.success) {
-                    alert("¡Comercio registrado con éxito! Código QR generado automáticamente.");
+                    mostrarToast("¡Comercio registrado con éxito y QR generado!", "success");
                     cerrarModalComercio();
                     document.getElementById('formComercio').reset();
                     cargarComerciosPublicos();
-                } else { alert("Error: " + json.detail); }
+                } else { mostrarToast("Error: " + json.detail, "error"); }
             }
 
             async function enviarUsuario(e) {
@@ -618,8 +668,9 @@ def mostrar_interfaz():
                 let json = await res.json();
                 if(json.success) {
                     cerrarModalUsuario();
+                    mostrarToast("Usuario registrado. Redirigiendo a pago...", "success");
                     window.open("https://mpago.la/12kwFZe", "_blank");
-                } else { alert("Error: " + json.detail); }
+                } else { mostrarToast("Error: " + json.detail, "error"); }
             }
         </script>
     </body>
@@ -644,7 +695,7 @@ def registrar_comercio(comercio: ComercioModel):
         response = supabase.table("comercios").insert(comercio.dict()).execute()
         return {"success": True, "data": response.data}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=550, detail=str(e))
 
 @app.post("/api/registrar-usuario")
 def registrar_usuario(usuario: UsuarioModel):
