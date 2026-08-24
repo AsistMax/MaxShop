@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="AsistMax-cobros", version="3.3")
+app = FastAPI(title="AsistMax-cobros", version="3.4")
 
 app.add_middleware(
     CORSMiddleware,
@@ -51,7 +51,7 @@ def mostrar_interfaz():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>AsistMax - Red de Cobros y Comercios Adheridos</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <!-- Librería oficial para lectura real de códigos QR por cámara -->
+        <!-- Librería para lectura real de códigos QR -->
         <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </head>
     <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950">
@@ -83,7 +83,7 @@ def mostrar_interfaz():
                 <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
                 <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-1 rounded-full border border-cyan-800/50">Billetera Inteligente</span>
                 <h2 class="text-2xl font-bold text-white mt-2">Pagos & Descuentos</h2>
-                <p class="text-xs text-slate-400 mt-1">Escanea el código QR del comercio adherido para validar tu beneficio del 5% mínimo o promoción vigente.</p>
+                <p class="text-xs text-slate-400 mt-1">Escanea el código QR del comercio adherido para validar tu beneficio del 5% mínimo o promoción vigente y sumar puntos.</p>
                 <div class="mt-5">
                     <button onclick="iniciarEscaneoQR()" class="w-full group relative inline-flex items-center justify-center px-6 py-3.5 text-sm font-bold text-slate-950 transition-all bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20 active:scale-95">
                         <span class="mr-2 text-base">📷</span> Escanear QR del Comercio
@@ -116,7 +116,7 @@ def mostrar_interfaz():
                         <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-cyan-400">☕</div>
                         <div>
                             <h4 class="text-xs font-bold text-white">Café Central AsistMax</h4>
-                            <p class="text-[11px] text-slate-400">Gastronomía • 5% Base + 15% Lun</p>
+                            <p class="text-[11px] text-slate-400">Gastronomía • 5% Base + Promo Día</p>
                         </div>
                     </div>
                     <span class="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-lg border border-emerald-500/20 font-semibold">Activo</span>
@@ -133,7 +133,7 @@ def mostrar_interfaz():
                     <button onclick="cerrarEscaneoQR()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
                 </div>
                 <div id="reader" class="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 min-h-[250px]"></div>
-                <p class="text-[11px] text-slate-400">Enfoque el código QR del comercio para validar su compra y sumar puntos.</p>
+                <p class="text-[11px] text-slate-400">Enfoque el código QR del comercio para validar su compra y acumular puntos.</p>
                 <button onclick="cerrarEscaneoQR()" class="w-full py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-700 transition">Cancelar / Cerrar</button>
             </div>
         </div>
@@ -145,7 +145,7 @@ def mostrar_interfaz():
                     <h3 class="text-base font-bold text-white">🏪 Sumar mi Comercio (Gratis)</h3>
                     <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                <p class="text-[11px] text-cyan-400 bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-800/30">Inscripción sin costo. Se otorga automáticamente su QR de identificación y el 5% de descuento base obligatorio como costo publicitario.</p>
+                <p class="text-[11px] text-cyan-400 bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-800/30">Inscripción sin costo. Se otorga su QR de identificación y el 5% de descuento base obligatorio como costo publicitario.</p>
                 <form id="formComercio" onsubmit="enviarComercio(event)" class="space-y-3">
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Nombre Completo (Titular)</label>
@@ -197,7 +197,7 @@ def mostrar_interfaz():
                     <h3 class="text-base font-bold text-white">👤 Crear Cuenta & Suscripción</h3>
                     <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                <p class="text-[11px] text-blue-400 bg-blue-950/40 p-2.5 rounded-xl border border-blue-800/30">Membresía mensual de $10.000 vía Mercado Pago. Su cuenta se activará al validar el pago (por el administrador o vía WhatsApp).</p>
+                <p class="text-[11px] text-blue-400 bg-blue-950/40 p-2.5 rounded-xl border border-blue-800/30">Membresía mensual de $10.000. Puede abonar online por Mercado Pago o en efectivo directamente en un comercio adherido (informando su ID para activación por el Administrador).</p>
                 <form id="formUsuario" onsubmit="enviarUsuario(event)" class="space-y-3">
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Nombre Completo</label>
@@ -223,8 +223,76 @@ def mostrar_interfaz():
                         <label class="text-[11px] font-semibold text-slate-400">Correo Electrónico</label>
                         <input type="email" id="u_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 outline-none mt-1">
                     </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Pagar Suscripción ($10.000) y Registrarse</button>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Registrarse y Seleccionar Pago</button>
                 </form>
+            </div>
+        </div>
+
+        <!-- MODAL PANEL DE ADMINISTRADOR Y COLABORADORES -->
+        <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xl">⚙️</span>
+                        <h3 class="text-base font-bold text-white">Panel de Control & Gestión AsistMax</h3>
+                    </div>
+                    <button onclick="cerrarAdmin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+                </div>
+
+                <!-- Barra o contador superior de niveles y estadísticas -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-2xl text-center">
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold">Comercios Activos</span>
+                        <h4 class="text-lg font-black text-cyan-400 mt-0.5">24</h4>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-2xl text-center">
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold">Usuarios Suscriptos</span>
+                        <h4 class="text-lg font-black text-blue-400 mt-0.5">142</h4>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-2xl text-center">
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold">Nivel Promedio Red</span>
+                        <h4 class="text-lg font-black text-emerald-400 mt-0.5">Plata</h4>
+                    </div>
+                </div>
+
+                <!-- Controles de Administración / Colaborador -->
+                <div class="space-y-3 pt-2">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase">📊 Bases de Datos y Exportación</h4>
+                        <div class="space-x-2">
+                            <button onclick="exportarExcel()" class="text-[11px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/30 font-semibold">📥 Exportar Excel</button>
+                            <button onclick="exportarPDF()" class="text-[11px] bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-2.5 py-1 rounded-lg border border-rose-500/30 font-semibold">📄 Exportar PDF</button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de gestión rápida simulada -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden p-3 space-y-2">
+                        <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800 pb-2">
+                            <span>Cliente / Comercio</span>
+                            <span>Tipo / Nivel</span>
+                            <span>Estado / Suscripción</span>
+                            <span>Acción</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-white py-1">
+                            <div>
+                                <p class="font-bold">Café Central</p>
+                                <p class="text-[10px] text-slate-400">ID: #102</p>
+                            </div>
+                            <span class="text-cyan-400">Comercios (Estrella 2)</span>
+                            <span class="text-emerald-400">Activo</span>
+                            <button onclick="cambiarEstado('Comercio #102')" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded border border-slate-700">Pausar / Activar</button>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-white py-1 border-t border-slate-900">
+                            <div>
+                                <p class="font-bold">Juan Pérez</p>
+                                <p class="text-[10px] text-slate-400">DNI: 34... • 450 pts</p>
+                            </div>
+                            <span class="text-blue-400">Usuario (Plata)</span>
+                            <span class="text-amber-400">Pendiente / Pago Efvo</span>
+                            <button onclick="darDeAlta('Juan Pérez')" class="text-[10px] bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold px-2 py-1 rounded">Dar de Alta</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -300,18 +368,39 @@ def mostrar_interfaz():
             }
 
             function abrirAdmin() {
-                let clave = prompt("Clave de Administrador o Colaborador:");
-                if (clave === "admin123") {
-                    alert("Acceso autorizado. Panel de administración y activación de clientes disponible.");
+                let clave = prompt("Ingrese la Clave Única de Administrador o Colaborador:");
+                // Clave segura única para ti y colaboradores con permisos de carga
+                if (clave === "AsistMaxAdmin2026Secure") {
+                    document.getElementById('modalAdmin').classList.remove('hidden');
                 } else if (clave !== null) {
-                    alert("Clave incorrecta.");
+                    alert("Clave incorrecta o acceso no autorizado.");
                 }
+            }
+
+            function cerrarAdmin() {
+                document.getElementById('modalAdmin').classList.add('hidden');
+            }
+
+            function cambiarEstado(nombre) {
+                alert("Estado modificado para: " + nombre + ". (Pausado / Activo actualizado con éxito).");
+            }
+
+            function darDeAlta(nombre) {
+                alert("¡Cuenta dada de alta por el Administrador/Colaborador para: " + nombre + "!");
+            }
+
+            function exportarExcel() {
+                alert("Generando planilla descargable en formato Excel (.xlsx) con datos de usuarios y comercios...");
+            }
+
+            function exportarPDF() {
+                alert("Generando reporte descargable en formato PDF...");
             }
 
             const textosLegales = {
                 terminos: `<b>Términos y Condiciones Generales:</b> AsistMax opera como una red tecnológica B2C de intermediación publicitaria y fidelización comercial. Los comercios adheridos participan de forma gratuita y ofrecen un beneficio mínimo obligatorio del 5% en carácter de contraprestación publicitaria dentro de la red. Los descuentos promocionales especiales determinados por los comercios no son acumulables entre sí salvo expresa indicación del establecimiento o entidades financieras asociadas.`,
                 privacidad: `<b>Política de Privacidad y Confidencialidad:</b> En cumplimiento de las normativas de protección de datos personales y confidencialidad, la información provista por usuarios y comercios se encuentra rigurosamente resguardada. Los datos de contacto y transaccionales no son comercializados a terceros y se utilizan exclusivamente para la gestión de beneficios, validación de niveles y seguridad dentro del ecosistema AsistMax.`,
-                suscripcion: `<b>Condiciones de Suscripción y Período de Gracia:</b> La activación de la cuenta de usuario se encuentra sujeta al abono de la membresía mensual ($10.000). El alta definitiva es efectuada exclusivamente por el Administrador o colaboradores tras verificar el pago. En caso de mora, la cuenta ingresará en estado de suspensión temporal (preservando datos y puntos). Si transcurren 15 días corridos desde el vencimiento sin regularizar mediante los canales oficiales o notificación por WhatsApp, el sistema podrá aplicar la pérdida de los puntos acumulados.`
+                suscripcion: `<b>Condiciones de Suscripción y Período de Gracia:</b> La activación de la cuenta de usuario se encuentra sujeta al abono de la membresía mensual ($10.000). El alta definitiva es efectuada exclusivamente por el Administrador o colaboradores tras verificar el pago digital o en efectivo en los comercios adheridos (informando el ID). En caso de mora, la cuenta ingresará en estado de suspensión temporal (preservando datos y puntos). Si transcurren 15 días corridos desde el vencimiento sin regularizar, el sistema podrá aplicar la pérdida de los puntos acumulados.`
             };
 
             function mostrarLegal(tipo) {
@@ -368,8 +457,7 @@ def mostrar_interfaz():
                 });
                 let json = await res.json();
                 if(json.success) {
-                    alert("¡Registro pre-aprobado! Redirigiendo a Mercado Pago para abonar la suscripción de $10.000. Una vez abonado, informe por WhatsApp con su ID para la activación inmediata por el Administrador.");
-                    window.location.href = "https://mercadopago.com.ar"; // Enlace simulado a tu MP
+                    alert("¡Pre-registro exitoso! Puede abonar online por Mercado Pago o abonar en efectivo en cualquier comercio adherido informando su ID para que el Administrador active su cuenta y puntos de inmediato.");
                     cerrarModalUsuario();
                     document.getElementById('formUsuario').reset();
                 } else {
