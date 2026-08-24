@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="4.7")
+app = FastAPI(title="MaxShop - AsistMax", version="4.8")
 
 app.add_middleware(
     CORSMiddleware,
@@ -378,7 +378,7 @@ def mostrar_interfaz():
 
         <!-- MODAL PANEL DE ADMINISTRADOR -->
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
                         <span class="text-xl">⚙️</span>
@@ -387,6 +387,7 @@ def mostrar_interfaz():
                     <button onclick="cerrarAdmin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
 
+                <!-- Pestañas del Panel de Admin -->
                 <div class="flex border-b border-slate-800 space-x-4 pt-2 overflow-x-auto">
                     <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 text-xs font-bold text-cyan-400 border-b-2 border-cyan-400 transition whitespace-nowrap">🏪 Comercios</button>
                     <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap">👤 Usuarios</button>
@@ -394,58 +395,66 @@ def mostrar_interfaz():
                     <button onclick="cambiarPestanaAdmin('operaciones')" id="btnTabOperaciones" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap">🧾 Historial</button>
                 </div>
 
+                <!-- SECCIÓN 1: COMERCIOS -->
                 <div id="seccionComerciosAdmin" class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Listado de Comercios</h4>
-                        <button onclick="exportarCSV('comercios')" class="text-[11px] bg-cyan-500/10 text-cyan-400 px-2.5 py-1 rounded-lg border border-cyan-500/30">📥 CSV</button>
+                        <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Listado General de Comercios</h4>
+                        <button onclick="exportarCSV('comercios')" class="text-[11px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-xl border border-cyan-500/30 transition font-semibold">📥 Exportar CSV</button>
                     </div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
-                        <div><p class="font-bold">MaxShop Oficial</p><p class="text-[10px] text-slate-400">ID: #1 • Rubro: Supermercados</p></div>
-                        <span class="text-emerald-400">140 transacciones ($450.000)</span>
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <div><p class="font-bold text-white">MaxShop Oficial</p><p class="text-[10px] text-slate-400">ID: #1 • Rubro: Supermercados, Almacenes y Autoservicios • CUIT: 30-71234567-9</p></div>
+                            <span class="text-cyan-400 font-semibold bg-cyan-950/60 px-2.5 py-1 rounded-lg border border-cyan-800/50">140 transacciones ($450.000)</span>
+                        </div>
                     </div>
                 </div>
 
+                <!-- SECCIÓN 2: USUARIOS -->
                 <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-bold text-blue-400 uppercase">📊 Listado de Usuarios y Membresías</h4>
-                        <button onclick="exportarCSV('usuarios')" class="text-[11px] bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-lg border border-blue-500/30">📥 CSV</button>
+                        <button onclick="exportarCSV('usuarios')" class="text-[11px] bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-xl border border-blue-500/30 transition font-semibold">📥 Exportar CSV</button>
                     </div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
-                        <div><p class="font-bold">Juan Pérez</p><p class="text-[10px] text-slate-400">DNI: 34... • Plata (450 pts)</p></div>
-                        <span class="text-amber-400">Suscripción Activa</span>
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <div><p class="font-bold text-white">Juan Pérez</p><p class="text-[10px] text-slate-400">DNI: 34567892 • Nivel Plata (450 pts) • Wpp: 3834123456</p></div>
+                            <span class="text-amber-400 font-semibold bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-800/50">Suscripción Activa</span>
+                        </div>
                     </div>
                 </div>
 
+                <!-- SECCIÓN 3: EFECTIVO / PENDIENTES -->
                 <div id="seccionEfectivoAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-bold text-emerald-400 uppercase">💵 Solicitudes de Alta - Pago en Comercio Pendientes</h4>
-                        <button onclick="exportarCSV('cobros_comercio')" class="text-[11px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/30">📥 CSV Pendientes</button>
+                        <button onclick="exportarCSV('cobros_comercio')" class="text-[11px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-500/30 transition font-semibold">📥 Exportar CSV Pendientes</button>
                     </div>
-                    <p class="text-[11px] text-slate-400">Aquí se registran los usuarios que eligieron abonar en efectivo en un comercio. Una vez que el comercio reciba el dinero y lo rinda a AsistMax, podrás marcarlo como cobrado para habilitar definitivamente su alta y generar el comprobante.</p>
+                    <p class="text-[11px] text-slate-400">Aquí se registran los usuarios que eligieron abonar en efectivo en un comercio. Una vez que el comercio reciba el dinero y lo rinda a AsistMax, podrás marcarlo como cobrado para habilitar definitivamente su alta.</p>
                     
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white space-y-2">
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3 text-xs">
                         <div class="flex justify-between items-center">
                             <div>
-                                <p class="font-bold text-amber-400">Usuario: Roberto Gómez (DNI: 28...) Wpp: 3834...</p>
-                                <p class="text-[10px] text-slate-400">Método: Pago en el Comercio (Efectivo) • Monto: $10.000</p>
+                                <p class="font-bold text-amber-400">Usuario: Roberto Gómez (DNI: 28999111)</p>
+                                <p class="text-[10px] text-slate-400 mt-0.5">WhatsApp: 3834987654 • Método: Pago en el Comercio (Efectivo) • Monto: $10.000</p>
                             </div>
-                            <span class="text-[10px] bg-amber-950 text-amber-300 px-2 py-1 rounded border border-amber-800">Pendiente Rendición</span>
+                            <span class="text-[10px] bg-amber-950 text-amber-300 px-2.5 py-1 rounded-lg border border-amber-800 font-bold">Pendiente Rendición</span>
                         </div>
                         <div class="flex justify-end space-x-2 pt-2 border-t border-slate-900">
-                            <button onclick="alert('Comprobante de Alta generado y registrado para rendición.')" class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2.5 py-1 rounded border border-cyan-500/30 hover:bg-cyan-500/20">📄 Generar Comprobante</button>
-                            <button onclick="alert('¡Pago rendido y registrado con éxito! El usuario ya cuenta com estado activo.')" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded border border-emerald-500/30 hover:bg-emerald-500/20">✅ Marcar Cobrado / Rendido</button>
+                            <button onclick="alert('Comprobante de Alta generado y registrado para rendición.')" class="bg-cyan-500/10 text-cyan-400 px-3 py-1.5 rounded-xl border border-cyan-500/30 hover:bg-cyan-500/20 font-semibold">📄 Generar Comprobante</button>
+                            <button onclick="alert('¡Pago rendido y registrado con éxito! El usuario ya cuenta con estado activo.')" class="bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-500/30 hover:bg-emerald-500/20 font-semibold">✅ Marcar Cobrado / Rendido</button>
                         </div>
                     </div>
                 </div>
 
+                <!-- SECCIÓN 4: HISTORIAL / OPERACIONES -->
                 <div id="seccionOperacionesAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-bold text-emerald-400 uppercase">🧾 Auditoría Centralizada de Comprobantes</h4>
-                        <button onclick="exportarCSV('operaciones')" class="text-[11px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/30">📥 CSV</button>
+                        <button onclick="exportarCSV('operaciones')" class="text-[11px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-500/30 transition font-semibold">📥 Exportar CSV</button>
                     </div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
-                        <div><p class="font-bold">Juan Pérez ➔ MaxShop</p><p class="text-[10px] text-slate-400">24/08/2026 - Op #1042</p></div>
-                        <span class="text-emerald-400 font-bold">$9.500</span>
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex justify-between items-center text-xs">
+                        <div><p class="font-bold text-white">Juan Pérez ➔ MaxShop</p><p class="text-[10px] text-slate-400">24/08/2026 - 08:30hs • Op #1042 • Consumo con Descuento</p></div>
+                        <span class="text-emerald-400 font-bold text-sm">$9.500</span>
                     </div>
                 </div>
 
@@ -632,13 +641,29 @@ def mostrar_interfaz():
             }
 
             function exportarCSV(tipo) {
-                let contenido = `ID,Fecha,Cliente/Comercio,Concepto,Monto\\n1,2026-08-24,Juan Pérez,Consumo con Descuento,9500`;
+                let cabeceras = "";
+                let filas = "";
+                if(tipo === 'comercios') {
+                    cabeceras = "ID,Nombre Fantasia,Rubro,Localidad,WhatsApp,Transacciones\\n";
+                    filas = "1,MaxShop Oficial,Supermercados,Central,3834000000,140";
+                } else if(tipo === 'usuarios') {
+                    cabeceras = "Nombre,DNI,Nivel,Puntos,WhatsApp,Estado\\n";
+                    filas = "Juan Pérez,34567892,Plata,450,3834123456,Suscripcion Activa";
+                } else if(tipo === 'cobros_comercio') {
+                    cabeceras = "Usuario,DNI,WhatsApp,Metodo,Monto,Estado\\n";
+                    filas = "Roberto Gómez,28999111,3834987654,Pago en el Comercio,10000,Pendiente Rendicion";
+                } else {
+                    cabeceras = "Operacion,Fecha,Participantes,Concepto,Monto\\n";
+                    filas = "#1042,24/08/2026,Juan Pérez a MaxShop,Consumo con Descuento,9500";
+                }
+                
+                let contenido = cabeceras + filas;
                 let blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
                 let enlace = document.createElement("a");
                 enlace.href = URL.createObjectURL(blob);
                 enlace.download = `reporte_${tipo}_maxshop.csv`;
                 enlace.click();
-                alert("Reporte CSV exportado correctamente.");
+                alert("¡Reporte CSV de " + tipo + " exportado correctamente!");
             }
 
             async function enviarComercio(e) {
