@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="4.6")
+app = FastAPI(title="MaxShop - AsistMax", version="4.7")
 
 app.add_middleware(
     CORSMiddleware,
@@ -78,10 +78,10 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- BANNER PRINCIPAL 100% NÍDITO (IMAGEN LIMPIA + TEXTO SEPARADO DEBAJO) -->
+            <!-- BANNER PRINCIPAL 100% NÍDITO Y EN ALTA DEFINICIÓN -->
             <div class="space-y-2">
-                <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900">
-                    <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-44 object-cover filter contrast-105 brightness-105">
+                <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 flex justify-center items-center">
+                    <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-auto object-cover max-h-52 transform-gpu">
                 </div>
                 <div class="px-2 flex justify-between items-center">
                     <div>
@@ -225,7 +225,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL REGISTRO COMERCIO (SIN REFERENCIAS PREESTABLECIDAS) -->
+        <!-- MODAL REGISTRO COMERCIO -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
@@ -320,7 +320,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL SELECTOR DE PAGO (CON OPCIÓN "PAGO EN EL COMERCIO (EFECTIVO)") -->
+        <!-- MODAL SELECTOR DE PAGO -->
         <div id="modalOpcionesPago" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -376,7 +376,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL PANEL DE ADMINISTRADOR (CON GESTIÓN DE PAGOS EN COMERCIO PENDIENTES) -->
+        <!-- MODAL PANEL DE ADMINISTRADOR -->
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -416,7 +416,6 @@ def mostrar_interfaz():
                     </div>
                 </div>
 
-                <!-- SECCIÓN ESPECIAL PARA COBROS EN EFECTIVO EN COMERCIO PENDIENTES DE RENDICIÓN -->
                 <div id="seccionEfectivoAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-bold text-emerald-400 uppercase">💵 Solicitudes de Alta - Pago en Comercio Pendientes</h4>
@@ -434,7 +433,7 @@ def mostrar_interfaz():
                         </div>
                         <div class="flex justify-end space-x-2 pt-2 border-t border-slate-900">
                             <button onclick="alert('Comprobante de Alta generado y registrado para rendición.')" class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2.5 py-1 rounded border border-cyan-500/30 hover:bg-cyan-500/20">📄 Generar Comprobante</button>
-                            <button onclick="alert('¡Pago rendido y registrado con éxito! El usuario ya cuenta con estado activo.')" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded border border-emerald-500/30 hover:bg-emerald-500/20">✅ Marcar Cobrado / Rendido</button>
+                            <button onclick="alert('¡Pago rendido y registrado con éxito! El usuario ya cuenta com estado activo.')" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded border border-emerald-500/30 hover:bg-emerald-500/20">✅ Marcar Cobrado / Rendido</button>
                         </div>
                     </div>
                 </div>
