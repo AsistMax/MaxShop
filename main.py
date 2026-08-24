@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="AsistMax-cobros", version="3.0")
+app = FastAPI(title="AsistMax-cobros", version="3.1")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,7 +23,6 @@ if SUPABASE_URL and SUPABASE_KEY:
 else:
     supabase = None
 
-# Modelos de datos para recibir la información de los formularios
 class ComercioModel(BaseModel):
     nombre_completo: str
     correo: str
@@ -52,6 +51,8 @@ def mostrar_interfaz():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>AsistMax - Red de Cobros y Comercios Adheridos</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <!-- Librería para lectura real de códigos QR por cámara -->
+        <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </head>
     <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950">
 
@@ -81,7 +82,7 @@ def mostrar_interfaz():
                 <h2 class="text-2xl font-bold text-white mt-2">Pagos & Descuentos</h2>
                 <p class="text-xs text-slate-400 mt-1">Escanea el código QR en el local adherido para procesar tu pago y aplicar beneficios al instante.</p>
                 <div class="mt-5">
-                    <button onclick="escanearQR()" class="w-full group relative inline-flex items-center justify-center px-6 py-3.5 text-sm font-bold text-slate-950 transition-all bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20 active:scale-95">
+                    <button onclick="iniciarEscaneoQR()" class="w-full group relative inline-flex items-center justify-center px-6 py-3.5 text-sm font-bold text-slate-950 transition-all bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20 active:scale-95">
                         <span class="mr-2 text-base">📷</span> Escanear QR del Comercio
                     </button>
                 </div>
@@ -120,6 +121,18 @@ def mostrar_interfaz():
             </div>
 
         </main>
+
+        <!-- MODAL CÁMARA ESCÁNER QR REAL -->
+        <div id="modalQR" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl text-center">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-white">📷 Escáner de Código QR</h3>
+                    <button onclick="cerrarEscaneoQR()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+                </div>
+                <div id="reader" class="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950"></div>
+                <p class="text-[11px] text-slate-400">Enfoque el código QR del comercio con la cámara de su dispositivo.</p>
+            </div>
+        </div>
 
         <!-- MODAL REGISTRO COMERCIO -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -230,14 +243,61 @@ def mostrar_interfaz():
             <p class="font-semibold text-slate-400">AsistMax-cobros &copy; 2026</p>
         </footer>
 
-        <!-- Scripts de interacción -->
+        <!-- Scripts de interacción y cámara QR -->
         <script>
-            function escanearQR() {
-                alert("📷 [Cámara activada]: Apunte al código QR del comercio asociado.");
+            let html5QrCode = null;
+
+            function iniciarEscaneoQR() {
+                document.getElementById('modalQR').classList.remove('hidden');
+                
+                if (!html5QrCode) {
+                    html5QrCode = new Html5Qrcode("reader");
+                }
+                
+                const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+                
+                html5QrCode.start(
+                    { facingMode: "environment" }, 
+                    config,
+                    (decodedText, decodedResult) => {
+                        // Éxito al leer el QR
+                        detenerEscaneoQR();
+                        if (decodedText.startsWith("http://") || decodedText.startsWith("https://")) {
+                            if (confirm("QR detectado con enlace:\n" + decodedText + "\n\n¿Desea abrir este sitio?")) {
+                                window.location.href = decodedText;
+                            }
+                        } else {
+                            alert("Código QR escaneado con éxito:\n\n" + decodedText);
+                        }
+                    },
+                    (errorMessage) => {
+                        // Errores de escaneo continuo por frame (se pueden ignorar)
+                    }
+                ).catch((err) => {
+                    alert("No se pudo acceder a la cámara del dispositivo. Verifique los permisos de su navegador.");
+                    cerrarEscaneoQR();
+                });
             }
+
+            function detenerEscaneoQR() {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    html5QrCode.stop().then(() => {
+                        document.getElementById('modalQR').classList.add('hidden');
+                    }).catch(err => {
+                        document.getElementById('modalQR').classList.add('hidden');
+                    });
+                } else {
+                    document.getElementById('modalQR').classList.add('hidden');
+                }
+            }
+
+            function cerrarEscaneoQR() {
+                detenerEscaneoQR();
+            }
+
             function abrirModalComercio() { document.getElementById('modalComercio').classList.remove('hidden'); }
             function cerrarModalComercio() { document.getElementById('modalComercio').classList.add('hidden'); }
-            function abrirModalUsuario() { document.getElementById('modalUsuario').classList.remove('hidden'); }
+            function abrirModalUsuario() { document.getElementById('modalModalUsuario')?.classList.remove('hidden') || document.getElementById('modalUsuario').classList.remove('hidden'); }
             function cerrarModalUsuario() { document.getElementById('modalUsuario').classList.add('hidden'); }
 
             async function enviarComercio(e) {
