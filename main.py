@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="4.1")
+app = FastAPI(title="MaxShop - AsistMax", version="4.2")
 
 app.add_middleware(
     CORSMiddleware,
@@ -59,8 +59,8 @@ def mostrar_interfaz():
         <!-- Navbar Superior -->
         <header class="w-full px-6 py-4 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 shadow-lg">
             <div class="flex items-center space-x-3">
-                <!-- LOGO: Enlace directo optimizado -->
-                <img src="https://drive.usercontent.google.com/download?id=1JAnl776WAMaDGjfUE85X2YvLCBHwQpPq" alt="MaxShop Logo" id="logoMaxShop" class="w-10 h-10 rounded-xl object-cover border border-cyan-500/40 shadow-md shadow-cyan-500/20 bg-slate-900">
+                <!-- LOGO CON TU ENLACE DIRECTO DE IMGBB -->
+                <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" id="logoMaxShop" class="w-10 h-10 rounded-xl object-cover border border-cyan-500/40 shadow-md shadow-cyan-500/20 bg-slate-900">
                 <div>
                     <h1 class="text-sm font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></h1>
                     <p class="text-[10px] text-cyan-400 font-semibold tracking-widest uppercase">Red B2B & Consumidores</p>
@@ -79,9 +79,9 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- BANNER PRINCIPAL: Si usas ImgBB o reemplazas el enlace directo de imagen acá funcionará al 100% -->
+            <!-- BANNER PRINCIPAL CON TU ENLACE DIRECTO DE IMGBB -->
             <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-xl relative bg-slate-900">
-                <img src="https://images.unsplash.com/photo-1556742049-0a67d5e8284f?auto=format&fit=crop&w=800&q=80" alt="MaxShop Banner" id="bannerMaxShop" class="w-full h-36 object-cover">
+                <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" id="bannerMaxShop" class="w-full h-36 object-cover">
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex items-end p-4">
                     <div>
                         <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/90 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Comercio Destacado</span>
