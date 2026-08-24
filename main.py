@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="AsistMax-cobros", version="3.5")
+app = FastAPI(title="AsistMax-cobros", version="3.6")
 
 app.add_middleware(
     CORSMiddleware,
@@ -78,7 +78,7 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- Tarjeta de Progreso / Nivel del Cliente (Simulada para usuario logueado) -->
+            <!-- Tarjeta de Progreso / Nivel del Cliente -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 shadow-xl flex items-center justify-between">
                 <div class="space-y-1">
                     <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-800/50">Mi Nivel Actual</span>
@@ -298,7 +298,7 @@ def mostrar_interfaz():
                     </div>
                 </div>
 
-                <!-- SECCIÓN USUARIOS (OCULTA POR DEFECTO) -->
+                <!-- SECCIÓN USUARIOS -->
                 <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-bold text-blue-400 uppercase">📊 Listado, Puntos y Suscripciones de Usuarios</h4>
@@ -337,7 +337,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Footer con enlaces en letras azules -->
+        <!-- Footer -->
         <footer class="w-full text-center py-6 border-t border-slate-900 text-xs text-slate-500 bg-slate-950 space-y-2">
             <p class="font-semibold text-slate-400">AsistMax-cobros &copy; 2026 - Todos los derechos reservados.</p>
             <div class="flex justify-center flex-wrap gap-2 text-[11px]">
@@ -349,7 +349,7 @@ def mostrar_interfaz():
             </div>
         </footer>
 
-        <!-- Scripts de interacción -->
+        <!-- Scripts -->
         <script>
             let html5QrCode = null;
 
@@ -507,8 +507,9 @@ def mostrar_interfaz():
                 });
                 let json = await res.json();
                 if(json.success) {
-                    alert("¡Registro pre-aprobado! Redirigiendo a Mercado Pago para completar la suscripción mensual de $10.000...");
-                    window.location.href = "https://www.mercadopago.com.ar"; // Enlace directo a tu cuenta/suscripción de MP
+                    alert("¡Registro pre-aprobado! Redirigiendo a Mercado Pago para abonar su suscripción mensual...");
+                    // URL REAL DE SUSCRIPCIÓN MENSUAL
+                    window.location.href = "https://mpago.la/12kwFZe";
                 } else {
                     alert("Error al registrar: " + json.detail);
                 }
