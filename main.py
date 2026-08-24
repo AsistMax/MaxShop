@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="4.5")
+app = FastAPI(title="MaxShop - AsistMax", version="4.6")
 
 app.add_middleware(
     CORSMiddleware,
@@ -59,7 +59,6 @@ def mostrar_interfaz():
         <!-- Navbar Superior con Logo Nítido y Separado -->
         <header class="w-full px-4 py-3 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 shadow-lg">
             <div class="flex items-center space-x-3">
-                <!-- LOGO NÍDITO (IMAGEN PURA SIN TEXTOS DENTRO) -->
                 <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-11 h-11 rounded-xl object-cover border border-cyan-500/50 shadow-md shadow-cyan-500/20 bg-slate-900">
                 <div class="flex flex-col">
                     <span class="text-xs font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></span>
@@ -79,13 +78,15 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- BANNER PRINCIPAL ALTA NITIDEZ -->
-            <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl relative bg-slate-900">
-                <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-52 object-cover filter contrast-105 brightness-105">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex items-end p-5">
+            <!-- BANNER PRINCIPAL 100% NÍDITO (IMAGEN LIMPIA + TEXTO SEPARADO DEBAJO) -->
+            <div class="space-y-2">
+                <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900">
+                    <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-44 object-cover filter contrast-105 brightness-105">
+                </div>
+                <div class="px-2 flex justify-between items-center">
                     <div>
-                        <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/90 px-3 py-1 rounded-full border border-cyan-800/50">Comercio Destacado Oficial</span>
-                        <h2 class="text-2xl font-extrabold text-white mt-1.5">MaxShop Red Global</h2>
+                        <span class="text-[9px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Comercio Destacado Oficial</span>
+                        <h2 class="text-lg font-extrabold text-white mt-1">MaxShop Red Global</h2>
                     </div>
                 </div>
             </div>
@@ -138,13 +139,11 @@ def mostrar_interfaz():
                     </div>
                 </div>
 
-                <!-- Barra de búsqueda en tiempo real -->
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">🔍</span>
                     <input type="text" id="inputBuscadorComercios" onkeyup="filtrarComerciosPublicos()" placeholder="Buscar por nombre, rubro o localidad..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-9 pr-4 py-2.5 text-xs text-white focus:border-cyan-500 outline-none transition">
                 </div>
 
-                <!-- Contenedor de la lista de comercios -->
                 <div id="listaComerciosPublicos" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
                     <div class="text-center py-4 text-xs text-slate-500">Cargando comercios adheridos...</div>
                 </div>
@@ -152,7 +151,7 @@ def mostrar_interfaz():
 
         </main>
 
-        <!-- MODAL LOGIN / INICIO DE SESIÓN CON HISTORIAL DINÁMICO POR ROL -->
+        <!-- MODAL LOGIN / INICIO DE SESIÓN -->
         <div id="modalLogin" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -226,7 +225,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL REGISTRO COMERCIO CON RUBROS AMPLIADOS -->
+        <!-- MODAL REGISTRO COMERCIO (SIN REFERENCIAS PREESTABLECIDAS) -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
@@ -249,7 +248,7 @@ def mostrar_interfaz():
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Nombre de Fantasía del Comercio</label>
-                        <input type="text" id="c_fantasia" value="MaxShop" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
+                        <input type="text" id="c_fantasia" placeholder="ej: Mi Negocio" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Rubro del Comercio</label>
@@ -290,7 +289,7 @@ def mostrar_interfaz():
                     <h3 class="text-base font-bold text-white">👤 Cuenta Consumidor & Suscripción</h3>
                     <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                <p class="text-[11px] text-blue-400 bg-blue-950/40 p-2.5 rounded-xl border border-blue-800/30">Membresía mensual de $10.000. Complete sus datos para registrarse y elija su método de pago sin abandonar la plataforma.</p>
+                <p class="text-[11px] text-blue-400 bg-blue-950/40 p-2.5 rounded-xl border border-blue-800/30">Membresía mensual de $10.000. Complete sus datos para registrarse y elija su método de pago.</p>
                 <form id="formUsuario" onsubmit="enviarUsuario(event)" class="space-y-3">
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Nombre Completo</label>
@@ -321,29 +320,37 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL SELECTOR DE PAGO SEGURO (SIN REDIRECCIONES AUTOMÁTICAS INCONVENIENTES) -->
+        <!-- MODAL SELECTOR DE PAGO (CON OPCIÓN "PAGO EN EL COMERCIO (EFECTIVO)") -->
         <div id="modalOpcionesPago" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <h3 class="text-sm font-bold text-white">💳 Seleccione Método de Pago ($10.000)</h3>
                     <button onclick="cerrarOpcionesPago()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                <p class="text-[11px] text-slate-400">Elija cómo abonar su membresía mensual de forma segura y transparente dentro del sistema:</p>
+                <p class="text-[11px] text-slate-400">Elija cómo abonar su membresía mensual de forma segura:</p>
                 <div class="space-y-3">
-                    <div onclick="seleccionarMetodoPago('suscripcion')" class="bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-blue-500/50 p-4 rounded-2xl cursor-pointer transition space-y-1">
+                    <div onclick="seleccionarMetodoPago('suscripcion')" class="bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-blue-500/50 p-3.5 rounded-2xl cursor-pointer transition space-y-1">
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold text-blue-400">🔄 Suscripción Automática Mensual</span>
                             <span class="text-[10px] bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800">Con Tarjeta</span>
                         </div>
-                        <p class="text-[11px] text-slate-400">Débito automático mensual. <strong class="text-slate-300">Nota: No afecta el margen ni límite de compra de tu tarjeta de crédito.</strong></p>
+                        <p class="text-[11px] text-slate-400">Débito automático sin afectar el margen ni límite de crédito.</p>
                     </div>
 
-                    <div onclick="seleccionarMetodoPago('unico')" class="bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/50 p-4 rounded-2xl cursor-pointer transition space-y-1">
+                    <div onclick="seleccionarMetodoPago('unico')" class="bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/50 p-3.5 rounded-2xl cursor-pointer transition space-y-1">
                         <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-cyan-400">🔗 Link de Pago Único (Efectivo / Débito / Otros)</span>
-                            <span class="text-[10px] bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800">Sin Tarjeta de Crédito</span>
+                            <span class="text-xs font-bold text-cyan-400">🔗 Link de Pago Único</span>
+                            <span class="text-[10px] bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800">Digital</span>
                         </div>
-                        <p class="text-[11px] text-slate-400">Ideal si no posees tarjeta de crédito. Paga mediante medios habilitados de forma independiente.</p>
+                        <p class="text-[11px] text-slate-400">Medios habilitados de pago electrónico independiente.</p>
+                    </div>
+
+                    <div onclick="seleccionarMetodoPago('comercio')" class="bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-emerald-500/50 p-3.5 rounded-2xl cursor-pointer transition space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-emerald-400">💵 Pago en el Comercio (Efectivo)</span>
+                            <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">Presencial</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Abona en efectivo en cualquier comercio adherido de la red. El comercio realizará la rendición a AsistMax.</p>
                     </div>
                 </div>
                 <button onclick="cerrarOpcionesPago()" class="w-full py-2.5 bg-slate-800 text-slate-300 text-xs font-semibold rounded-xl hover:bg-slate-700 transition">Cancelar</button>
@@ -369,7 +376,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL PANEL DE ADMINISTRADOR -->
+        <!-- MODAL PANEL DE ADMINISTRADOR (CON GESTIÓN DE PAGOS EN COMERCIO PENDIENTES) -->
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -380,16 +387,17 @@ def mostrar_interfaz():
                     <button onclick="cerrarAdmin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
 
-                <div class="flex border-b border-slate-800 space-x-4 pt-2">
-                    <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 text-xs font-bold text-cyan-400 border-b-2 border-cyan-400 transition">🏪 Comercios</button>
-                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition">👤 Usuarios (Consumidores)</button>
-                    <button onclick="cambiarPestanaAdmin('operaciones')" id="btnTabOperaciones" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition">🧾 Historial Operaciones</button>
+                <div class="flex border-b border-slate-800 space-x-4 pt-2 overflow-x-auto">
+                    <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 text-xs font-bold text-cyan-400 border-b-2 border-cyan-400 transition whitespace-nowrap">🏪 Comercios</button>
+                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap">👤 Usuarios</button>
+                    <button onclick="cambiarPestanaAdmin('efectivo')" id="btnTabEfectivo" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap">💵 Cobros en Comercio 🟡</button>
+                    <button onclick="cambiarPestanaAdmin('operaciones')" id="btnTabOperaciones" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap">🧾 Historial</button>
                 </div>
 
                 <div id="seccionComerciosAdmin" class="space-y-3">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Listado de Comercios</h4>
-                        <button onclick="exportarCSV('comercios')" class="text-[11px] bg-cyan-500/10 text-cyan-400 px-2.5 py-1 rounded-lg border border-cyan-500/30">📥 CSV Comercios</button>
+                        <button onclick="exportarCSV('comercios')" class="text-[11px] bg-cyan-500/10 text-cyan-400 px-2.5 py-1 rounded-lg border border-cyan-500/30">📥 CSV</button>
                     </div>
                     <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
                         <div><p class="font-bold">MaxShop Oficial</p><p class="text-[10px] text-slate-400">ID: #1 • Rubro: Supermercados</p></div>
@@ -400,18 +408,41 @@ def mostrar_interfaz():
                 <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-bold text-blue-400 uppercase">📊 Listado de Usuarios y Membresías</h4>
-                        <button onclick="exportarCSV('usuarios')" class="text-[11px] bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-lg border border-blue-500/30">📥 CSV Usuarios</button>
+                        <button onclick="exportarCSV('usuarios')" class="text-[11px] bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-lg border border-blue-500/30">📥 CSV</button>
                     </div>
                     <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
-                        <div><p class="font-bold">Juan Pérez (Comerciante/Consumidor)</p><p class="text-[10px] text-slate-400">DNI: 34... • Plata (450 pts)</p></div>
+                        <div><p class="font-bold">Juan Pérez</p><p class="text-[10px] text-slate-400">DNI: 34... • Plata (450 pts)</p></div>
                         <span class="text-amber-400">Suscripción Activa</span>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN ESPECIAL PARA COBROS EN EFECTIVO EN COMERCIO PENDIENTES DE RENDICIÓN -->
+                <div id="seccionEfectivoAdmin" class="space-y-3 hidden">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold text-emerald-400 uppercase">💵 Solicitudes de Alta - Pago en Comercio Pendientes</h4>
+                        <button onclick="exportarCSV('cobros_comercio')" class="text-[11px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/30">📥 CSV Pendientes</button>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Aquí se registran los usuarios que eligieron abonar en efectivo en un comercio. Una vez que el comercio reciba el dinero y lo rinda a AsistMax, podrás marcarlo como cobrado para habilitar definitivamente su alta y generar el comprobante.</p>
+                    
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white space-y-2">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-amber-400">Usuario: Roberto Gómez (DNI: 28...) Wpp: 3834...</p>
+                                <p class="text-[10px] text-slate-400">Método: Pago en el Comercio (Efectivo) • Monto: $10.000</p>
+                            </div>
+                            <span class="text-[10px] bg-amber-950 text-amber-300 px-2 py-1 rounded border border-amber-800">Pendiente Rendición</span>
+                        </div>
+                        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-900">
+                            <button onclick="alert('Comprobante de Alta generado y registrado para rendición.')" class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2.5 py-1 rounded border border-cyan-500/30 hover:bg-cyan-500/20">📄 Generar Comprobante</button>
+                            <button onclick="alert('¡Pago rendido y registrado con éxito! El usuario ya cuenta con estado activo.')" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded border border-emerald-500/30 hover:bg-emerald-500/20">✅ Marcar Cobrado / Rendido</button>
+                        </div>
                     </div>
                 </div>
 
                 <div id="seccionOperacionesAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-bold text-emerald-400 uppercase">🧾 Auditoría Centralizada de Comprobantes</h4>
-                        <button onclick="exportarCSV('operaciones')" class="text-[11px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/30">📥 CSV Historial</button>
+                        <button onclick="exportarCSV('operaciones')" class="text-[11px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/30">📥 CSV</button>
                     </div>
                     <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
                         <div><p class="font-bold">Juan Pérez ➔ MaxShop</p><p class="text-[10px] text-slate-400">24/08/2026 - Op #1042</p></div>
@@ -422,7 +453,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL DE POLÍTICAS Y CONDICIONES (RESTABLECIDO) -->
+        <!-- MODAL DE POLÍTICAS Y CONDICIONES -->
         <div id="modalPoliticas" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl text-xs">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -438,7 +469,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Footer Completo con Políticas y Condiciones Restablecidas -->
+        <!-- Footer Completo -->
         <footer class="w-full text-center py-6 border-t border-slate-900 text-xs text-slate-500 bg-slate-950 space-y-2">
             <p class="font-semibold text-slate-400">MaxShop & AsistMax &copy; 2026 - Todos los derechos reservados.</p>
             <div class="flex justify-center space-x-4 text-[11px]">
@@ -592,11 +623,12 @@ def mostrar_interfaz():
             function cerrarAdmin() { document.getElementById('modalAdmin').classList.add('hidden'); }
 
             function cambiarPestanaAdmin(tipo) {
-                ['comercios', 'usuarios', 'operaciones'].forEach(t => {
-                    document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = "pb-2 text-xs font-bold text-slate-400 hover:text-white transition";
+                ['comercios', 'usuarios', 'efectivo', 'operaciones'].forEach(t => {
+                    document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = "pb-2 text-xs font-bold text-slate-400 hover:text-white transition whitespace-nowrap";
                     document.getElementById('seccion' + t.charAt(0).toUpperCase() + t.slice(1) + 'Admin').classList.add('hidden');
                 });
-                document.getElementById('btnTab' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).className = "pb-2 text-xs font-bold text-" + (tipo==='comercios'?'cyan':tipo==='usuarios'?'blue':'emerald') + "-400 border-b-2 border-" + (tipo==='comercios'?'cyan':tipo==='usuarios'?'blue':'emerald') + "-400 transition";
+                let colorActivo = tipo === 'comercios' ? 'cyan' : tipo === 'usuarios' ? 'blue' : tipo === 'efectivo' ? 'emerald' : 'emerald';
+                document.getElementById('btnTab' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).className = `pb-2 text-xs font-bold text-${colorActivo}-400 border-b-2 border-${colorActivo}-400 transition whitespace-nowrap`;
                 document.getElementById('seccion' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Admin').classList.remove('hidden');
             }
 
@@ -659,8 +691,10 @@ def mostrar_interfaz():
                 cerrarOpcionesPago();
                 if(tipo === 'suscripcion') {
                     window.open("https://mpago.la/12kwFZe", "_blank");
-                } else {
+                } else if(tipo === 'unico') {
                     window.open("https://mpago.la/2xio5HU", "_blank");
+                } else {
+                    alert("¡Solicitud registrada con éxito! Acérquese a abonar en efectivo a cualquiera de los comercios adheridos de la red. Su alta quedará pendiente de validación para la posterior rendición del comercio.");
                 }
             }
         </script>
@@ -691,7 +725,7 @@ def registrar_comercio(comercio: ComercioModel):
 @app.post("/api/registrar-usuario")
 def registrar_usuario(usuario: UsuarioModel):
     if not supabase:
-        raise HTTPException(status__code=500, detail="Base de datos no conectada.")
+        raise HTTPException(status_code=500, detail="Base de datos no conectada.")
     try:
         response = supabase.table("usuarios").insert(usuario.dict()).execute()
         return {"success": True, "data": response.data}
