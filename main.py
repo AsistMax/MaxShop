@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="AsistMax-cobros", version="3.6")
+app = FastAPI(title="MaxShop - AsistMax", version="3.9")
 
 app.add_middleware(
     CORSMiddleware,
@@ -49,20 +49,21 @@ def mostrar_interfaz():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AsistMax - Red de Cobros y Comercios Adheridos</title>
+        <title>MaxShop & AsistMax - Red Fintech B2B</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <!-- Librería para lectura real de códigos QR -->
         <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </head>
     <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950">
 
-        <!-- Navbar Superior con Login y Admin -->
+        <!-- Navbar Superior -->
         <header class="w-full px-6 py-4 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 shadow-lg">
             <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-md shadow-cyan-500/20 font-black text-slate-950 text-lg">AM</div>
+                <!-- LOGO: Reemplaza el src con la URL de tu logo -->
+                <img src="https://via.placeholder.com/40" alt="MaxShop Logo" id="logoMaxShop" class="w-10 h-10 rounded-xl object-cover border border-cyan-500/40 shadow-md shadow-cyan-500/20">
                 <div>
-                    <h1 class="text-sm font-black tracking-wider text-white">ASISTMAX</h1>
-                    <p class="text-[10px] text-cyan-400 font-semibold tracking-widest uppercase">Red Fintech B2B</p>
+                    <h1 class="text-sm font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></h1>
+                    <p class="text-[10px] text-cyan-400 font-semibold tracking-widest uppercase">Red B2B & Consumidores</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
@@ -78,24 +79,35 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- Tarjeta de Progreso / Nivel del Cliente -->
+            <!-- BANNER PRINCIPAL: Reemplaza el src con la URL de tu banner -->
+            <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-xl relative">
+                <img src="https://via.placeholder.com/600x200" alt="MaxShop Banner" id="bannerMaxShop" class="w-full h-32 object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex items-end p-4">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/90 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Comercio Destacado</span>
+                        <h2 class="text-lg font-extrabold text-white mt-1">MaxShop Oficial</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Progreso / Nivel -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 shadow-xl flex items-center justify-between">
                 <div class="space-y-1">
-                    <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-800/50">Mi Nivel Actual</span>
-                    <h3 class="text-sm font-bold text-white">Nivel Plata • 450 Puntos</h3>
-                    <p class="text-[11px] text-slate-400">Te faltan 55p para el Nivel Oro</p>
+                    <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-800/50">Mi Perfil / Nivel</span>
+                    <h3 class="text-sm font-bold text-white" id="lblNivelUsuario">Nivel Plata • 450 Puntos</h3>
+                    <p class="text-[11px] text-slate-400">Descuentos activos en toda la red</p>
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-slate-950 font-black text-lg shadow-lg">
                     🥈
                 </div>
             </div>
 
-            <!-- Banner Principal Escáner -->
+            <!-- Escáner QR Banner -->
             <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/40 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
                 <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
                 <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-1 rounded-full border border-cyan-800/50">Billetera Inteligente</span>
                 <h2 class="text-2xl font-bold text-white mt-2">Pagos & Descuentos</h2>
-                <p class="text-xs text-slate-400 mt-1">Escanea el código QR del comercio adherido para validar tu beneficio del 5% mínimo o promoción vigente y sumar puntos.</p>
+                <p class="text-xs text-slate-400 mt-1">Escanea el código QR de MaxShop o comercios adheridos para validar tu beneficio (5% min) y sumar puntos.</p>
                 <div class="mt-5">
                     <button onclick="iniciarEscaneoQR()" class="w-full group relative inline-flex items-center justify-center px-6 py-3.5 text-sm font-bold text-slate-950 transition-all bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20 active:scale-95">
                         <span class="mr-2 text-base">📷</span> Escanear QR del Comercio
@@ -108,30 +120,53 @@ def mostrar_interfaz():
                 <button onclick="abrirModalComercio()" class="bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-cyan-400 text-xl mb-1">🏪</div>
                     <h3 class="text-xs font-bold text-white group-hover:text-cyan-400 transition">Sumar mi Comercio</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">100% Gratuito (5% base)</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">100% Gratuito (Ventas)</p>
                 </button>
                 <button onclick="abrirModalUsuario()" class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-blue-400 text-xl mb-1">👤</div>
-                    <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Crear Cuenta</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Suscripción mensual</p>
+                    <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Crear Cuenta Usuario</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Clientes y Comerciantes</p>
                 </button>
             </div>
 
-            <!-- Listado de Comercios Adheridos -->
-            <div class="space-y-3">
-                <div class="flex justify-between items-center px-1">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">🏢 Comercios Adheridos (5% OFF Base)</h3>
-                    <span class="text-[10px] text-cyan-400">Red AsistMax</span>
+            <!-- Sección Mi Historial (Dinámico) -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">🧾 Mi Historial de Operaciones</h3>
+                    <div class="space-x-1">
+                        <button onclick="cambiarVistaHistorial('consumos')" id="btnHistConsumos" class="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/40 font-bold">Consumos</button>
+                        <button onclick="cambiarVistaHistorial('ventas')" id="btnHistVentas" class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">Ventas (MaxShop)</button>
+                    </div>
                 </div>
-                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-cyan-400">☕</div>
-                        <div>
-                            <h4 class="text-xs font-bold text-white">Café Central AsistMax</h4>
-                            <p class="text-[11px] text-slate-400">Gastronomía • 5% Base + Promo Día</p>
+
+                <!-- Historial Consumos -->
+                <div id="historialConsumosContainer" class="space-y-2">
+                    <div class="text-xs bg-slate-950 p-3 rounded-xl border border-slate-800/80 space-y-1">
+                        <div class="flex justify-between text-slate-400 text-[10px]">
+                            <span>Fecha: 24/08/2026 - 08:30hs</span>
+                            <span>Op #1042</span>
+                        </div>
+                        <p class="font-bold text-white">Consumo en MaxShop (5% desc. aplicado)</p>
+                        <div class="flex justify-between items-center pt-1 border-t border-slate-900">
+                            <span class="text-slate-400">Total pagado: <strong class="text-emerald-400">$9.500</strong></span>
+                            <button onclick="verComprobanteDetalle('1042', 'MaxShop', 'Consumo con Descuento', '$9.500')" class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded border border-cyan-500/30 hover:bg-cyan-500/20">Ver Comprobante</button>
                         </div>
                     </div>
-                    <span class="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-lg border border-emerald-500/20 font-semibold">Activo</span>
+                </div>
+
+                <!-- Historial Ventas -->
+                <div id="historialVentasContainer" class="space-y-2 hidden">
+                    <div class="text-xs bg-slate-950 p-3 rounded-xl border border-slate-800/80 space-y-1">
+                        <div class="flex justify-between text-slate-400 text-[10px]">
+                            <span>Fecha: 23/08/2026 - 19:15hs</span>
+                            <span>Op #1039</span>
+                        </div>
+                        <p class="font-bold text-white">Venta realizada a Cliente: Juan Pérez</p>
+                        <div class="flex justify-between items-center pt-1 border-t border-slate-900">
+                            <span class="text-slate-400">Acreditado: <strong class="text-emerald-400">$12.200</strong></span>
+                            <button onclick="verComprobanteDetalle('1039', 'MaxShop', 'Venta a Consumidor', '$12.200')" class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded border border-cyan-500/30 hover:bg-cyan-500/20">Ver Comprobante</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -145,19 +180,19 @@ def mostrar_interfaz():
                     <button onclick="cerrarEscaneoQR()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
                 </div>
                 <div id="reader" class="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 min-h-[250px]"></div>
-                <p class="text-[11px] text-slate-400">Enfoque el código QR del comercio para validar su compra y acumular puntos.</p>
+                <p class="text-[11px] text-slate-400">Enfoque el código QR del comercio para validar su compra y obtener su beneficio.</p>
                 <button onclick="cerrarEscaneoQR()" class="w-full py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-700 transition">Cancelar / Cerrar</button>
             </div>
         </div>
 
-        <!-- MODAL REGISTRO COMERCIO (GRATIS) -->
+        <!-- MODAL REGISTRO COMERCIO -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
                     <h3 class="text-base font-bold text-white">🏪 Sumar mi Comercio (Gratis)</h3>
                     <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                <p class="text-[11px] text-cyan-400 bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-800/30">Inscripción sin costo. Se otorga su QR de identificación y el 5% de descuento base obligatorio como costo publicitario.</p>
+                <p class="text-[11px] text-cyan-400 bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-800/30">Inscripción sin costo. <br><strong class="text-white mt-1 block">💡 Recordatorio: Como comerciante de MaxShop, si deseas comprar en otros comercios con descuento, regístrate también como Usuario.</strong></p>
                 <form id="formComercio" onsubmit="enviarComercio(event)" class="space-y-3">
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Nombre Completo (Titular)</label>
@@ -173,12 +208,11 @@ def mostrar_interfaz():
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Nombre de Fantasía del Comercio</label>
-                        <input type="text" id="c_fantasia" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
+                        <input type="text" id="c_fantasia" value="MaxShop" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
                     </div>
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Rubro</label>
                         <select id="c_rubro" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
-                            <option value="">Seleccione un rubro...</option>
                             <option value="Supermercados y almacenes">Supermercados y almacenes</option>
                             <option value="Gastronomía">Gastronomía</option>
                             <option value="Indumentaria y calzado">Indumentaria y calzado</option>
@@ -202,14 +236,14 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL REGISTRO USUARIO + SUSCRIPCIÓN MERCADO PAGO -->
+        <!-- MODAL REGISTRO USUARIO -->
         <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-base font-bold text-white">👤 Crear Cuenta & Suscripción</h3>
+                    <h3 class="text-base font-bold text-white">👤 Cuenta Consumidor & Suscripción</h3>
                     <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                <p class="text-[11px] text-blue-400 bg-blue-950/40 p-2.5 rounded-xl border border-blue-800/30">Membresía mensual de $10.000. Al registrarse será redirigido automáticamente a Mercado Pago para abonar su suscripción.</p>
+                <p class="text-[11px] text-blue-400 bg-blue-950/40 p-2.5 rounded-xl border border-blue-800/30">Membresía mensual de $10.000. Complete sus datos para registrarse y elija su método de pago sin abandonar la plataforma.</p>
                 <form id="formUsuario" onsubmit="enviarUsuario(event)" class="space-y-3">
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Nombre Completo</label>
@@ -235,118 +269,114 @@ def mostrar_interfaz():
                         <label class="text-[11px] font-semibold text-slate-400">Correo Electrónico</label>
                         <input type="email" id="u_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 outline-none mt-1">
                     </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Pagar Suscripción en Mercado Pago</button>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Continuar a Opciones de Pago</button>
                 </form>
             </div>
         </div>
 
-        <!-- MODAL PANEL DE ADMINISTRADOR Y COLABORADORES SEPARADO Y ORDENADO -->
+        <!-- MODAL SELECTOR DE PAGO (RETENCIÓN EN PÁGINA) -->
+        <div id="modalOpcionesPago" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-white">💳 Seleccione Método de Pago ($10.000)</h3>
+                    <button onclick="cerrarOpcionesPago()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+                </div>
+                <div class="space-y-3">
+                    <div onclick="pagarSuscripcion()" class="bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-blue-500/50 p-4 rounded-2xl cursor-pointer transition space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-blue-400">🔄 Suscripción Automática Mensual</span>
+                            <span class="text-[10px] bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800">Con Tarjeta</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Débito mensual automático. <strong class="text-slate-300">Nota: No afecta el margen ni límite de compra de tu tarjeta de crédito.</strong></p>
+                    </div>
+
+                    <div onclick="pagarLinkUnico()" class="bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/50 p-4 rounded-2xl cursor-pointer transition space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-cyan-400">🔗 Link de Pago Único (Efectivo / Débito / Otros)</span>
+                            <span class="text-[10px] bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800">Sin Tarjeta de Crédito</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Ideal si no posees tarjeta de crédito. Paga mediante medios habilitados.</p>
+                    </div>
+                </div>
+                <button onclick="cerrarOpcionesPago()" class="w-full py-2.5 bg-slate-800 text-slate-300 text-xs font-semibold rounded-xl hover:bg-slate-700 transition">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- MODAL COMPROBANTE DETALLE -->
+        <div id="modalComprobante" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl text-center">
+                <div class="w-12 h-12 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto text-xl font-black">✓</div>
+                <h3 class="text-sm font-bold text-white">Comprobante de Operación</h3>
+                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-left space-y-2 text-xs">
+                    <div class="flex justify-between"><span class="text-slate-400">Operación:</span> <span class="text-white font-mono" id="compOp">#1042</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Fecha/Hora:</span> <span class="text-white">24/08/2026 08:30hs</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Entidad / Comercio:</span> <span class="text-white" id="compEntidad">MaxShop</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Concepto:</span> <span class="text-white" id="compConcepto">Consumo con Descuento</span></div>
+                    <div class="flex justify-between pt-2 border-t border-slate-900"><span class="text-slate-400 font-bold">Monto Total:</span> <span class="text-emerald-400 font-black text-sm" id="compMonto">$9.500</span></div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="alert('Descargando comprobante PDF...')" class="py-2.5 bg-cyan-500/10 text-cyan-400 font-bold rounded-xl text-xs border border-cyan-500/30 hover:bg-cyan-500/20">📥 Descargar</button>
+                    <button onclick="cerrarComprobante()" class="py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-700">Cerrar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL PANEL DE ADMINISTRADOR -->
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
                         <span class="text-xl">⚙️</span>
-                        <h3 class="text-base font-bold text-white">Panel de Control & Gestión AsistMax</h3>
+                        <h3 class="text-base font-bold text-white">Panel de Control & Auditoría MaxShop</h3>
                     </div>
                     <button onclick="cerrarAdmin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
 
-                <!-- Contadores superiores -->
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-2xl text-center">
-                        <span class="text-[10px] text-slate-400 uppercase font-semibold">Comercios Activos</span>
-                        <h4 class="text-lg font-black text-cyan-400 mt-0.5">24</h4>
-                    </div>
-                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-2xl text-center">
-                        <span class="text-[10px] text-slate-400 uppercase font-semibold">Usuarios Suscriptos</span>
-                        <h4 class="text-lg font-black text-blue-400 mt-0.5">142</h4>
-                    </div>
-                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-2xl text-center">
-                        <span class="text-[10px] text-slate-400 uppercase font-semibold">Nivel Promedio Red</span>
-                        <h4 class="text-lg font-black text-emerald-400 mt-0.5">Plata</h4>
-                    </div>
-                </div>
-
-                <!-- Pestañas de Navegación del Panel -->
                 <div class="flex border-b border-slate-800 space-x-4 pt-2">
-                    <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 text-xs font-bold text-cyan-400 border-b-2 border-cyan-400 transition">🏪 Gestión de Comercios</button>
-                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition">👤 Gestión de Usuarios</button>
+                    <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 text-xs font-bold text-cyan-400 border-b-2 border-cyan-400 transition">🏪 Comercios</button>
+                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition">👤 Usuarios (Consumidores)</button>
+                    <button onclick="cambiarPestanaAdmin('operaciones')" id="btnTabOperaciones" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition">🧾 Historial Operaciones</button>
                 </div>
 
-                <!-- SECCIÓN COMERCIOS -->
                 <div id="seccionComerciosAdmin" class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Listado y Ventas de Comercios</h4>
-                        <button onclick="exportarCSV('comercios')" class="text-[11px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-2.5 py-1 rounded-lg border border-cyan-500/30 font-semibold">📥 Descargar CSV Comercios</button>
+                        <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Listado de Comercios</h4>
+                        <button onclick="exportarCSV('comercios')" class="text-[11px] bg-cyan-500/10 text-cyan-400 px-2.5 py-1 rounded-lg border border-cyan-500/30">📥 CSV Comercios</button>
                     </div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden p-3 space-y-2">
-                        <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800 pb-2">
-                            <span>Comercio (ID)</span>
-                            <span>Estrella / Nivel</span>
-                            <span>Ventas / Monto</span>
-                            <span>Acción</span>
-                        </div>
-                        <div class="flex justify-between items-center text-xs text-white py-1">
-                            <div>
-                                <p class="font-bold">Café Central</p>
-                                <p class="text-[10px] text-slate-400">ID: #102</p>
-                            </div>
-                            <span class="text-cyan-400">Estrella 2</span>
-                            <span class="text-emerald-400">140 ventas ($450.000)</span>
-                            <button onclick="cambiarEstadoComercio('Café Central')" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded border border-slate-700">Pausar / Activar</button>
-                        </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
+                        <div><p class="font-bold">MaxShop Oficial</p><p class="text-[10px] text-slate-400">ID: #1 • Rubro: Supermercados</p></div>
+                        <span class="text-emerald-400">140 transacciones ($450.000)</span>
                     </div>
                 </div>
 
-                <!-- SECCIÓN USUARIOS -->
                 <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-bold text-blue-400 uppercase">📊 Listado, Puntos y Suscripciones de Usuarios</h4>
-                        <button onclick="exportarCSV('usuarios')" class="text-[11px] bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-2.5 py-1 rounded-lg border border-blue-500/30 font-semibold">📥 Descargar CSV Usuarios</button>
+                        <h4 class="text-xs font-bold text-blue-400 uppercase">📊 Listado de Usuarios y Membresías</h4>
+                        <button onclick="exportarCSV('usuarios')" class="text-[11px] bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-lg border border-blue-500/30">📥 CSV Usuarios</button>
                     </div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden p-3 space-y-2">
-                        <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800 pb-2">
-                            <span>Usuario / DNI</span>
-                            <span>Nivel / Puntos</span>
-                            <span>Suscripción</span>
-                            <span>Acción</span>
-                        </div>
-                        <div class="flex justify-between items-center text-xs text-white py-1">
-                            <div>
-                                <p class="font-bold">Juan Pérez</p>
-                                <p class="text-[10px] text-slate-400">DNI: 34... • wpp: 3834...</p>
-                            </div>
-                            <span class="text-blue-400">Plata (450 pts)</span>
-                            <span class="text-amber-400">Pendiente / Efectivo</span>
-                            <button onclick="darDeAlta('Juan Pérez')" class="text-[10px] bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold px-2 py-1 rounded">Dar de Alta</button>
-                        </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
+                        <div><p class="font-bold">Juan Pérez (Comerciante/Consumidor)</p><p class="text-[10px] text-slate-400">DNI: 34... • Plata (450 pts)</p></div>
+                        <span class="text-amber-400">Suscripción Activa</span>
                     </div>
                 </div>
 
-            </div>
-        </div>
-
-        <!-- MODAL LEGALES / POLÍTICAS -->
-        <div id="modalLegal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl">
-                <div class="flex justify-between items-center">
-                    <h3 id="legalTitulo" class="text-base font-bold text-white">Información Legal</h3>
-                    <button onclick="cerrarLegal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+                <div id="seccionOperacionesAdmin" class="space-y-3 hidden">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold text-emerald-400 uppercase">🧾 Auditoría Centralizada de Comprobantes</h4>
+                        <button onclick="exportarCSV('operaciones')" class="text-[11px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/30">📥 CSV Historial</button>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
+                        <div><p class="font-bold">Juan Pérez ➔ MaxShop</p><p class="text-[10px] text-slate-400">24/08/2026 - Op #1042</p></div>
+                        <span class="text-emerald-400 font-bold">$9.500</span>
+                    </div>
                 </div>
-                <div id="legalContenido" class="text-xs text-slate-300 space-y-3 leading-relaxed"></div>
+
             </div>
         </div>
 
         <!-- Footer -->
         <footer class="w-full text-center py-6 border-t border-slate-900 text-xs text-slate-500 bg-slate-950 space-y-2">
-            <p class="font-semibold text-slate-400">AsistMax-cobros &copy; 2026 - Todos los derechos reservados.</p>
-            <div class="flex justify-center flex-wrap gap-2 text-[11px]">
-                <a href="javascript:void(0)" onclick="mostrarLegal('terminos')" class="text-cyan-400 hover:underline">Términos y Condiciones</a>
-                <span class="text-slate-700">•</span>
-                <a href="javascript:void(0)" onclick="mostrarLegal('privacidad')" class="text-cyan-400 hover:underline">Política de Privacidad y Confidencialidad</a>
-                <span class="text-slate-700">•</span>
-                <a href="javascript:void(0)" onclick="mostrarLegal('suscripcion')" class="text-cyan-400 hover:underline">Condiciones de Suscripción</a>
-            </div>
+            <p class="font-semibold text-slate-400">MaxShop & AsistMax &copy; 2026 - Todos los derechos reservados.</p>
         </footer>
 
         <!-- Scripts -->
@@ -356,111 +386,84 @@ def mostrar_interfaz():
             function iniciarEscaneoQR() {
                 const modal = document.getElementById('modalQR');
                 modal.classList.remove('hidden');
-                if (!html5QrCode) {
-                    html5QrCode = new Html5Qrcode("reader");
-                }
-                const config = { fps: 10, qrbox: { width: 220, height: 220 } };
-                html5QrCode.start(
-                    { facingMode: "environment" },
-                    config,
+                if (!html5QrCode) { html5QrCode = new Html5Qrcode("reader"); }
+                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 220, height: 220 } },
                     (decodedText) => {
                         detenerEscaneoQR();
-                        alert("Comercio / QR Identificado:\\n\\n" + decodedText + "\\n\\nBeneficio del 5% base o promoción aplicada con éxito. Acumulando puntos.");
-                    },
-                    (errorMessage) => {}
-                ).catch((err) => {
-                    alert("No se pudo iniciar la cámara. Verifique permisos o conexión HTTPS.");
-                    modal.classList.add('hidden');
-                });
+                        alert("Comercio / QR Identificado: " + decodedText + "\\nDescuento del 5% aplicado y puntos sumados.");
+                    }, (err) => {}
+                ).catch(() => { modal.classList.add('hidden'); });
             }
 
             function detenerEscaneoQR() {
                 const modal = document.getElementById('modalQR');
                 if (html5QrCode && html5QrCode.isScanning) {
                     html5QrCode.stop().then(() => modal.classList.add('hidden')).catch(() => modal.classList.add('hidden'));
-                } else {
-                    modal.classList.add('hidden');
-                }
+                } else { modal.classList.add('hidden'); }
             }
-
             function cerrarEscaneoQR() { detenerEscaneoQR(); }
 
             function abrirModalComercio() { document.getElementById('modalComercio').classList.remove('hidden'); }
             function cerrarModalComercio() { document.getElementById('modalComercio').classList.add('hidden'); }
             function abrirModalUsuario() { document.getElementById('modalUsuario').classList.remove('hidden'); }
             function cerrarModalUsuario() { document.getElementById('modalUsuario').classList.add('hidden'); }
+            function cerrarOpcionesPago() { document.getElementById('modalOpcionesPago').classList.add('hidden'); }
+
+            function verComprobanteDetalle(op, entidad, concepto, monto) {
+                document.getElementById('compOp').innerText = "#" + op;
+                document.getElementById('compEntidad').innerText = entidad;
+                document.getElementById('compConcepto').innerText = concepto;
+                document.getElementById('compMonto').innerText = monto;
+                document.getElementById('modalComprobante').classList.remove('hidden');
+            }
+            function cerrarComprobante() { document.getElementById('modalComprobante').classList.add('hidden'); }
+
+            function cambiarVistaHistorial(tipo) {
+                if(tipo === 'consumos') {
+                    document.getElementById('historialConsumosContainer').classList.remove('hidden');
+                    document.getElementById('historialVentasContainer').classList.add('hidden');
+                    document.getElementById('btnHistConsumos').className = "text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/40 font-bold";
+                    document.getElementById('btnHistVentas').className = "text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700";
+                } else {
+                    document.getElementById('historialConsumosContainer').classList.add('hidden');
+                    document.getElementById('historialVentasContainer').classList.remove('hidden');
+                    document.getElementById('btnHistConsumos').className = "text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700";
+                    document.getElementById('btnHistVentas').className = "text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/40 font-bold";
+                }
+            }
 
             function abrirLogin() {
-                let id = prompt("Ingrese su Correo o ID de Usuario / Comercio para ingresar:");
-                if(id) {
-                    alert("Redirigiendo al panel de control de: " + id);
-                }
+                let id = prompt("Ingrese su Correo o ID:");
+                if(id) alert("Ingresando a su perfil...");
             }
 
             function abrirAdmin() {
-                let clave = prompt("Ingrese la Clave Única de Administrador o Colaborador:");
+                let clave = prompt("Ingrese la Clave de Administrador:");
                 if (clave === "AsistMaxAdmin2026Secure") {
                     document.getElementById('modalAdmin').classList.remove('hidden');
                 } else if (clave !== null) {
-                    alert("Clave incorrecta o acceso no autorizado.");
+                    alert("Clave incorrecta.");
                 }
             }
-
-            function cerrarAdmin() {
-                document.getElementById('modalAdmin').classList.add('hidden');
-            }
+            function cerrarAdmin() { document.getElementById('modalAdmin').classList.add('hidden'); }
 
             function cambiarPestanaAdmin(tipo) {
-                const btnComercios = document.getElementById('btnTabComercios');
-                const btnUsuarios = document.getElementById('btnTabUsuarios');
-                const secComercios = document.getElementById('seccionComerciosAdmin');
-                const secUsuarios = document.getElementById('seccionUsuariosAdmin');
-
-                if(tipo === 'comercios') {
-                    btnComercios.className = "pb-2 text-xs font-bold text-cyan-400 border-b-2 border-cyan-400 transition";
-                    btnUsuarios.className = "pb-2 text-xs font-bold text-slate-400 hover:text-white transition";
-                    secComercios.classList.remove('hidden');
-                    secUsuarios.classList.add('hidden');
-                } else {
-                    btnUsuarios.className = "pb-2 text-xs font-bold text-blue-400 border-b-2 border-blue-400 transition";
-                    btnComercios.className = "pb-2 text-xs font-bold text-slate-400 hover:text-white transition";
-                    secUsuarios.classList.remove('hidden');
-                    secComercios.classList.add('hidden');
-                }
-            }
-
-            function cambiarEstadoComercio(nombre) {
-                alert("Estado modificado para el comercio: " + nombre);
-            }
-
-            function darDeAlta(nombre) {
-                alert("¡Cuenta dada de alta por el Administrador/Colaborador para: " + nombre + "!");
+                ['comercios', 'usuarios', 'operaciones'].forEach(t => {
+                    document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = "pb-2 text-xs font-bold text-slate-400 hover:text-white transition";
+                    document.getElementById('seccion' + t.charAt(0).toUpperCase() + t.slice(1) + 'Admin').classList.add('hidden');
+                });
+                document.getElementById('btnTab' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).className = "pb-2 text-xs font-bold text-" + (tipo==='comercios'?'cyan':tipo==='usuarios'?'blue':'emerald') + "-400 border-b-2 border-" + (tipo==='comercios'?'cyan':tipo==='usuarios'?'blue':'emerald') + "-400 transition";
+                document.getElementById('seccion' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Admin').classList.remove('hidden');
             }
 
             function exportarCSV(tipo) {
-                let contenido = tipo === 'comercios' ? "ID,Comercio,Estrella,Ventas,MontoTotal\\n102,Café Central,2,140,450000" : "ID,Usuario,DNI,Puntos,Nivel,Suscripcion\\n1,Juan Pérez,34000000,450,Plata,Activo";
+                let contenido = `ID,Fecha,Cliente/Comercio,Concepto,Monto\\n1,2026-08-24,Juan Pérez,Consumo con Descuento,9500`;
                 let blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
                 let enlace = document.createElement("a");
                 enlace.href = URL.createObjectURL(blob);
-                enlace.download = `reporte_${tipo}_asistmax.csv`;
+                enlace.download = `reporte_${tipo}_maxshop.csv`;
                 enlace.click();
-                alert("Archivo CSV descargado con éxito.");
-            }
-
-            const textosLegales = {
-                terminos: `<b>Términos y Condiciones Generales:</b> AsistMax opera como una red tecnológica B2C de intermediación publicitaria y fidelización comercial. Los comercios adheridos participan de forma gratuita y ofrecen un beneficio mínimo obligatorio del 5% en carácter de contraprestación publicitaria dentro de la red.`,
-                privacidad: `<b>Política de Privacidad y Confidencialidad:</b> En cumplimiento de las normativas de protección de datos personales y confidencialidad, la información provista por usuarios y comercios se encuentra rigurosamente resguardada.`,
-                suscripcion: `<b>Condiciones de Suscripción y Período de Gracia:</b> La activación de la cuenta de usuario se encuentra sujeta al abono de la membresía mensual ($10.000).`
-            };
-
-            function mostrarLegal(tipo) {
-                document.getElementById('legalTitulo').innerText = tipo === 'terminos' ? 'Términos y Condiciones' : tipo === 'privacidad' ? 'Política de Privacidad' : 'Condiciones de Suscripción';
-                document.getElementById('legalContenido').innerHTML = textosLegales[tipo];
-                document.getElementById('modalLegal').classList.remove('hidden');
-            }
-
-            function cerrarLegal() {
-                document.getElementById('modalLegal').classList.add('hidden');
+                alert("Reporte CSV exportado correctamente.");
             }
 
             async function enviarComercio(e) {
@@ -476,18 +479,14 @@ def mostrar_interfaz():
                     cuit_cuil: document.getElementById('c_cuit').value
                 };
                 let res = await fetch('/api/registrar-comercio', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(data)
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
                 });
                 let json = await res.json();
                 if(json.success) {
-                    alert("¡Comercio registrado gratis con éxito! Ya se generó su QR y su beneficio base del 5%.");
+                    alert("¡Comercio MaxShop registrado con éxito!");
                     cerrarModalComercio();
                     document.getElementById('formComercio').reset();
-                } else {
-                    alert("Error al registrar: " + json.detail);
-                }
+                } else { alert("Error: " + json.detail); }
             }
 
             async function enviarUsuario(e) {
@@ -501,18 +500,22 @@ def mostrar_interfaz():
                     correo: document.getElementById('u_correo').value
                 };
                 let res = await fetch('/api/registrar-usuario', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(data)
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
                 });
                 let json = await res.json();
                 if(json.success) {
-                    alert("¡Registro pre-aprobado! Redirigiendo a Mercado Pago para abonar su suscripción mensual...");
-                    // URL REAL DE SUSCRIPCIÓN MENSUAL
-                    window.location.href = "https://mpago.la/12kwFZe";
-                } else {
-                    alert("Error al registrar: " + json.detail);
-                }
+                    cerrarModalUsuario();
+                    document.getElementById('modalOpcionesPago').classList.remove('hidden');
+                    document.getElementById('formUsuario').reset();
+                } else { alert("Error: " + json.detail); }
+            }
+
+            function pagarSuscripcion() {
+                window.location.href = "https://mpago.la/12kwFZe";
+            }
+
+            function pagarLinkUnico() {
+                window.location.href = "https://mpago.la/2xio5HU";
             }
         </script>
     </body>
