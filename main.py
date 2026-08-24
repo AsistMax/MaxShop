@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="4.2")
+app = FastAPI(title="MaxShop - AsistMax", version="4.3")
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,23 +54,23 @@ def mostrar_interfaz():
         <!-- Librería para lectura real de códigos QR -->
         <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </head>
-    <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950">
+    <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950" onload="cargarComerciosPublicos()">
 
         <!-- Navbar Superior -->
-        <header class="w-full px-6 py-4 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 shadow-lg">
-            <div class="flex items-center space-x-3">
-                <!-- LOGO CON TU ENLACE DIRECTO DE IMGBB -->
-                <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" id="logoMaxShop" class="w-10 h-10 rounded-xl object-cover border border-cyan-500/40 shadow-md shadow-cyan-500/20 bg-slate-900">
+        <header class="w-full px-5 py-4 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/90 backdrop-blur-md sticky top-0 z-50 shadow-lg">
+            <div class="flex items-center space-x-3.5">
+                <!-- LOGO AMPLIADO Y MÁS CLARO -->
+                <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-12 h-12 rounded-2xl object-cover border-2 border-cyan-500/60 shadow-lg shadow-cyan-500/30 bg-slate-900">
                 <div>
-                    <h1 class="text-sm font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></h1>
-                    <p class="text-[10px] text-cyan-400 font-semibold tracking-widest uppercase">Red B2B & Consumidores</p>
+                    <h1 class="text-base font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></h1>
+                    <p class="text-[11px] text-cyan-400 font-semibold tracking-widest uppercase">Red B2B & Consumidores</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="abrirLogin()" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-lg border border-cyan-500/30 transition font-semibold">
+                <button onclick="abrirLogin()" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-2 rounded-xl border border-cyan-500/30 transition font-semibold">
                     🔑 Login
                 </button>
-                <button onclick="abrirAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition font-medium">
+                <button onclick="abrirAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-xl border border-slate-700 transition font-medium">
                     ⚙️ Admin
                 </button>
             </div>
@@ -79,13 +79,13 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- BANNER PRINCIPAL CON TU ENLACE DIRECTO DE IMGBB -->
-            <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-xl relative bg-slate-900">
-                <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" id="bannerMaxShop" class="w-full h-36 object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex items-end p-4">
+            <!-- BANNER PRINCIPAL AMPLIADO Y DESTACADO -->
+            <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl relative bg-slate-900">
+                <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-48 object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex items-end p-5">
                     <div>
-                        <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/90 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Comercio Destacado</span>
-                        <h2 class="text-lg font-extrabold text-white mt-1">MaxShop Oficial</h2>
+                        <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/90 px-3 py-1 rounded-full border border-cyan-800/50">Comercio Destacado Oficial</span>
+                        <h2 class="text-xl font-extrabold text-white mt-1.5">MaxShop Red Global</h2>
                     </div>
                 </div>
             </div>
@@ -127,6 +127,28 @@ def mostrar_interfaz():
                     <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Crear Cuenta Usuario</h3>
                     <p class="text-[11px] text-slate-400 mt-0.5">Clientes y Comerciantes</p>
                 </button>
+            </div>
+
+            <!-- SECCIÓN NUEVA: BUSCADOR Y COMERCIOS ADHERIDOS -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Directorio</span>
+                        <h3 class="text-sm font-extrabold text-white mt-1">🏪 Comercios Adheridos & Beneficios</h3>
+                    </div>
+                </div>
+
+                <!-- Barra de búsqueda en tiempo real -->
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">🔍</span>
+                    <input type="text" id="inputBuscadorComercios" onkeyup="filtrarComerciosPublicos()" placeholder="Buscar por nombre, rubro o localidad..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-9 pr-4 py-2.5 text-xs text-white focus:border-cyan-500 outline-none transition">
+                </div>
+
+                <!-- Contenedor de la lista de comercios -->
+                <div id="listaComerciosPublicos" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                    <!-- Se carga dinámicamente -->
+                    <div class="text-center py-4 text-xs text-slate-500">Cargando comercios adheridos...</div>
+                </div>
             </div>
 
             <!-- Sección Mi Historial (Dinámico) -->
@@ -382,6 +404,54 @@ def mostrar_interfaz():
         <!-- Scripts -->
         <script>
             let html5QrCode = null;
+            let listaComerciosGlobal = [];
+
+            async function cargarComerciosPublicos() {
+                try {
+                    let res = await fetch('/api/comercios');
+                    let json = await res.json();
+                    if(json.success) {
+                        listaComerciosGlobal = json.data;
+                        renderizarComercios(listaComerciosGlobal);
+                    }
+                } catch(e) {
+                    // Fallback predeterminado si no hay base conectada aún
+                    listaComerciosGlobal = [
+                        { nombre_fantasias: "MaxShop Oficial", rubro: "Supermercados y almacenes", localidad: "Central", whatsapp: "3834000000" }
+                    ];
+                    renderizarComercios(listaComerciosGlobal);
+                }
+            }
+
+            function renderizarComercios(comercios) {
+                const contenedor = document.getElementById('listaComerciosPublicos');
+                if(!comercios || comercios.length === 0) {
+                    contenedor.innerHTML = '<div class="text-center py-4 text-xs text-slate-500">No se encontraron comercios registrados.</div>';
+                    return;
+                }
+                let html = '';
+                comercios.forEach(c => {
+                    html += `
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-2xl p-3 flex justify-between items-center transition hover:border-cyan-500/40">
+                        <div class="space-y-0.5">
+                            <h4 class="text-xs font-bold text-white flex items-center">🏪 ${c.nombre_fantasias} <span class="ml-2 text-[9px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-800/60">5% Descuento</span></h4>
+                            <p class="text-[10px] text-slate-400">Rubro: ${c.rubro} • Localidad: ${c.localidad || 'General'}</p>
+                        </div>
+                        <a href="https://wa.me/${c.whatsapp}?text=Hola,%20vengo%20de%20MaxShop%20y%20quiero%20consultar%20por%20sus%20beneficios." target="_blank" class="text-[10px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-2.5 py-1.5 rounded-xl border border-emerald-500/30 font-semibold transition">💬 Contacto</a>
+                    </div>`;
+                });
+                contenedor.innerHTML = html;
+            }
+
+            function filtrarComerciosPublicos() {
+                let texto = document.getElementById('inputBuscadorComercios').value.toLowerCase();
+                let filtrados = listaComerciosGlobal.filter(c => 
+                    c.nombre_fantasias.toLowerCase().includes(texto) || 
+                    c.rubro.toLowerCase().includes(texto) || 
+                    (c.localidad && c.localidad.toLowerCase().includes(texto))
+                );
+                renderizarComercios(filtrados);
+            }
 
             function iniciarEscaneoQR() {
                 const modal = document.getElementById('modalQR');
@@ -486,6 +556,7 @@ def mostrar_interfaz():
                     alert("¡Comercio MaxShop registrado con éxito!");
                     cerrarModalComercio();
                     document.getElementById('formComercio').reset();
+                    cargarComerciosPublicos(); // Recarga la lista de comercios
                 } else { alert("Error: " + json.detail); }
             }
 
@@ -521,6 +592,16 @@ def mostrar_interfaz():
     </body>
     </html>
     """
+
+@app.get("/api/comercios")
+def obtener_comercios():
+    if not supabase:
+        return {"success": False, "data": []}
+    try:
+        response = supabase.table("comercios").select("nombre_fantasias, rubro, localidad, whatsapp").execute()
+        return {"success": True, "data": response.data}
+    except Exception as e:
+        return {"success": False, "data": []}
 
 @app.post("/api/registrar-comercio")
 def registrar_comercio(comercio: ComercioModel):
