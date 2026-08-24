@@ -1,68 +1,145 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-import os
-from supabase import create_client, Client
+import sqlite3
+from typing import Optional
 
-app = FastAPI(title="MaxShop - AsistMax", version="4.3")
+app = FastAPI(title="MaxShop - AsistMax Red B2B & Consumidores")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# ==========================================
+# BASE DE DATOS SQLITE
+# ==========================================
+def init_db():
+    conn = sqlite3.connect('maxshop.db')
+    cursor = conn.cursor()
+    
+    # Tabla de Comercios
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS comercios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            cuit TEXT NOT NULL,
+            rubro TEXT NOT NULL,
+            whatsapp TEXT NOT NULL,
+            direccion TEXT NOT NULL
+        )
+    ''')
+    
+    # Tabla de Usuarios (Consumidores)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            email TEXT NOT NULL,
+            telefono TEXT NOT NULL
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+init_db()
 
-if SUPABASE_URL and SUPABASE_KEY:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-else:
-    supabase = None
+# ==========================================
+# MODELOS PYDANTIC
+# ==========================================
+class ComercioModel(BaseModel.model_config := {}, **{
+    "nombre": str,
+    "cuit": str,
+    "rubro": str,
+    "whatsapp": str,
+    "direccion": str
+})
 
-class ComercioModel(BaseModel):
-    nombre_completo: str
-    correo: str
-    whatsapp: str
-    nombre_fantasias: str
-    rubro: str
-    direccion: str
-    localidad: str
-    cuit_cuil: str
+class UsuarioModel(BaseModel.model_config := {}, **{
+    "nombre": str,
+    "email": str,
+    "telefono": str
+})
 
-class UsuarioModel(BaseModel):
-    nombre_completo: str
-    dni: str
-    direccion: str
-    localidad: str
-    whatsapp: str
-    correo: str
+# ==========================================
+# ENDPOINTS API BACKEND
+# ==========================================
+@app.post("/api/registrar-comercio")
+def registrar_comercio(comercio: ComercioModel):
+    try:
+        conn = sqlite3.connect('maxshop.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO comercios (nombre, cuit, rubro, whatsapp, direccion)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (comercio.nombre, comercio.cuit, comercio.rubro, comercio.whatsapp, comercio.direccion))
+        conn.commit()
+        conn.close()
+        return {"success": True, "message": "Comercio registrado con éxito"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/comercios")
+def obtener_comercios():
+    conn = sqlite3.connect('maxshop.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, nombre, rubro, whatsapp, direccion FROM comercios")
+    rows = cursor.fetchall()
+    conn.close()
+    
+    comercios = []
+    for r in rows:
+        comercios.append({
+            "id": r[0],
+            "nombre": r[1],
+            "rubro": r[2],
+            "whatsapp": r[3],
+            "direccion": r[4]
+        })
+    return comercios
+
+@app.post("/api/registrar-usuario")
+def registrar_usuario(usuario: UsuarioModel):
+    try:
+        conn = sqlite3.connect('maxshop.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO usuarios (nombre, email, telefono)
+            VALUES (?, ?, ?)
+        ''', (usuario.nombre, usuario.email, usuario.telefono))
+        conn.commit()
+        conn.close()
+        return {"success": True, "message": "Usuario registrado con éxito"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================
+# INTERFAZ FRONTEND (HTML / TailwindCSS / JS)
+# ==========================================
 @app.get("/", response_class=HTMLResponse)
-def mostrar_interfaz():
+def index():
     return """
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>MaxShop & AsistMax - Red Fintech B2B</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <!-- Librería para lectura real de códigos QR -->
-        <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    </head>
-    <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950" onload="cargarComerciosPublicos()">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaxShop | AsistMax</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950">
 
-        <!-- Navbar Superior -->
+    <!-- CONTENEDOR PRINCIPAL APP MÓVIL / WEB -->
+    <div class="w-full max-w-md mx-auto bg-slate-950 min-h-screen flex flex-col shadow-2xl relative border-x border-slate-900">
+
+        <!-- Navbar Superior (LOGO MEJORADO) -->
         <header class="w-full px-5 py-4 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/90 backdrop-blur-md sticky top-0 z-50 shadow-lg">
             <div class="flex items-center space-x-3.5">
-                <!-- LOGO AMPLIADO Y MÁS CLARO -->
-                <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-12 h-12 rounded-2xl object-cover border-2 border-cyan-500/60 shadow-lg shadow-cyan-500/30 bg-slate-900">
+                <!-- LOGO MÁS GRANDE Y NITIDO (w-14 h-14) -->
+                <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-14 h-14 rounded-2xl object-cover object-center border-2 border-cyan-500/60 shadow-lg shadow-cyan-500/30 bg-slate-900">
                 <div>
-                    <h1 class="text-base font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></h1>
+                    <h1 class="text-lg font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></h1>
                     <p class="text-[11px] text-cyan-400 font-semibold tracking-widest uppercase">Red B2B & Consumidores</p>
                 </div>
             </div>
@@ -79,90 +156,50 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- BANNER PRINCIPAL AMPLIADO Y DESTACADO -->
+            <!-- BANNER PRINCIPAL (MÁS ALTO h-64 Y CENTRADO) -->
             <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl relative bg-slate-900">
-                <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-48 object-cover">
+                <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-64 object-cover object-center">
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex items-end p-5">
                     <div>
                         <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/90 px-3 py-1 rounded-full border border-cyan-800/50">Comercio Destacado Oficial</span>
-                        <h2 class="text-xl font-extrabold text-white mt-1.5">MaxShop Red Global</h2>
+                        <h2 class="text-2xl font-extrabold text-white mt-1.5">MaxShop Red Global</h2>
                     </div>
                 </div>
             </div>
 
-            <!-- Tarjeta de Progreso / Nivel -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 shadow-xl flex items-center justify-between">
-                <div class="space-y-1">
-                    <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-800/50">Mi Perfil / Nivel</span>
-                    <h3 class="text-sm font-bold text-white" id="lblNivelUsuario">Nivel Plata • 450 Puntos</h3>
-                    <p class="text-[11px] text-slate-400">Descuentos activos en toda la red</p>
-                </div>
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-slate-950 font-black text-lg shadow-lg">
-                    🥈
-                </div>
-            </div>
-
-            <!-- Escáner QR Banner -->
-            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/40 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
-                <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-1 rounded-full border border-cyan-800/50">Billetera Inteligente</span>
-                <h2 class="text-2xl font-bold text-white mt-2">Pagos & Descuentos</h2>
-                <p class="text-xs text-slate-400 mt-1">Escanea el código QR de MaxShop o comercios adheridos para validar tu beneficio (5% min) y sumar puntos.</p>
-                <div class="mt-5">
-                    <button onclick="iniciarEscaneoQR()" class="w-full group relative inline-flex items-center justify-center px-6 py-3.5 text-sm font-bold text-slate-950 transition-all bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20 active:scale-95">
-                        <span class="mr-2 text-base">📷</span> Escanear QR del Comercio
-                    </button>
-                </div>
-            </div>
-
-            <!-- Botones de Registro -->
+            <!-- Accesos / Acciones Principales -->
             <div class="grid grid-cols-2 gap-3">
-                <button onclick="abrirModalComercio()" class="bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 p-4 rounded-2xl text-left transition-all group">
-                    <div class="text-cyan-400 text-xl mb-1">🏪</div>
-                    <h3 class="text-xs font-bold text-white group-hover:text-cyan-400 transition">Sumar mi Comercio</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">100% Gratuito (Ventas)</p>
-                </button>
-                <button onclick="abrirModalUsuario()" class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 p-4 rounded-2xl text-left transition-all group">
-                    <div class="text-blue-400 text-xl mb-1">👤</div>
-                    <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Crear Cuenta Usuario</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Clientes y Comerciantes</p>
-                </button>
-            </div>
-
-            <!-- SECCIÓN NUEVA: BUSCADOR Y COMERCIOS ADHERIDOS -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
-                <div class="flex justify-between items-center">
+                <button onclick="abrirModalUsuario()" class="p-4 rounded-2xl bg-gradient-to-br from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold shadow-lg shadow-cyan-900/40 border border-cyan-400/30 text-left transition transform active:scale-95 flex flex-col justify-between h-28">
+                    <span class="text-xl">🛍️</span>
                     <div>
-                        <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Directorio</span>
-                        <h3 class="text-sm font-extrabold text-white mt-1">🏪 Comercios Adheridos & Beneficios</h3>
+                        <div class="text-sm font-extrabold">Soy Consumidor</div>
+                        <div class="text-[10px] text-cyan-100 font-normal">Obtén beneficios y descuentos</div>
                     </div>
-                </div>
-
-                <!-- Barra de búsqueda en tiempo real -->
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">🔍</span>
-                    <input type="text" id="inputBuscadorComercios" onkeyup="filtrarComerciosPublicos()" placeholder="Buscar por nombre, rubro o localidad..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-9 pr-4 py-2.5 text-xs text-white focus:border-cyan-500 outline-none transition">
-                </div>
-
-                <!-- Contenedor de la lista de comercios -->
-                <div id="listaComerciosPublicos" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
-                    <!-- Se carga dinámicamente -->
-                    <div class="text-center py-4 text-xs text-slate-500">Cargando comercios adheridos...</div>
-                </div>
+                </button>
+                
+                <button onclick="abrirModalComercio()" class="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-900 hover:from-slate-800 hover:to-slate-800 text-white font-bold shadow-lg border border-slate-700/80 text-left transition transform active:scale-95 flex flex-col justify-between h-28">
+                    <span class="text-xl">🏢</span>
+                    <div>
+                        <div class="text-sm font-extrabold">Soy Comercio</div>
+                        <div class="text-[10px] text-slate-400 font-normal">Únete a nuestra red B2B</div>
+                    </div>
+                </button>
             </div>
 
-            <!-- Sección Mi Historial (Dinámico) -->
+            <!-- SECCIÓN MI HISTORIAL (ACTUALIZADA Y DINÁMICA) -->
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">🧾 Mi Historial de Operaciones</h3>
-                    <div class="space-x-1">
-                        <button onclick="cambiarVistaHistorial('consumos')" id="btnHistConsumos" class="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/40 font-bold">Consumos</button>
-                        <button onclick="cambiarVistaHistorial('ventas')" id="btnHistVentas" class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">Ventas (MaxShop)</button>
-                    </div>
+                    <!-- Título Dinámico según Sesión -->
+                    <h3 id="tituloHistorial" class="text-xs font-bold uppercase tracking-wider text-slate-400">🧾 Historial (Inicie Sesión)</h3>
                 </div>
 
-                <!-- Historial Consumos -->
-                <div id="historialConsumosContainer" class="space-y-2">
+                <!-- Mensaje de No Logueado por defecto -->
+                <div id="historialVacio" class="text-center py-4 text-[11px] text-slate-500">
+                    Inicie sesión o regístrese para ver sus operaciones.
+                </div>
+
+                <!-- Historial Consumos (Visible solo si es Usuario Consumidor) -->
+                <div id="historialConsumosContainer" class="space-y-2 hidden">
                     <div class="text-xs bg-slate-950 p-3 rounded-xl border border-slate-800/80 space-y-1">
                         <div class="flex justify-between text-slate-400 text-[10px]">
                             <span>Fecha: 24/08/2026 - 08:30hs</span>
@@ -176,7 +213,7 @@ def mostrar_interfaz():
                     </div>
                 </div>
 
-                <!-- Historial Ventas -->
+                <!-- Historial Ventas (Visible solo si es Comercio) -->
                 <div id="historialVentasContainer" class="space-y-2 hidden">
                     <div class="text-xs bg-slate-950 p-3 rounded-xl border border-slate-800/80 space-y-1">
                         <div class="flex justify-between text-slate-400 text-[10px]">
@@ -192,433 +229,339 @@ def mostrar_interfaz():
                 </div>
             </div>
 
+            <!-- Listado de Comercios Red -->
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">📍 Comercios Adheridos</h3>
+                    <span id="contadorComercios" class="text-[10px] bg-slate-800 text-cyan-400 px-2 py-0.5 rounded-full font-semibold">0 Activos</span>
+                </div>
+                <div id="listaComercios" class="space-y-2.5">
+                    <!-- Dinámico vía JS -->
+                </div>
+            </div>
+
         </main>
 
-        <!-- MODAL CÁMARA ESCÁNER QR -->
-        <div id="modalQR" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl text-center">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-sm font-bold text-white">📷 Escáner de Código QR</h3>
-                    <button onclick="cerrarEscaneoQR()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
-                </div>
-                <div id="reader" class="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 min-h-[250px]"></div>
-                <p class="text-[11px] text-slate-400">Enfoque el código QR del comercio para validar su compra y obtener su beneficio.</p>
-                <button onclick="cerrarEscaneoQR()" class="w-full py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-700 transition">Cancelar / Cerrar</button>
-            </div>
-        </div>
-
-        <!-- MODAL REGISTRO COMERCIO -->
-        <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-base font-bold text-white">🏪 Sumar mi Comercio (Gratis)</h3>
-                    <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
-                </div>
-                <p class="text-[11px] text-cyan-400 bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-800/30">Inscripción sin costo. <br><strong class="text-white mt-1 block">💡 Recordatorio: Como comerciante de MaxShop, si deseas comprar en otros comercios con descuento, regístrate también como Usuario.</strong></p>
-                <form id="formComercio" onsubmit="enviarComercio(event)" class="space-y-3">
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Nombre Completo (Titular)</label>
-                        <input type="text" id="c_nombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Correo Electrónico</label>
-                        <input type="email" id="c_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">WhatsApp (Teléfono)</label>
-                        <input type="text" id="c_wpp" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Nombre de Fantasía del Comercio</label>
-                        <input type="text" id="c_fantasia" value="MaxShop" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Rubro</label>
-                        <select id="c_rubro" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
-                            <option value="Supermercados y almacenes">Supermercados y almacenes</option>
-                            <option value="Gastronomía">Gastronomía</option>
-                            <option value="Indumentaria y calzado">Indumentaria y calzado</option>
-                            <option value="Servicios y otros">Servicios y otros</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Dirección</label>
-                        <input type="text" id="c_dir" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Localidad</label>
-                        <input type="text" id="c_loc" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">CUIT o CUIL</label>
-                        <input type="text" id="c_cuit" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
-                    </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Registrar Comercio y Obtener QR</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- MODAL REGISTRO USUARIO -->
-        <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-base font-bold text-white">👤 Cuenta Consumidor & Suscripción</h3>
-                    <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
-                </div>
-                <p class="text-[11px] text-blue-400 bg-blue-950/40 p-2.5 rounded-xl border border-blue-800/30">Membresía mensual de $10.000. Complete sus datos para registrarse y elija su método de pago sin abandonar la plataforma.</p>
-                <form id="formUsuario" onsubmit="enviarUsuario(event)" class="space-y-3">
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Nombre Completo</label>
-                        <input type="text" id="u_nombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">DNI</label>
-                        <input type="text" id="u_dni" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Dirección</label>
-                        <input type="text" id="u_dir" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Localidad</label>
-                        <input type="text" id="u_loc" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">WhatsApp (Teléfono)</label>
-                        <input type="text" id="u_wpp" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Correo Electrónico</label>
-                        <input type="email" id="u_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 outline-none mt-1">
-                    </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Continuar a Opciones de Pago</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- MODAL SELECTOR DE PAGO -->
-        <div id="modalOpcionesPago" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                    <h3 class="text-sm font-bold text-white">💳 Seleccione Método de Pago ($10.000)</h3>
-                    <button onclick="cerrarOpcionesPago()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
-                </div>
-                <div class="space-y-3">
-                    <div onclick="pagarSuscripcion()" class="bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-blue-500/50 p-4 rounded-2xl cursor-pointer transition space-y-1">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-blue-400">🔄 Suscripción Automática Mensual</span>
-                            <span class="text-[10px] bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800">Con Tarjeta</span>
-                        </div>
-                        <p class="text-[11px] text-slate-400">Débito mensual automático. <strong class="text-slate-300">Nota: No afecta el margen ni límite de compra de tu tarjeta de crédito.</strong></p>
-                    </div>
-
-                    <div onclick="pagarLinkUnico()" class="bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/50 p-4 rounded-2xl cursor-pointer transition space-y-1">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-cyan-400">🔗 Link de Pago Único (Efectivo / Débito / Otros)</span>
-                            <span class="text-[10px] bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800">Sin Tarjeta de Crédito</span>
-                        </div>
-                        <p class="text-[11px] text-slate-400">Ideal si no posees tarjeta de crédito. Paga mediante medios habilitados.</p>
-                    </div>
-                </div>
-                <button onclick="cerrarOpcionesPago()" class="w-full py-2.5 bg-slate-800 text-slate-300 text-xs font-semibold rounded-xl hover:bg-slate-700 transition">Cancelar</button>
-            </div>
-        </div>
-
-        <!-- MODAL COMPROBANTE DETALLE -->
-        <div id="modalComprobante" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl text-center">
-                <div class="w-12 h-12 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto text-xl font-black">✓</div>
-                <h3 class="text-sm font-bold text-white">Comprobante de Operación</h3>
-                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-left space-y-2 text-xs">
-                    <div class="flex justify-between"><span class="text-slate-400">Operación:</span> <span class="text-white font-mono" id="compOp">#1042</span></div>
-                    <div class="flex justify-between"><span class="text-slate-400">Fecha/Hora:</span> <span class="text-white">24/08/2026 08:30hs</span></div>
-                    <div class="flex justify-between"><span class="text-slate-400">Entidad / Comercio:</span> <span class="text-white" id="compEntidad">MaxShop</span></div>
-                    <div class="flex justify-between"><span class="text-slate-400">Concepto:</span> <span class="text-white" id="compConcepto">Consumo con Descuento</span></div>
-                    <div class="flex justify-between pt-2 border-t border-slate-900"><span class="text-slate-400 font-bold">Monto Total:</span> <span class="text-emerald-400 font-black text-sm" id="compMonto">$9.500</span></div>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="alert('Descargando comprobante PDF...')" class="py-2.5 bg-cyan-500/10 text-cyan-400 font-bold rounded-xl text-xs border border-cyan-500/30 hover:bg-cyan-500/20">📥 Descargar</button>
-                    <button onclick="cerrarComprobante()" class="py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-700">Cerrar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- MODAL PANEL DE ADMINISTRADOR -->
-        <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xl">⚙️</span>
-                        <h3 class="text-base font-bold text-white">Panel de Control & Auditoría MaxShop</h3>
-                    </div>
-                    <button onclick="cerrarAdmin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
-                </div>
-
-                <div class="flex border-b border-slate-800 space-x-4 pt-2">
-                    <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 text-xs font-bold text-cyan-400 border-b-2 border-cyan-400 transition">🏪 Comercios</button>
-                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition">👤 Usuarios (Consumidores)</button>
-                    <button onclick="cambiarPestanaAdmin('operaciones')" id="btnTabOperaciones" class="pb-2 text-xs font-bold text-slate-400 hover:text-white transition">🧾 Historial Operaciones</button>
-                </div>
-
-                <div id="seccionComerciosAdmin" class="space-y-3">
-                    <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Listado de Comercios</h4>
-                        <button onclick="exportarCSV('comercios')" class="text-[11px] bg-cyan-500/10 text-cyan-400 px-2.5 py-1 rounded-lg border border-cyan-500/30">📥 CSV Comercios</button>
-                    </div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
-                        <div><p class="font-bold">MaxShop Oficial</p><p class="text-[10px] text-slate-400">ID: #1 • Rubro: Supermercados</p></div>
-                        <span class="text-emerald-400">140 transacciones ($450.000)</span>
-                    </div>
-                </div>
-
-                <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
-                    <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-bold text-blue-400 uppercase">📊 Listado de Usuarios y Membresías</h4>
-                        <button onclick="exportarCSV('usuarios')" class="text-[11px] bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-lg border border-blue-500/30">📥 CSV Usuarios</button>
-                    </div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
-                        <div><p class="font-bold">Juan Pérez (Comerciante/Consumidor)</p><p class="text-[10px] text-slate-400">DNI: 34... • Plata (450 pts)</p></div>
-                        <span class="text-amber-400">Suscripción Activa</span>
-                    </div>
-                </div>
-
-                <div id="seccionOperacionesAdmin" class="space-y-3 hidden">
-                    <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-bold text-emerald-400 uppercase">🧾 Auditoría Centralizada de Comprobantes</h4>
-                        <button onclick="exportarCSV('operaciones')" class="text-[11px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/30">📥 CSV Historial</button>
-                    </div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white flex justify-between items-center">
-                        <div><p class="font-bold">Juan Pérez ➔ MaxShop</p><p class="text-[10px] text-slate-400">24/08/2026 - Op #1042</p></div>
-                        <span class="text-emerald-400 font-bold">$9.500</span>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
         <!-- Footer -->
-        <footer class="w-full text-center py-6 border-t border-slate-900 text-xs text-slate-500 bg-slate-950 space-y-2">
-            <p class="font-semibold text-slate-400">MaxShop & AsistMax &copy; 2026 - Todos los derechos reservados.</p>
+        <footer class="w-full py-4 text-center border-t border-slate-900 text-slate-500 text-[10px]">
+            MaxShop Ecosystem &bull; Powered by AsistMax &copy; 2026
         </footer>
+    </div>
 
-        <!-- Scripts -->
-        <script>
-            let html5QrCode = null;
-            let listaComerciosGlobal = [];
+    <!-- MODAL REGISTRO COMERCIO -->
+    <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base text-white">🏢 Registro de Comercio</h3>
+                <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+            </div>
+            <form id="formComercio" onsubmit="enviarComercio(event)" class="space-y-3">
+                <div>
+                    <label class="text-[11px] text-slate-400 font-medium">Nombre del Comercio</label>
+                    <input type="text" id="comNombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-slate-400 font-medium">CUIT</label>
+                    <input type="text" id="comCuit" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-slate-400 font-medium">Rubro</label>
+                    <input type="text" id="comRubro" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-slate-400 font-medium">WhatsApp de Contacto</label>
+                    <input type="text" id="comWp" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-slate-400 font-medium">Dirección</label>
+                    <input type="text" id="comDir" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-2.5 rounded-xl text-sm shadow-lg shadow-cyan-500/20 transition mt-2">
+                    Registrar Comercio
+                </button>
+            </form>
+        </div>
+    </div>
 
-            async function cargarComerciosPublicos() {
-                try {
-                    let res = await fetch('/api/comercios');
-                    let json = await res.json();
-                    if(json.success) {
-                        listaComerciosGlobal = json.data;
-                        renderizarComercios(listaComerciosGlobal);
-                    }
-                } catch(e) {
-                    // Fallback predeterminado si no hay base conectada aún
-                    listaComerciosGlobal = [
-                        { nombre_fantasias: "MaxShop Oficial", rubro: "Supermercados y almacenes", localidad: "Central", whatsapp: "3834000000" }
-                    ];
-                    renderizarComercios(listaComerciosGlobal);
-                }
+    <!-- MODAL REGISTRO USUARIO -->
+    <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base text-white">🛍️ Registro de Consumidor</h3>
+                <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+            </div>
+            <form id="formUsuario" onsubmit="enviarUsuario(event)" class="space-y-3">
+                <div>
+                    <label class="text-[11px] text-slate-400 font-medium">Nombre y Apellido</label>
+                    <input type="text" id="usuNombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-slate-400 font-medium">Correo Electrónico</label>
+                    <input type="email" id="usuEmail" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-slate-400 font-medium">Teléfono / Celular</label>
+                    <input type="text" id="usuTel" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-2.5 rounded-xl text-sm shadow-lg shadow-cyan-500/20 transition mt-2">
+                    Continuar y Obtener Beneficio
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL OPCIONES DE PAGO / BENEFICIO -->
+    <div id="modalOpcionesPago" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl text-center">
+            <div class="w-12 h-12 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto text-emerald-400 text-xl font-bold">
+                ✓
+            </div>
+            <div>
+                <h3 class="font-bold text-base text-white">¡Registro Exitoso!</h3>
+                <p class="text-xs text-slate-400 mt-1">Selecciona tu método de pago preferido para aplicar tu descuento en MaxShop:</p>
+            </div>
+            <div class="space-y-2 pt-2">
+                <button onclick="seleccionarMetodoPago('QR MaxShop')" class="w-full bg-slate-950 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-xs font-bold text-left flex justify-between items-center transition">
+                    <span>📱 Pagar con QR MaxShop</span>
+                    <span class="text-cyan-400">10% OFF</span>
+                </button>
+                <button onclick="seleccionarMetodoPago('Tarjeta Débito/Crédito')" class="w-full bg-slate-950 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-xs font-bold text-left flex justify-between items-center transition">
+                    <span>💳 Tarjeta de Débito / Crédito</span>
+                    <span class="text-emerald-400">5% OFF</span>
+                </button>
+                <button onclick="seleccionarMetodoPago('Efectivo / Transferencia')" class="w-full bg-slate-950 hover:bg-slate-800 border border-slate-800 p-3 rounded-xl text-xs font-bold text-left flex justify-between items-center transition">
+                    <span>💵 Efectivo o Transferencia</span>
+                    <span class="text-slate-400">Sin desc.</span>
+                </button>
+            </div>
+            <button onclick="cerrarModalPago()" class="text-xs text-slate-500 hover:text-slate-300 pt-2">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL COMPROBANTE -->
+    <div id="modalComprobante" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-sm text-white">🧾 Comprobante Digital</h3>
+                <button onclick="cerrarComprobante()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+            </div>
+            <div id="contenidoComprobante" class="text-xs space-y-2 text-slate-300">
+                <!-- Se llena por JavaScript -->
+            </div>
+            <button onclick="cerrarComprobante()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                Cerrar Comprobante
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Variable global para simular la sesión activa
+        let rolActual = null; // 'consumidor', 'comercio' o null
+
+        function actualizarVistaHistorial() {
+            const titulo = document.getElementById('tituloHistorial');
+            const contConsumos = document.getElementById('historialConsumosContainer');
+            const contVentas = document.getElementById('historialVentasContainer');
+            const contVacio = document.getElementById('historialVacio');
+
+            if (rolActual === 'comercio') {
+                titulo.innerText = "🧾 Mi Historial de Ventas";
+                contConsumos.classList.add('hidden');
+                contVentas.classList.remove('hidden');
+                contVacio.classList.add('hidden');
+            } else if (rolActual === 'consumidor') {
+                titulo.innerText = "🧾 Mi Historial de Consumos";
+                contConsumos.classList.remove('hidden');
+                contVentas.classList.add('hidden');
+                contVacio.classList.add('hidden');
+            } else {
+                titulo.innerText = "🧾 Historial (Inicie Sesión)";
+                contConsumos.classList.add('hidden');
+                contVentas.classList.add('hidden');
+                contVacio.classList.remove('hidden');
             }
+        }
 
-            function renderizarComercios(comercios) {
-                const contenedor = document.getElementById('listaComerciosPublicos');
-                if(!comercios || comercios.length === 0) {
-                    contenedor.innerHTML = '<div class="text-center py-4 text-xs text-slate-500">No se encontraron comercios registrados.</div>';
-                    return;
-                }
-                let html = '';
-                comercios.forEach(c => {
-                    html += `
-                    <div class="bg-slate-950 border border-slate-800/80 rounded-2xl p-3 flex justify-between items-center transition hover:border-cyan-500/40">
-                        <div class="space-y-0.5">
-                            <h4 class="text-xs font-bold text-white flex items-center">🏪 ${c.nombre_fantasias} <span class="ml-2 text-[9px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-800/60">5% Descuento</span></h4>
-                            <p class="text-[10px] text-slate-400">Rubro: ${c.rubro} • Localidad: ${c.localidad || 'General'}</p>
-                        </div>
-                        <a href="https://wa.me/${c.whatsapp}?text=Hola,%20vengo%20de%20MaxShop%20y%20quiero%20consultar%20por%20sus%20beneficios." target="_blank" class="text-[10px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-2.5 py-1.5 rounded-xl border border-emerald-500/30 font-semibold transition">💬 Contacto</a>
-                    </div>`;
-                });
-                contenedor.innerHTML = html;
-            }
-
-            function filtrarComerciosPublicos() {
-                let texto = document.getElementById('inputBuscadorComercios').value.toLowerCase();
-                let filtrados = listaComerciosGlobal.filter(c => 
-                    c.nombre_fantasias.toLowerCase().includes(texto) || 
-                    c.rubro.toLowerCase().includes(texto) || 
-                    (c.localidad && c.localidad.toLowerCase().includes(texto))
-                );
-                renderizarComercios(filtrados);
-            }
-
-            function iniciarEscaneoQR() {
-                const modal = document.getElementById('modalQR');
-                modal.classList.remove('hidden');
-                if (!html5QrCode) { html5QrCode = new Html5Qrcode("reader"); }
-                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 220, height: 220 } },
-                    (decodedText) => {
-                        detenerEscaneoQR();
-                        alert("Comercio / QR Identificado: " + decodedText + "\\nDescuento del 5% aplicado y puntos sumados.");
-                    }, (err) => {}
-                ).catch(() => { modal.classList.add('hidden'); });
-            }
-
-            function detenerEscaneoQR() {
-                const modal = document.getElementById('modalQR');
-                if (html5QrCode && html5QrCode.isScanning) {
-                    html5QrCode.stop().then(() => modal.classList.add('hidden')).catch(() => modal.classList.add('hidden'));
-                } else { modal.classList.add('hidden'); }
-            }
-            function cerrarEscaneoQR() { detenerEscaneoQR(); }
-
-            function abrirModalComercio() { document.getElementById('modalComercio').classList.remove('hidden'); }
-            function cerrarModalComercio() { document.getElementById('modalComercio').classList.add('hidden'); }
-            function abrirModalUsuario() { document.getElementById('modalUsuario').classList.remove('hidden'); }
-            function cerrarModalUsuario() { document.getElementById('modalUsuario').classList.add('hidden'); }
-            function cerrarOpcionesPago() { document.getElementById('modalOpcionesPago').classList.add('hidden'); }
-
-            function verComprobanteDetalle(op, entidad, concepto, monto) {
-                document.getElementById('compOp').innerText = "#" + op;
-                document.getElementById('compEntidad').innerText = entidad;
-                document.getElementById('compConcepto').innerText = concepto;
-                document.getElementById('compMonto').innerText = monto;
-                document.getElementById('modalComprobante').classList.remove('hidden');
-            }
-            function cerrarComprobante() { document.getElementById('modalComprobante').classList.add('hidden'); }
-
-            function cambiarVistaHistorial(tipo) {
-                if(tipo === 'consumos') {
-                    document.getElementById('historialConsumosContainer').classList.remove('hidden');
-                    document.getElementById('historialVentasContainer').classList.add('hidden');
-                    document.getElementById('btnHistConsumos').className = "text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/40 font-bold";
-                    document.getElementById('btnHistVentas').className = "text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700";
+        function abrirLogin() {
+            let id = prompt("Ingrese 'comercio' para entrar como tienda, o 'usuario' para entrar como consumidor:");
+            if(id) {
+                if (id.toLowerCase().includes('comercio')) {
+                    rolActual = 'comercio';
+                    alert("Sesión iniciada como COMERCIO.");
                 } else {
-                    document.getElementById('historialConsumosContainer').classList.add('hidden');
-                    document.getElementById('historialVentasContainer').classList.remove('hidden');
-                    document.getElementById('btnHistConsumos').className = "text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700";
-                    document.getElementById('btnHistVentas').className = "text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/40 font-bold";
+                    rolActual = 'consumidor';
+                    alert("Sesión iniciada como USUARIO CONSUMIDOR.");
                 }
+                actualizarVistaHistorial();
             }
+        }
 
-            function abrirLogin() {
-                let id = prompt("Ingrese su Correo o ID:");
-                if(id) alert("Ingresando a su perfil...");
-            }
+        function abrirAdmin() {
+            alert("Panel Administrativo de MaxShop v1.0 (Restringido)");
+        }
 
-            function abrirAdmin() {
-                let clave = prompt("Ingrese la Clave de Administrador:");
-                if (clave === "AsistMaxAdmin2026Secure") {
-                    document.getElementById('modalAdmin').classList.remove('hidden');
-                } else if (clave !== null) {
-                    alert("Clave incorrecta.");
-                }
-            }
-            function cerrarAdmin() { document.getElementById('modalAdmin').classList.add('hidden'); }
+        function abrirModalComercio() {
+            document.getElementById('modalComercio').classList.remove('hidden');
+        }
+        function cerrarModalComercio() {
+            document.getElementById('modalComercio').classList.add('hidden');
+        }
 
-            function cambiarPestanaAdmin(tipo) {
-                ['comercios', 'usuarios', 'operaciones'].forEach(t => {
-                    document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = "pb-2 text-xs font-bold text-slate-400 hover:text-white transition";
-                    document.getElementById('seccion' + t.charAt(0).toUpperCase() + t.slice(1) + 'Admin').classList.add('hidden');
-                });
-                document.getElementById('btnTab' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).className = "pb-2 text-xs font-bold text-" + (tipo==='comercios'?'cyan':tipo==='usuarios'?'blue':'emerald') + "-400 border-b-2 border-" + (tipo==='comercios'?'cyan':tipo==='usuarios'?'blue':'emerald') + "-400 transition";
-                document.getElementById('seccion' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Admin').classList.remove('hidden');
-            }
+        function abrirModalUsuario() {
+            document.getElementById('modalUsuario').classList.remove('hidden');
+        }
+        function cerrarModalUsuario() {
+            document.getElementById('modalUsuario').classList.add('hidden');
+        }
 
-            function exportarCSV(tipo) {
-                let contenido = `ID,Fecha,Cliente/Comercio,Concepto,Monto\\n1,2026-08-24,Juan Pérez,Consumo con Descuento,9500`;
-                let blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
-                let enlace = document.createElement("a");
-                enlace.href = URL.createObjectURL(blob);
-                enlace.download = `reporte_${tipo}_maxshop.csv`;
-                enlace.click();
-                alert("Reporte CSV exportado correctamente.");
-            }
+        function cerrarModalPago() {
+            document.getElementById('modalOpcionesPago').classList.add('hidden');
+        }
 
-            async function enviarComercio(e) {
-                e.preventDefault();
-                const data = {
-                    nombre_completo: document.getElementById('c_nombre').value,
-                    correo: document.getElementById('c_correo').value,
-                    whatsapp: document.getElementById('c_wpp').value,
-                    nombre_fantasias: document.getElementById('c_fantasia').value,
-                    rubro: document.getElementById('c_rubro').value,
-                    direccion: document.getElementById('c_dir').value,
-                    localidad: document.getElementById('c_loc').value,
-                    cuit_cuil: document.getElementById('c_cuit').value
-                };
+        function seleccionarMetodoPago(metodo) {
+            alert("Método seleccionado: " + metodo + ". ¡Disfruta tu beneficio MaxShop!");
+            cerrarModalPago();
+        }
+
+        function verComprobanteDetalle(op, comercio, tipo, monto) {
+            let html = `
+                <div class="flex justify-between py-1 border-b border-slate-800">
+                    <span class="text-slate-400">Operación:</span>
+                    <strong class="text-white">#${op}</strong>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-800">
+                    <span class="text-slate-400">Establecimiento:</span>
+                    <strong class="text-white">${comercio}</strong>
+                </div>
+                <div class="flex justify-between py-1 border-b border-slate-800">
+                    <span class="text-slate-400">Concepto:</span>
+                    <strong class="text-white">${tipo}</strong>
+                </div>
+                <div class="flex justify-between py-1 font-bold text-sm pt-2">
+                    <span class="text-slate-300">Monto Total:</span>
+                    <span class="text-emerald-400">${monto}</span>
+                </div>
+            `;
+            document.getElementById('contenidoComprobante').innerHTML = html;
+            document.getElementById('modalComprobante').classList.remove('hidden');
+        }
+
+        function cerrarComprobante() {
+            document.getElementById('modalComprobante').classList.add('hidden');
+        }
+
+        // Enviar Registro Comercio vía API
+        async function enviarComercio(e) {
+            e.preventDefault();
+            const data = {
+                nombre: document.getElementById('comNombre').value,
+                cuit: document.getElementById('comCuit').value,
+                rubro: document.getElementById('comRubro').value,
+                whatsapp: document.getElementById('comWp').value,
+                direccion: document.getElementById('comDir').value
+            };
+
+            try {
                 let res = await fetch('/api/registrar-comercio', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
                 });
                 let json = await res.json();
                 if(json.success) {
                     alert("¡Comercio MaxShop registrado con éxito!");
                     cerrarModalComercio();
                     document.getElementById('formComercio').reset();
-                    cargarComerciosPublicos(); // Recarga la lista de comercios
-                } else { alert("Error: " + json.detail); }
+                    cargarComerciosPublicos();
+                    
+                    // Auto-iniciar sesión como comercio registrado
+                    rolActual = 'comercio';
+                    actualizarVistaHistorial();
+                } else {
+                    alert("Error al registrar: " + json.detail);
+                }
+            } catch (err) {
+                alert("Error de conexión con el servidor.");
             }
+        }
 
-            async function enviarUsuario(e) {
-                e.preventDefault();
-                const data = {
-                    nombre_completo: document.getElementById('u_nombre').value,
-                    dni: document.getElementById('u_dni').value,
-                    direccion: document.getElementById('u_dir').value,
-                    localidad: document.getElementById('u_loc').value,
-                    whatsapp: document.getElementById('u_wpp').value,
-                    correo: document.getElementById('u_correo').value
-                };
+        // Enviar Registro Usuario vía API
+        async function enviarUsuario(e) {
+            e.preventDefault();
+            const data = {
+                nombre: document.getElementById('usuNombre').value,
+                email: document.getElementById('usuEmail').value,
+                telefono: document.getElementById('usuTel').value
+            };
+
+            try {
                 let res = await fetch('/api/registrar-usuario', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
                 });
                 let json = await res.json();
                 if(json.success) {
                     cerrarModalUsuario();
                     document.getElementById('modalOpcionesPago').classList.remove('hidden');
                     document.getElementById('formUsuario').reset();
-                } else { alert("Error: " + json.detail); }
+                    
+                    // Auto-iniciar sesión como consumidor registrado
+                    rolActual = 'consumidor';
+                    actualizarVistaHistorial();
+                } else {
+                    alert("Error al registrar: " + json.detail);
+                }
+            } catch (err) {
+                alert("Error de conexión con el servidor.");
             }
+        }
 
-            function pagarSuscripcion() {
-                window.location.href = "https://mpago.la/12kwFZe";
-            }
+        // Cargar listado de comercios desde la base de datos
+        async function cargarComerciosPublicos() {
+            try {
+                let res = await fetch('/api/comercios');
+                let comercios = await res.json();
+                let container = document.getElementById('listaComercios');
+                let contador = document.getElementById('contadorComercios');
+                
+                contador.innerText = comercios.length + " Activos";
+                
+                if(comercios.length === 0) {
+                    container.innerHTML = `<div class="text-center py-4 text-xs text-slate-500 bg-slate-950 rounded-xl border border-slate-900">No hay comercios registrados aún.</div>`;
+                    return;
+                }
 
-            function pagarLinkUnico() {
-                window.location.href = "https://mpago.la/2xio5HU";
+                container.innerHTML = "";
+                comercios.forEach(c => {
+                    container.innerHTML += `
+                        <div class="bg-slate-900/40 border border-slate-800/80 p-3.5 rounded-2xl flex justify-between items-center transition hover:border-cyan-500/40">
+                            <div>
+                                <h4 class="font-bold text-xs text-white">${c.nombre}</h4>
+                                <p class="text-[11px] text-cyan-400 font-medium">${c.rubro} &bull; <span class="text-slate-400">${c.direccion}</span></p>
+                            </div>
+                            <a href="https://wa.me/${c.whatsapp}" target="_blank" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 p-2 rounded-xl text-xs font-bold transition">
+                                💬 Wp
+                            </a>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error("Error cargando comercios:", err);
             }
-        </script>
-    </body>
-    </html>
+        }
+
+        // Cargar al iniciar la página
+        window.onload = () => {
+            cargarComerciosPublicos();
+            actualizarVistaHistorial();
+        };
+    </script>
+</body>
+</html>
     """
 
-@app.get("/api/comercios")
-def obtener_comercios():
-    if not supabase:
-        return {"success": False, "data": []}
-    try:
-        response = supabase.table("comercios").select("nombre_fantasias, rubro, localidad, whatsapp").execute()
-        return {"success": True, "data": response.data}
-    except Exception as e:
-        return {"success": False, "data": []}
-
-@app.post("/api/registrar-comercio")
-def registrar_comercio(comercio: ComercioModel):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Base de datos no conectada.")
-    try:
-        response = supabase.table("comercios").insert(comercio.dict()).execute()
-        return {"success": True, "data": response.data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/registrar-usuario")
-def registrar_usuario(usuario: UsuarioModel):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Base de datos no conectada.")
-    try:
-        response = supabase.table("usuarios").insert(usuario.dict()).execute()
-        return {"success": True, "data": response.data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
