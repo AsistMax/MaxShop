@@ -3,9 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="6.0")
+app = FastAPI(title="MaxShop - AsistMax", version="6.5")
 
 app.add_middleware(
     CORSMiddleware,
@@ -44,6 +47,35 @@ class UsuarioModel(BaseModel):
     localidad: str
     whatsapp: str
     correo: str
+
+# FUNCIÓN PARA ENVIAR CORREOS AUTOMÁTICOS GRATUITOS (SMTP)
+def enviar_correo_transaccional(destinatario: str, asunto: str, cuerpo_html: str):
+    remitente = os.getenv("SMTP_CORREO")
+    password = os.getenv("SMTP_PASSWORD")
+    
+    if not remitente or not password:
+        print("SMTP no configurado en las variables de entorno. Omitiendo envío.")
+        return False
+
+    try:
+        servidor = smtplib.SMTP("smtp.gmail.com", 587)
+        servidor.starttls()
+        servidor.login(remitente, password)
+        
+        mensaje = MIMEMultipart("alternative")
+        mensaje["Subject"] = asunto
+        mensaje["From"] = f"MaxShop <{remitente}>"
+        mensaje["To"] = destinatario
+        
+        parte_html = MIMEText(cuerpo_html, "html", "utf-8")
+        mensaje.attach(parte_html)
+        
+        servidor.sendmail(remitente, destinatario, mensaje.as_string())
+        servidor.quit()
+        return True
+    except Exception as e:
+        print(f"Error al enviar correo: {e}")
+        return False
 
 @app.get("/", response_class=HTMLResponse)
 def mostrar_interfaz():
@@ -84,7 +116,7 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- BANNER PRINCIPAL (Sin efectos de transformaciones) -->
+            <!-- BANNER PRINCIPAL -->
             <div class="space-y-2">
                 <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 flex justify-center items-center">
                     <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-auto object-cover max-h-52">
@@ -183,7 +215,7 @@ def mostrar_interfaz():
                         <button onclick="cerrarSesion()" class="text-[10px] bg-rose-500/10 text-rose-400 px-2.5 py-1 rounded-lg border border-rose-500/30 hover:bg-rose-500/20">Cerrar Sesión</button>
                     </div>
 
-                    <!-- Panel de configuración exclusiva si es Comercio -->
+                    <!-- Configuración exclusiva si es Comercio -->
                     <div id="configuracionComercioPanel" class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3 hidden">
                         <h3 class="text-xs font-bold text-cyan-400 uppercase">⚙️ Configuración de Descuentos & Promociones</h3>
                         <p class="text-[10px] text-slate-400">El descuento mínimo obligatorio es 5%. Si defines un día especial de promoción, este no podrá modificarse ni quitarse durante ese mismo día.</p>
@@ -233,7 +265,7 @@ def mostrar_interfaz():
                         <div id="historialConsumosContainer" class="space-y-2">
                             <div class="text-xs bg-slate-900 p-3 rounded-xl border border-slate-800/80 space-y-1">
                                 <div class="flex justify-between text-slate-400 text-[10px]">
-                                    <span>24/08/2026 - 08:30hs</span>
+                                    <span>25/08/2026 - 11:00hs</span>
                                     <span>Op #1042</span>
                                 </div>
                                 <p class="font-bold text-white">Consumo con Descuento aplicado</p>
@@ -346,7 +378,6 @@ def mostrar_interfaz():
                         <label class="text-[11px] font-semibold text-slate-400">CUIT / CUIL</label>
                         <input type="text" id="c_cuit" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
                     </div>
-                    <!-- Subida de Multimedia -->
                     <div class="space-y-2 pt-1 border-t border-slate-800">
                         <label class="text-[11px] font-semibold text-cyan-400">Subir Logo del Comercio (1 archivo)</label>
                         <input type="file" id="c_logo_file" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20">
@@ -432,7 +463,6 @@ def mostrar_interfaz():
             let listaComerciosGlobal = [];
             let comercioEscaneadoActual = null;
 
-            // SISTEMA DE NOTIFICACIONES TOAST
             function mostrarToast(mensaje, tipo = 'success') {
                 const contenedor = document.getElementById('toastContainer');
                 const toast = document.createElement('div');
@@ -527,7 +557,7 @@ def mostrar_interfaz():
 
             function calcularDescuentoQR() {
                 let monto = parseFloat(document.getElementById('inputMontoCompra').value) || 0;
-                let descuentoPorc = 5; // Mínimo obligatorio
+                let descuentoPorc = 5;
                 let totalFinal = monto - (monto * (descuentoPorc / 100));
                 document.getElementById('lblPorcentajeDesc').innerText = descuentoPorc + "%";
                 document.getElementById('lblTotalFinal').innerText = "$" + totalFinal.toLocaleString();
@@ -589,7 +619,6 @@ def mostrar_interfaz():
                 let diaHoy = diasSemana[new Date().getDay()];
                 let diaSeleccionado = document.getElementById('edit_dia').value;
 
-                // REGLA DE NEGOCIO: Bloqueo si intenta modificar el día de promoción actual
                 if (diaHoy === diaSeleccionado) {
                     mostrarToast("⚠️ No puedes modificar el descuento el mismo día que está activo.", "error");
                     return;
@@ -611,10 +640,9 @@ def mostrar_interfaz():
                     filas = "Roberto Gómez,28999111,3834987654,Pago en el Comercio,10000,Pendiente";
                 } else {
                     cabeceras = "Operacion,Fecha,Participantes,Concepto,Monto\\n";
-                    filas = "#1042,24/08/2026,Juan Pérez a MaxShop,Consumo con Descuento,9500";
+                    filas = "#1042,25/08/2026,Juan Pérez a MaxShop,Consumo con Descuento,9500";
                 }
                 
-                // BOM (\uFEFF) para corregir acentos y caracteres especiales en Excel
                 let contenido = "\\uFEFF" + cabeceras + filas;
                 let blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
                 let enlace = document.createElement("a");
@@ -693,6 +721,20 @@ def registrar_comercio(comercio: ComercioModel):
         raise HTTPException(status_code=500, detail="Base de datos no conectada.")
     try:
         response = supabase.table("comercios").insert(comercio.dict()).execute()
+        
+        # DISPARO DE CORREO AUTOMÁTICO AL COMERCIO
+        asunto = "¡Tu comercio ha sido adherido a MaxShop!"
+        html = f"""
+        <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 15px;">
+            <h2 style="color: #22d3ee;">¡Hola, {comercio.nombre_completo}!</h2>
+            <p>El comercio <b>{comercio.nombre_fantasias}</b> ya forma parte de la red B2B de <b>MaxShop</b>.</p>
+            <p>Tu código QR y tu perfil multimedia ya se encuentran activos para recibir clientes con descuentos automáticos.</p>
+            <hr style="border-color: #334155;">
+            <p style="font-size: 11px; color: #94a3b8;">AsistMax - Red Fintech Global</p>
+        </div>
+        """
+        enviar_correo_transaccional(comercio.correo, asunto, html)
+        
         return {"success": True, "data": response.data}
     except Exception as e:
         raise HTTPException(status_code=550, detail=str(e))
@@ -703,6 +745,20 @@ def registrar_usuario(usuario: UsuarioModel):
         raise HTTPException(status_code=500, detail="Base de datos no conectada.")
     try:
         response = supabase.table("usuarios").insert(usuario.dict()).execute()
+        
+        # DISPARO DE CORREO AUTOMÁTICO AL USUARIO
+        asunto = "¡Bienvenido a MaxShop! Tu cuenta está activa"
+        html = f"""
+        <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 15px;">
+            <h2 style="color: #22d3ee;">¡Hola, {usuario.nombre_completo}!</h2>
+            <p>Te damos la bienvenida a la red de consumidores <b>MaxShop</b>.</p>
+            <p>Ya puedes disfrutar de tus beneficios y descuentos exclusivos en todos los comercios adheridos de la red.</p>
+            <hr style="border-color: #334155;">
+            <p style="font-size: 11px; color: #94a3b8;">AsistMax - Red Fintech Global</p>
+        </div>
+        """
+        enviar_correo_transaccional(usuario.correo, asunto, html)
+        
         return {"success": True, "data": response.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
