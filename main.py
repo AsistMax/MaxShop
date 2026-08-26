@@ -4,11 +4,12 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import os
 import smtplib
+from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="6.7")
+app = FastAPI(title="MaxShop - AsistMax", version="7.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -47,15 +48,20 @@ class UsuarioModel(BaseModel):
     localidad: str
     whatsapp: str
     correo: str
-    suscripcion_activa: bool = False
+    plan_monto: int = 10000  # Por defecto plan de $10.000
 
-# FUNCIÓN PARA ENVIAR CORREOS AUTOMÁTICOS GRATUITOS (SMTP)
+class ConsumoQRModel(BaseModel):
+    correo_usuario: str
+    nombre_comercio: str
+    monto_compra: float
+
+# FUNCIÓN PARA ENVIAR CORREOS AUTOMÁTICOS (SMTP)
 def enviar_correo_transaccional(destinatario: str, asunto: str, cuerpo_html: str):
     remitente = os.getenv("SMTP_CORREO")
     password = os.getenv("SMTP_PASSWORD")
     
     if not remitente or not password:
-        print("SMTP no configurado en las variables de entorno. Omitiendo envío.")
+        print("SMTP no configurado. Omitiendo envío.")
         return False
 
     try:
@@ -90,7 +96,7 @@ def mostrar_interfaz():
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </head>
-    <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950" onload="cargarComerciosPublicos()">
+    <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950" onload="inicializarApp()">
 
         <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
         <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
@@ -124,56 +130,60 @@ def mostrar_interfaz():
                 </div>
                 <div class="px-2 flex justify-between items-center">
                     <div>
-                        <span class="text-[9px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Comercio Destacado Oficial</span>
-                        <h2 class="text-lg font-extrabold text-white mt-1">MaxShop Red Global</h2>
+                        <span class="text-[9px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Red Global de Beneficios</span>
+                        <h2 class="text-lg font-extrabold text-white mt-1">Ahorro Inteligente en Comercios</h2>
                     </div>
                 </div>
             </div>
 
-            <!-- Nivel / Perfil -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 shadow-xl flex items-center justify-between">
-                <div class="space-y-1">
-                    <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-800/50">Mi Perfil / Nivel</span>
-                    <h3 class="text-sm font-bold text-white" id="lblNivelUsuario">Nivel Plata • 450 Puntos</h3>
-                    <p class="text-[11px] text-slate-400">Descuentos activos en toda la red</p>
+            <!-- Panel de Estado / Crédito de Descuento del Usuario -->
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-800/50" id="lblEstadoSuscripcionBadge">Modo Explorador (Gratis)</span>
+                    <span class="text-[10px] text-slate-400" id="lblVencimientoSuscripcion">Sin membresía activa</span>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-slate-950 font-black text-lg shadow-lg">
-                    🥈
-                </div>
-            </div>
-
-            <!-- Escáner QR de Comercio -->
-            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/40 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
-                <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-1 rounded-full border border-cyan-800/50">Billetera Inteligente</span>
-                <h2 class="text-2xl font-bold text-white mt-2">Pagos & Descuentos</h2>
-                <p class="text-xs text-slate-400 mt-1">Escanea el código QR del comercio para aplicar el descuento (mínimo 5%) e ingresar el monto de la compra.</p>
-                <div class="mt-5">
-                    <button onclick="iniciarEscaneoQR()" class="w-full group relative inline-flex items-center justify-center px-6 py-3.5 text-sm font-bold text-slate-950 transition-all bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20 active:scale-95">
-                        <span class="mr-2 text-base">📷</span> Escanear QR del Comercio
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase">Crédito de Descuento Disponible</h3>
+                        <p class="text-2xl font-black text-emerald-400 mt-0.5" id="lblCreditoDisponible">$0</p>
+                    </div>
+                    <button onclick="abrirModalUsuario()" class="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-2 rounded-xl font-extrabold shadow-lg shadow-cyan-500/20 transition">
+                        ⚡ Activar Créditos
                     </button>
                 </div>
             </div>
 
-            <!-- Botones de Registro -->
+            <!-- Escáner QR de Comercio -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+                <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-1 rounded-full border border-cyan-800/50">Billetera Inteligente</span>
+                <h2 class="text-xl font-bold text-white mt-2">Canjear Descuento en Comercio</h2>
+                <p class="text-xs text-slate-400 mt-1">Escanea el QR del comercio adherido para aplicar tu descuento y descontarlo de tu línea de crédito.</p>
+                <div class="mt-4">
+                    <button onclick="iniciarEscaneoQR()" class="w-full py-3.5 text-sm font-bold text-slate-950 transition-all bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20">
+                        📷 Escanear QR del Comercio
+                    </button>
+                </div>
+            </div>
+
+            <!-- Botones de Registro (Freemium) -->
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="abrirModalComercio()" class="bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-cyan-400 text-xl mb-1">🏪</div>
                     <h3 class="text-xs font-bold text-white group-hover:text-cyan-400 transition">Sumar mi Comercio</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Con Logo y Fotos (Gratis)</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Gratis con QR propio</p>
                 </button>
                 <button onclick="abrirModalUsuario()" class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-blue-400 text-xl mb-1">👤</div>
-                    <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Crear Cuenta Usuario</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Clientes y Comerciantes</p>
+                    <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Planes & Membresías</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Hasta $500k de ahorro</p>
                 </button>
             </div>
 
-            <!-- Directorio de Comercios -->
+            <!-- Directorio de Comercios (100% Público y Gratuito) -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
                 <div class="flex justify-between items-center">
                     <div>
-                        <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Directorio</span>
+                        <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Vidriera Abierta</span>
                         <h3 class="text-sm font-extrabold text-white mt-1">🏪 Comercios Adheridos & Beneficios</h3>
                     </div>
                 </div>
@@ -194,15 +204,15 @@ def mostrar_interfaz():
         <div id="modalLogin" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                    <h3 class="text-sm font-bold text-white" id="tituloModalLogin">🔑 Iniciar Sesión / Mi Perfil</h3>
+                    <h3 class="text-sm font-bold text-white">🔑 Iniciar Sesión en MaxShop</h3>
                     <button onclick="cerrarLogin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
                 
                 <div id="loginFormContainer" class="space-y-3">
-                    <p class="text-[11px] text-slate-400">Ingrese su Correo Electrónico o DNI/CUIT registrado para acceder a su panel y su historial.</p>
+                    <p class="text-[11px] text-slate-400">Ingrese su Correo Electrónico registrado para ver el estado de su crédito y su membresía.</p>
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Correo o Identificador</label>
-                        <input type="text" id="inputLoginIdentificador" placeholder="ej: tu@correo.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
+                        <label class="text-[11px] font-semibold text-slate-400">Correo Electrónico</label>
+                        <input type="email" id="inputLoginCorreo" placeholder="ej: tu@correo.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
                     </div>
                     <button onclick="ejecutarLogin()" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs shadow-lg">Ingresar</button>
                 </div>
@@ -211,77 +221,29 @@ def mostrar_interfaz():
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex justify-between items-center">
                         <div>
                             <span class="text-[10px] text-cyan-400 font-bold uppercase" id="rolSesionBadge">Rol: Usuario</span>
-                            <h4 class="text-xs font-bold text-white" id="nombreSesionLabel">Juan Pérez</h4>
+                            <h4 class="text-xs font-bold text-white" id="nombreSesionLabel">Usuario</h4>
                         </div>
-                        <button onclick="cerrarSesion()" class="text-[10px] bg-rose-500/10 text-rose-400 px-2.5 py-1 rounded-lg border border-rose-500/30 hover:bg-rose-500/20">Cerrar Sesión</button>
+                        <button onclick="cerrarSesion()" class="text-[10px] bg-rose-500/10 text-rose-400 px-2.5 py-1 rounded-lg border border-rose-500/30">Cerrar Sesión</button>
                     </div>
 
-                    <!-- Configuración exclusiva si es Comercio -->
-                    <div id="configuracionComercioPanel" class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3 hidden">
-                        <h3 class="text-xs font-bold text-cyan-400 uppercase">⚙️ Configuración de Descuentos & Promociones</h3>
-                        <p class="text-[10px] text-slate-400">El descuento mínimo obligatorio es 5%. Si defines un día especial de promoción, este no podrá modificarse ni quitarse durante ese mismo día.</p>
-                        <div class="space-y-2">
-                            <div>
-                                <label class="text-[10px] text-slate-400">Porcentaje de Descuento (%)</label>
-                                <input type="number" id="edit_porcentaje" min="5" value="5" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white outline-none">
-                            </div>
-                            <div>
-                                <label class="text-[10px] text-slate-400">Día de Promoción Especial</label>
-                                <select id="edit_dia" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white outline-none">
-                                    <option value="Ninguno">Ninguno (Sólo 5% base)</option>
-                                    <option value="Lunes">Lunes</option>
-                                    <option value="Martes">Martes</option>
-                                    <option value="Miércoles">Miércoles</option>
-                                    <option value="Jueves">Jueves</option>
-                                    <option value="Viernes">Viernes</option>
-                                    <option value="Sábado">Sábado</option>
-                                    <option value="Domingo">Domingo</option>
-                                </select>
-                            </div>
-                            <button onclick="guardarConfiguracionComercio()" class="w-full py-2 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 font-bold rounded-xl text-xs border border-cyan-500/40">Guardar Cambios de Promoción</button>
-                        </div>
-                    </div>
-
-                    <!-- PANEL ESTADÍSTICO PARA COMERCIOS (KPIs) -->
-                    <div id="panelEstadisticasComercio" class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3 hidden">
-                        <h3 class="text-xs font-bold text-cyan-400 uppercase">📊 Estadísticas del Mes (MaxShop)</h3>
-                        <div class="grid grid-cols-3 gap-2 text-center">
-                            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-                                <span class="text-[9px] text-slate-400 block">Ventas Totales</span>
-                                <span class="text-xs font-black text-emerald-400" id="statVentasTotal">$142.500</span>
-                            </div>
-                            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-                                <span class="text-[9px] text-slate-400 block">Descuentos</span>
-                                <span class="text-xs font-black text-cyan-400" id="statDescuentosTotal">$7.125</span>
-                            </div>
-                            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-                                <span class="text-[9px] text-slate-400 block">Clientes Únicos</span>
-                                <span class="text-xs font-black text-blue-400" id="statClientesTotal">18</span>
-                            </div>
-                        </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
+                        <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Mi Membresía Actual</h4>
+                        <p class="text-[11px] text-slate-300">Plan: <strong id="sesionPlan" class="text-white">Estándar</strong></p>
+                        <p class="text-[11px] text-slate-300">Crédito de Ahorro: <strong id="sesionCredito" class="text-emerald-400">$0</strong></p>
+                        <p class="text-[11px] text-slate-300">Vencimiento: <strong id="sesionVencimiento" class="text-amber-400">-</strong></p>
                     </div>
 
                     <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 space-y-3">
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-400" id="tituloHistorialRol">🧾 Historial de Operaciones</h3>
-                        <div id="historialConsumosContainer" class="space-y-2">
-                            <div class="text-xs bg-slate-900 p-3 rounded-xl border border-slate-800/80 space-y-1">
-                                <div class="flex justify-between text-slate-400 text-[10px]">
-                                    <span>26/08/2026 - 11:00hs</span>
-                                    <span>Op #1042</span>
-                                </div>
-                                <p class="font-bold text-white">Consumo con Descuento aplicado</p>
-                                <div class="flex justify-between items-center pt-1 border-t border-slate-800">
-                                    <span class="text-slate-400">Total: <strong class="text-emerald-400">$9.500</strong></span>
-                                    <button onclick="mostrarToast('Comprobante descargado correctamente', 'success')" class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded border border-cyan-500/30">Ver Comprobante</button>
-                                </div>
-                            </div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-400">🧾 Historial de Consumos</h3>
+                        <div id="historialConsumosContainer" class="space-y-2 text-xs text-slate-400">
+                            No hay consumos recientes registrados.
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- MODAL CÁMARA ESCÁNER QR & VALIDACIÓN DE VENTA -->
+        <!-- MODAL CÁMARA ESCÁNER QR -->
         <div id="modalQR" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl text-center">
                 <div class="flex justify-between items-center">
@@ -290,28 +252,28 @@ def mostrar_interfaz():
                 </div>
                 <div id="reader" class="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 min-h-[220px]"></div>
                 <p class="text-[11px] text-slate-400">Enfoque el código QR provisto por el comercio adherido.</p>
-                <button onclick="cerrarEscaneoQR()" class="w-full py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs hover:bg-slate-700 transition">Cancelar</button>
+                <button onclick="cerrarEscaneoQR()" class="w-full py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs">Cancelar</button>
             </div>
         </div>
 
-        <!-- MODAL MONTO DE VENTA Y APLICACIÓN DE DESCUENTO -->
+        <!-- MODAL MONTO DE VENTA Y APLICACIÓN DE CRÉDITO -->
         <div id="modalMontoVenta" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <h3 class="text-sm font-bold text-white">💳 Registrar Venta y Descuento</h3>
+                    <h3 class="text-sm font-bold text-white">💳 Canjear Descuento (Créditos)</h3>
                     <button onclick="cerrarModalVenta()" class="text-slate-400 hover:text-white font-bold">✕</button>
                 </div>
                 <div class="space-y-3 text-xs">
-                    <p class="text-slate-400">Comercio escaneado: <strong id="lblComercioEscaneado" class="text-cyan-400">Comercio Oficial</strong></p>
+                    <p class="text-slate-400">Comercio: <strong id="lblComercioEscaneado" class="text-cyan-400">Comercio</strong></p>
                     <div>
                         <label class="text-slate-400">Monto Total de la Compra ($)</label>
                         <input type="number" id="inputMontoCompra" placeholder="ej: 10000" onkeyup="calcularDescuentoQR()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1">
-                        <div class="flex justify-between text-slate-400"><span>Descuento aplicado:</span> <span id="lblPorcentajeDesc" class="text-cyan-400 font-bold">5%</span></div>
-                        <div class="flex justify-between text-slate-400 pt-1 border-t border-slate-900"><span>Total a Pagar con Beneficio:</span> <span id="lblTotalFinal" class="text-emerald-400 font-black text-sm">$0</span></div>
+                        <div class="flex justify-between text-slate-400"><span>Descuento estimado (5%):</span> <span id="lblAhorroCalculado" class="text-cyan-400 font-bold">$0</span></div>
+                        <div class="flex justify-between text-slate-400 pt-1 border-t border-slate-900"><span>Total con Descuento:</span> <span id="lblTotalFinal" class="text-emerald-400 font-black text-sm">$0</span></div>
                     </div>
-                    <button onclick="confirmarVentaQR()" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg">Confirmar y Generar Comprobante</button>
+                    <button onclick="confirmarConsumoCredito()" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg">Aplicar y Descontar de mi Crédito</button>
                 </div>
             </div>
         </div>
@@ -323,7 +285,7 @@ def mostrar_interfaz():
                     <h3 class="text-base font-bold text-white">🏪 Sumar mi Comercio (Gratis)</h3>
                     <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                <p class="text-[11px] text-cyan-400 bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-800/30">Inscripción gratuita con generación automática de tu Código QR y perfil multimedia.</p>
+                <p class="text-[11px] text-cyan-400 bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-800/30">Inscripción gratuita con generación automática de tu Código QR oficial.</p>
                 <form id="formComercio" onsubmit="enviarComercio(event)" class="space-y-3">
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Nombre Completo (Titular)</label>
@@ -334,7 +296,7 @@ def mostrar_interfaz():
                         <input type="email" id="c_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-400">WhatsApp (Teléfono)</label>
+                        <label class="text-[11px] font-semibold text-slate-400">WhatsApp</label>
                         <input type="text" id="c_wpp" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
                     </div>
                     <div>
@@ -342,13 +304,12 @@ def mostrar_interfaz():
                         <input type="text" id="c_fantasia" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Rubro del Comercio</label>
+                        <label class="text-[11px] font-semibold text-slate-400">Rubro</label>
                         <select id="c_rubro" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
                             <option value="Supermercados, Almacenes y Autoservicios">Supermercados, Almacenes y Autoservicios</option>
                             <option value="Gastronomía (Restaurantes, Cafés, Bares)">Gastronomía (Restaurantes, Cafés, Bares)</option>
                             <option value="Indumentaria, Calzado y Marroquinería">Indumentaria, Calzado y Marroquinería</option>
                             <option value="Salud, Farmacias y Perfumerías">Salud, Farmacias y Perfumerías</option>
-                            <option value="Construcción, Ferretería y Hogar">Construcción, Ferretería y Hogar</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
@@ -371,7 +332,6 @@ def mostrar_interfaz():
                         </div>
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Dirección y Localidad</label>
                         <input type="text" id="c_dir" placeholder="Dirección" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
                         <input type="text" id="c_loc" placeholder="Localidad" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1.5">
                     </div>
@@ -379,24 +339,16 @@ def mostrar_interfaz():
                         <label class="text-[11px] font-semibold text-slate-400">CUIT / CUIL</label>
                         <input type="text" id="c_cuit" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
                     </div>
-                    <div class="space-y-2 pt-1 border-t border-slate-800">
-                        <label class="text-[11px] font-semibold text-cyan-400">Subir Logo del Comercio (1 archivo)</label>
-                        <input type="file" id="c_logo_file" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[11px] font-semibold text-cyan-400">Fotos del Comercio (Hasta 3 imágenes)</label>
-                        <input type="file" id="c_fotos_file" accept="image/*" multiple class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20">
-                    </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Registrar Comercio y Generar QR</button>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Registrar Comercio Gratis</button>
                 </form>
             </div>
         </div>
 
-        <!-- MODAL REGISTRO USUARIO -->
+        <!-- MODAL REGISTRO USUARIO Y SELECCIÓN DE PLANES -->
         <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-base font-bold text-white">👤 Cuenta Consumidor & Suscripción</h3>
+                    <h3 class="text-base font-bold text-white">👤 Elegir Plan & Membresía MaxShop</h3>
                     <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-white font-bold">✕</button>
                 </div>
                 <form id="formUsuario" onsubmit="enviarUsuario(event)" class="space-y-3 text-xs">
@@ -409,7 +361,6 @@ def mostrar_interfaz():
                         <input type="text" id="u_dni" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
                     <div>
-                        <label class="text-slate-400">Dirección y Localidad</label>
                         <input type="text" id="u_dir" placeholder="Dirección" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                         <input type="text" id="u_loc" placeholder="Localidad" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1.5">
                     </div>
@@ -421,7 +372,19 @@ def mostrar_interfaz():
                         <label class="text-slate-400">Correo Electrónico</label>
                         <input type="email" id="u_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2">Continuar a Opciones de Pago ($10.000)</button>
+
+                    <!-- SELECTOR DE PLANES ESCALABLES -->
+                    <div>
+                        <label class="text-cyan-400 font-bold">Seleccionar Plan Mensual & Crédito de Ahorro:</label>
+                        <select id="u_plan_monto" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-3 py-2.5 text-white font-bold outline-none mt-1">
+                            <option value="5000">Plan Básico ($5.000/mes) ➔ $100.000 Crédito Ahorro</option>
+                            <option value="10000" selected>Plan Estándar ($10.000/mes) ➔ $250.000 Crédito Ahorro</option>
+                            <option value="15000">Plan Pro ($15.000/mes) ➔ $375.000 Crédito Ahorro</option>
+                            <option value="20000">Plan VIP ($20.000/mes) ➔ $500.000 Crédito Ahorro + $200k Extra</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2">Continuar al Pago en Mercado Pago</button>
                 </form>
             </div>
         </div>
@@ -435,26 +398,16 @@ def mostrar_interfaz():
                 </div>
                 <div class="flex border-b border-slate-800 space-x-4 pt-2 overflow-x-auto text-xs">
                     <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400">🏪 Comercios</button>
-                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 font-bold text-slate-400">👤 Usuarios</button>
-                    <button onclick="cambiarPestanaAdmin('efectivo')" id="btnTabEfectivo" class="pb-2 font-bold text-slate-400">💵 Cobros Efectivo 🟡</button>
-                    <button onclick="cambiarPestanaAdmin('operaciones')" id="btnTabOperaciones" class="pb-2 font-bold text-slate-400">🧾 Historial</button>
+                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 font-bold text-slate-400">👤 Usuarios & Créditos</button>
                 </div>
 
                 <div id="seccionComerciosAdmin" class="space-y-3">
-                    <div class="flex justify-between items-center"><h4 class="text-xs font-bold text-cyan-400 uppercase">Comercios Adheridos</h4><button onclick="exportarCSV('comercios')" class="text-[11px] bg-cyan-500/10 text-cyan-400 px-3 py-1.5 rounded-xl border border-cyan-500/30">📥 Exportar CSV</button></div>
-                    <div id="tablaComerciosAdminList" class="space-y-2"></div>
+                    <h4 class="text-xs font-bold text-cyan-400 uppercase">Comercios Adheridos</h4>
+                    <div id="tablaComerciosAdminList" class="text-xs text-slate-400">Cargando...</div>
                 </div>
                 <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
-                    <div class="flex justify-between items-center"><h4 class="text-xs font-bold text-blue-400 uppercase">Usuarios y Membresías</h4><button onclick="exportarCSV('usuarios')" class="text-[11px] bg-blue-500/10 text-blue-400 px-3 py-1.5 rounded-xl border border-blue-500/30">📥 Exportar CSV</button></div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs flex justify-between"><span>Juan Pérez (DNI: 34567892) - Suscripción Activa</span><span class="text-amber-400 font-bold">Plata (450 pts)</span></div>
-                </div>
-                <div id="seccionEfectivoAdmin" class="space-y-3 hidden">
-                    <div class="flex justify-between items-center"><h4 class="text-xs font-bold text-emerald-400 uppercase">Cobros en Comercio Pendientes</h4><button onclick="exportarCSV('cobros_comercio')" class="text-[11px] bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-500/30">📥 Exportar CSV</button></div>
-                    <p class="text-[11px] text-slate-400">Validaciones de efectivo en comercio pendiente de rendición.</p>
-                </div>
-                <div id="seccionOperacionesAdmin" class="space-y-3 hidden">
-                    <div class="flex justify-between items-center"><h4 class="text-xs font-bold text-emerald-400 uppercase">Auditoría Operaciones QR</h4><button onclick="exportarCSV('operaciones')" class="text-[11px] bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-500/30">📥 Exportar CSV</button></div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs flex justify-between"><span>Op #1042 - Juan Pérez a MaxShop</span><span class="text-emerald-400 font-bold">$9.500</span></div>
+                    <h4 class="text-xs font-bold text-blue-400 uppercase">Usuarios con Créditos Activos</h4>
+                    <div id="tablaUsuariosAdminList" class="text-xs text-slate-400">Cargando...</div>
                 </div>
             </div>
         </div>
@@ -463,42 +416,26 @@ def mostrar_interfaz():
             let html5QrCode = null;
             let listaComerciosGlobal = [];
             let comercioEscaneadoActual = null;
+            let usuarioLogueadoGlobal = null;
 
             function mostrarToast(mensaje, tipo = 'success') {
                 const contenedor = document.getElementById('toastContainer');
                 const toast = document.createElement('div');
-                let bgColors = "bg-slate-900 border-cyan-500/40 text-cyan-400";
-                let icono = "✨";
-                if (tipo === 'success') {
-                    bgColors = "bg-slate-900 border-emerald-500/40 text-emerald-400";
-                    icono = "✅";
-                } else if (tipo === 'error') {
-                    bgColors = "bg-slate-900 border-rose-500/40 text-rose-400";
-                    icono = "⚠️";
-                }
-                toast.className = `pointer-events-auto flex items-center space-x-2 px-4 py-3 rounded-2xl border ${bgColors} shadow-2xl backdrop-blur-md transform transition-all duration-300 translate-y-[-10px] opacity-0 text-xs font-bold`;
+                let bgColors = "bg-slate-900 border-emerald-500/40 text-emerald-400";
+                let icono = "✅";
+                if (tipo === 'error') { bgColors = "bg-slate-900 border-rose-500/40 text-rose-400"; icono = "⚠️"; }
+                toast.className = `pointer-events-auto flex items-center space-x-2 px-4 py-3 rounded-2xl border ${bgColors} shadow-2xl backdrop-blur-md text-xs font-bold`;
                 toast.innerHTML = `<span>${icono}</span><span>${mensaje}</span>`;
                 contenedor.appendChild(toast);
-                setTimeout(() => { toast.classList.remove('translate-y-[-10px]', 'opacity-0'); }, 10);
-                setTimeout(() => {
-                    toast.classList.add('translate-y-[-10px]', 'opacity-0');
-                    setTimeout(() => toast.remove(), 300);
-                }, 3500);
+                setTimeout(() => toast.remove(), 3500);
             }
 
-            // FUNCIÓN DE WHATSAPP INTELIGENTE (wa.me)
-            function enviarWhatsAppBienvenida(nombre, tipo, telefonoDestino = "") {
-                let telefono = telefonoDestino || "5493834000000"; // Número de soporte AsistMax
-                let mensaje = "";
-                
-                if (tipo === 'comercio') {
-                    mensaje = `¡Hola! Me acabo de registrar como comercio en *MaxShop* (${nombre}). Quiero coordinar la entrega de mi material y mi código QR oficial.`;
-                } else {
-                    mensaje = `¡Hola! Me acabo de registrar como usuario en *MaxShop* (${nombre}). Ya realicé mi suscripción y quiero activar mi nivel y beneficios.`;
+            function inicializarApp() {
+                cargarComerciosPublicos();
+                let sesionGuardada = localStorage.getItem('maxshop_correo_usuario');
+                if(sesionGuardada) {
+                    verificarEstadoUsuario(sesionGuardada);
                 }
-                
-                let url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-                window.open(url, '_blank');
             }
 
             async function cargarComerciosPublicos() {
@@ -510,9 +447,7 @@ def mostrar_interfaz():
                         renderizarComercios(listaComerciosGlobal);
                     }
                 } catch(e) {
-                    listaComerciosGlobal = [
-                        { id: 1, nombre_fantasias: "MaxShop Oficial", rubro: "Supermercados, Almacenes y Autoservicios", localidad: "Central", whatsapp: "3834000000", porcentaje_descuento: 5, dia_promocion: "Lunes" }
-                    ];
+                    listaComerciosGlobal = [{ nombre_fantasias: "MaxShop Central", rubro: "Supermercados", localidad: "Centro", whatsapp: "3834000000", porcentaje_descuento: 5 }];
                     renderizarComercios(listaComerciosGlobal);
                 }
             }
@@ -520,19 +455,18 @@ def mostrar_interfaz():
             function renderizarComercios(comercios) {
                 const contenedor = document.getElementById('listaComerciosPublicos');
                 if(!comercios || comercios.length === 0) {
-                    contenedor.innerHTML = '<div class="text-center py-4 text-xs text-slate-500">No se encontraron comercios registrados.</div>';
+                    contenedor.innerHTML = '<div class="text-center py-4 text-xs text-slate-500">No hay comercios.</div>';
                     return;
                 }
                 let html = '';
                 comercios.forEach(c => {
-                    let promoTexto = c.dia_promocion && c.dia_promocion !== 'Ninguno' ? `${c.por_descuento || c.porcentaje_descuento || 5}% Off los ${c.dia_promocion}` : `${c.porcentaje_descuento || 5}% Descuento`;
                     html += `
-                    <div class="bg-slate-950 border border-slate-800/80 rounded-2xl p-3 flex justify-between items-center transition hover:border-cyan-500/40">
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-2xl p-3 flex justify-between items-center">
                         <div class="space-y-0.5">
-                            <h4 class="text-xs font-bold text-white flex items-center">🏪 ${c.nombre_fantasias} <span class="ml-2 text-[9px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-800/60">${promoTexto}</span></h4>
-                            <p class="text-[10px] text-slate-400">Rubro: ${c.rubro} • Localidad: ${c.localidad || 'General'}</p>
+                            <h4 class="text-xs font-bold text-white">🏪 ${c.nombre_fantasias} <span class="ml-2 text-[9px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded-full">${c.porcentaje_descuento || 5}% Off</span></h4>
+                            <p class="text-[10px] text-slate-400">${c.rubro} • ${c.localidad || 'General'}</p>
                         </div>
-                        <a href="https://wa.me/${c.whatsapp}?text=Hola,%20vengo%20de%20MaxShop%20y%20quiero%20consultar%20por%20sus%20beneficios." target="_blank" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1.5 rounded-xl border border-emerald-500/30 font-semibold">💬 Contacto</a>
+                        <a href="https://wa.me/${c.whatsapp}?text=Hola,%20vengo%20de%20MaxShop." target="_blank" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1.5 rounded-xl border border-emerald-500/30 font-semibold">💬 Contacto</a>
                     </div>`;
                 });
                 contenedor.innerHTML = html;
@@ -540,15 +474,36 @@ def mostrar_interfaz():
 
             function filtrarComerciosPublicos() {
                 let texto = document.getElementById('inputBuscadorComercios').value.toLowerCase();
-                let filtrados = listaComerciosGlobal.filter(c => 
-                    c.nombre_fantasias.toLowerCase().includes(texto) || 
-                    c.rubro.toLowerCase().includes(texto) || 
-                    (c.localidad && c.localidad.toLowerCase().includes(texto))
-                );
+                let filtrados = listaComerciosGlobal.filter(c => c.nombre_fantasias.toLowerCase().includes(texto) || c.rubro.toLowerCase().includes(texto));
                 renderizarComercios(filtrados);
             }
 
+            async function verificarEstadoUsuario(correo) {
+                try {
+                    let res = await fetch(`/api/usuario/${correo}`);
+                    let json = await res.json();
+                    if(json.success) {
+                        usuarioLogueadoGlobal = json.data;
+                        localStorage.setItem('maxshop_correo_usuario', correo);
+                        
+                        if(usuarioLogueadoGlobal.suscripcion_activa) {
+                            document.getElementById('lblEstadoSuscripcionBadge').innerText = "Membresía Activa ⚡";
+                            document.getElementById('lblCreditoDisponible').innerText = "$" + (usuarioLogueadoGlobal.credito_descuento_disponible || 0).toLocaleString();
+                            document.getElementById('lblVencimientoSuscripcion').innerText = "Vence: " + new Date(usuarioLogueadoGlobal.fecha_vencimiento).toLocaleDateString();
+                        } else {
+                            document.getElementById('lblEstadoSuscripcionBadge').innerText = "Membresía Inactiva (Requiere Pago)";
+                            document.getElementById('lblCreditoDisponible').innerText = "$0";
+                        }
+                    }
+                } catch(e) {}
+            }
+
             function iniciarEscaneoQR() {
+                if(!usuarioLogueadoGlobal || !usuarioLogueadoGlobal.suscripcion_activa) {
+                    mostrarToast("⚠️ Necesitas tener una membresía activa para usar tus créditos de descuento.", "error");
+                    abrirModalUsuario();
+                    return;
+                }
                 const modal = document.getElementById('modalQR');
                 modal.classList.remove('hidden');
                 if (!html5QrCode) { html5QrCode = new Html5Qrcode("reader"); }
@@ -563,109 +518,89 @@ def mostrar_interfaz():
             }
 
             function detenerEscaneoQR() {
-                const modal = document.getElementById('modalQR');
                 if (html5QrCode && html5QrCode.isScanning) {
-                    html5QrCode.stop().then(() => modal.classList.add('hidden')).catch(() => modal.classList.add('hidden'));
-                } else { modal.classList.add('hidden'); }
+                    html5QrCode.stop().then(() => document.getElementById('modalQR').classList.add('hidden'));
+                } else { document.getElementById('modalQR').classList.add('hidden'); }
             }
             function cerrarEscaneoQR() { detenerEscaneoQR(); }
             function cerrarModalVenta() { document.getElementById('modalMontoVenta').classList.add('hidden'); }
 
             function calcularDescuentoQR() {
                 let monto = parseFloat(document.getElementById('inputMontoCompra').value) || 0;
-                let descuentoPorc = 5;
-                let totalFinal = monto - (monto * (descuentoPorc / 100));
-                document.getElementById('lblPorcentajeDesc').innerText = descuentoPorc + "%";
-                document.getElementById('lblTotalFinal').innerText = "$" + totalFinal.toLocaleString();
+                let ahorro = monto * 0.05; // 5% de descuento estimado
+                document.getElementById('lblAhorroCalculado').innerText = "$" + ahorro.toLocaleString();
+                document.getElementById('lblTotalFinal').innerText = "$" + (monto - ahorro).toLocaleString();
             }
 
-            function confirmarVentaQR() {
-                let monto = document.getElementById('inputMontoCompra').value;
-                if(!monto || monto <= 0) { mostrarToast("Ingrese un monto válido.", "error"); return; }
-                cerrarModalVenta();
-                mostrarToast("¡Venta validada con éxito! Puntos y comprobante guardados.", "success");
+            async function confirmarConsumoCredito() {
+                let monto = parseFloat(document.getElementById('inputMontoCompra').value);
+                if(!monto || monto <= 0) { mostrarToast("Ingrese un monto válido", "error"); return; }
+                
+                let res = await fetch('/api/consumir-credito', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        correo_usuario: usuarioLogueadoGlobal.correo,
+                        nombre_comercio: comercioEscaneadoActual,
+                        monto_compra: monto
+                    })
+                });
+                let json = await res.json();
+                if(json.success) {
+                    mostrarToast(`¡Descuento aplicado con éxito! Ahorro: $${json.ahorro_aplicado}`, "success");
+                    cerrarModalVenta();
+                    verificarEstadoUsuario(usuarioLogueadoGlobal.correo);
+                } else {
+                    mostrarToast("Error: " + json.detail, "error");
+                }
             }
 
             function abrirModalComercio() { document.getElementById('modalComercio').classList.remove('hidden'); }
             function cerrarModalComercio() { document.getElementById('modalComercio').classList.add('hidden'); }
             function abrirModalUsuario() { document.getElementById('modalUsuario').classList.remove('hidden'); }
             function cerrarModalUsuario() { document.getElementById('modalUsuario').classList.add('hidden'); }
-            function abrirLogin() { document.getElementById('modalLogin').classList.remove('hidden'); document.getElementById('loginFormContainer').classList.remove('hidden'); document.getElementById('panelSesionContainer').classList.add('hidden'); }
+            function abrirLogin() { document.getElementById('modalLogin').classList.remove('hidden'); }
             function cerrarLogin() { document.getElementById('modalLogin').classList.add('hidden'); }
-            function abrirAdmin() { let c = prompt("Clave Admin:"); if(c === "AsistMaxAdmin2026Secure") { document.getElementById('modalAdmin').classList.remove('hidden'); } else if(c !== null) { mostrarToast("Clave incorrecta.", "error"); } }
-            function cerrarAdmin() { document.getElementById('modalAdmin').classList.add('hidden'); }
 
-            function cambiarPestanaAdmin(tipo) {
-                ['comercios', 'usuarios', 'efectivo', 'operaciones'].forEach(t => {
-                    document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = "pb-2 font-bold text-slate-400";
-                    document.getElementById('seccion' + t.charAt(0).toUpperCase() + t.slice(1) + 'Admin').classList.add('hidden');
-                });
-                document.getElementById('btnTab' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).className = "pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400";
-                document.getElementById('seccion' + tipo.charAt(0).toUpperCase() + tipo.slice(1) + 'Admin').classList.remove('hidden');
-            }
-
-            function ejecutarLogin() {
-                let id = document.getElementById('inputLoginIdentificador').value.trim();
-                if(!id) return;
-                document.getElementById('loginFormContainer').classList.add('hidden');
-                document.getElementById('panelSesionContainer').classList.remove('hidden');
-                if(id.toLowerCase().includes('comercio') || id.toLowerCase().includes('shop')) {
-                    document.getElementById('rolSesionBadge').innerText = "Rol: Comercio Adherido";
-                    document.getElementById('configuracionComercioPanel').classList.remove('hidden');
-                    document.getElementById('panelEstadisticasComercio').classList.remove('hidden');
-                    document.getElementById('nombreSesionLabel').innerText = "Comercio: " + id;
+            async function ejecutarLogin() {
+                let correo = document.getElementById('inputLoginCorreo').value.trim();
+                if(!correo) return;
+                await verificarEstadoUsuario(correo);
+                if(usuarioLogueadoGlobal) {
+                    document.getElementById('loginFormContainer').classList.add('hidden');
+                    document.getElementById('panelSesionContainer').classList.remove('hidden');
+                    document.getElementById('nombreSesionLabel').innerText = usuarioLogueadoGlobal.nombre_completo;
+                    document.getElementById('sesionPlan').innerText = usuarioLogueadoGlobal.plan_seleccionado || "Estándar";
+                    document.getElementById('sesionCredito').innerText = "$" + (usuarioLogueadoGlobal.credito_descuento_disponible || 0).toLocaleString();
+                    document.getElementById('sesionVencimiento').innerText = usuarioLogueadoGlobal.fecha_vencimiento ? new Date(usuarioLogueadoGlobal.fecha_vencimiento).toLocaleDateString() : "Sin activar";
+                    mostrarToast("Sesión iniciada", "success");
                 } else {
-                    document.getElementById('rolSesionBadge').innerText = "Rol: Consumidor";
-                    document.getElementById('configuracionComercioPanel').classList.add('hidden');
-                    document.getElementById('panelEstadisticasComercio').classList.add('hidden');
-                    document.getElementById('nombreSesionLabel').innerText = "Usuario: " + id;
+                    mostrarToast("No se encontró usuario con ese correo.", "error");
                 }
-                mostrarToast("Sesión iniciada correctamente", "success");
             }
 
             function cerrarSesion() {
-                document.getElementById('inputLoginIdentificador').value = "";
+                localStorage.removeItem('maxshop_correo_usuario');
+                usuarioLogueadoGlobal = null;
                 document.getElementById('panelSesionContainer').classList.add('hidden');
                 document.getElementById('loginFormContainer').classList.remove('hidden');
-                mostrarToast("Sesión cerrada", "info");
+                location.reload();
             }
 
-            function guardarConfiguracionComercio() {
-                let diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-                let diaHoy = diasSemana[new Date().getDay()];
-                let diaSeleccionado = document.getElementById('edit_dia').value;
-
-                if (diaHoy === diaSeleccionado) {
-                    mostrarToast("⚠️ No puedes modificar el descuento el mismo día que está activo.", "error");
-                    return;
-                }
-                mostrarToast("¡Configuración de descuentos actualizada!", "success");
+            function abrirAdmin() {
+                let c = prompt("Clave Admin:");
+                if(c === "AsistMaxAdmin2026Secure") { document.getElementById('modalAdmin').classList.remove('hidden'); cargarDatosAdmin(); }
+                else if(c !== null) { mostrarToast("Clave incorrecta", "error"); }
             }
+            function cerrarAdmin() { document.getElementById('modalAdmin').classList.add('hidden'); }
 
-            function exportarCSV(tipo) {
-                let cabeceras = "";
-                let filas = "";
-                if(tipo === 'comercios') {
-                    cabeceras = "ID,Nombre Fantasia,Rubro,Localidad,WhatsApp,Descuento\\n";
-                    filas = "1,MaxShop Oficial,Supermercados,Central,3834000000,5%";
-                } else if(tipo === 'usuarios') {
-                    cabeceras = "Nombre,DNI,Nivel,Puntos,WhatsApp,Estado\\n";
-                    filas = "Juan Pérez,34567892,Plata,450,3834123456,Suscripción Activa";
-                } else if(tipo === 'cobros_comercio') {
-                    cabeceras = "Usuario,DNI,WhatsApp,Metodo,Monto,Estado\\n";
-                    filas = "Roberto Gómez,28999111,3834987654,Pago en el Comercio,10000,Pendiente";
-                } else {
-                    cabeceras = "Operacion,Fecha,Participantes,Concepto,Monto\\n";
-                    filas = "#1042,26/08/2026,Juan Pérez a MaxShop,Consumo con Descuento,9500";
+            async function cargarDatosAdmin() {
+                let res = await res = await fetch('/api/admin/datos');
+                let json = await res.json();
+                if(json.success) {
+                    document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `<div class="p-2 bg-slate-950 border border-slate-800 rounded mb-1"><b>${c.nombre_fantasias}</b> - ${c.rubro}</div>`).join('');
+                    document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `<div class="p-2 bg-slate-950 border border-slate-800 rounded mb-1"><b>${u.nombre_completo}</b> (${u.correo}) - Crédito: $${u.credito_descuento_disponible || 0}</div>`).join('');
                 }
-                
-                let contenido = "\\uFEFF" + cabeceras + filas;
-                let blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
-                let enlace = document.createElement("a");
-                enlace.href = URL.createObjectURL(blob);
-                enlace.download = `reporte_${tipo}_maxshop.csv`;
-                enlace.click();
-                mostrarToast("Reporte CSV exportado con éxito", "success");
             }
 
             async function enviarComercio(e) {
@@ -680,21 +615,15 @@ def mostrar_interfaz():
                     localidad: document.getElementById('c_loc').value,
                     cuit_cuil: document.getElementById('c_cuit').value,
                     porcentaje_descuento: parseFloat(document.getElementById('c_porcentaje').value) || 5.0,
-                    dia_promocion: document.getElementById('c_dia_promo').value,
-                    logo_url: "logo_cargado.jpg",
-                    fotos_url: "fotos_multiples.jpg"
+                    dia_promocion: document.getElementById('c_dia_promo').value
                 };
-                let res = await fetch('/api/registrar-comercio', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
-                });
+                let res = await fetch('/api/registrar-comercio', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                 let json = await res.json();
                 if(json.success) {
-                    mostrarToast("¡Comercio registrado con éxito y correo enviado!", "success");
+                    mostrarToast("¡Comercio registrado con éxito!", "success");
                     cerrarModalComercio();
-                    enviarWhatsAppBienvenida(data.nombre_fantasias, 'comercio', data.whatsapp);
-                    document.getElementById('formComercio').reset();
                     cargarComerciosPublicos();
-                } else { mostrarToast("Error: " + json.detail, "error"); }
+                }
             }
 
             async function enviarUsuario(e) {
@@ -706,18 +635,15 @@ def mostrar_interfaz():
                     localidad: document.getElementById('u_loc').value,
                     whatsapp: document.getElementById('u_wpp').value,
                     correo: document.getElementById('u_correo').value,
-                    suscripcion_activa: false
+                    plan_monto: parseInt(document.getElementById('u_plan_monto').value)
                 };
-                let res = await fetch('/api/registrar-usuario', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
-                });
+                let res = await fetch('/api/registrar-usuario', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                 let json = await res.json();
                 if(json.success) {
                     cerrarModalUsuario();
-                    mostrarToast("Usuario registrado. Redirigiendo a pago y WhatsApp...", "success");
-                    enviarWhatsAppBienvenida(data.nombre_completo, 'usuario', data.whatsapp);
-                    window.open("https://mpago.la/12kwFZe", "_blank");
-                } else { mostrarToast("Error: " + json.detail, "error"); }
+                    mostrarToast("Redirigiendo a Mercado Pago...", "success");
+                    window.open(json.init_point || "https://mpago.la/12kwFZe", "_blank");
+                }
             }
         </script>
     </body>
@@ -734,71 +660,120 @@ def obtener_comercios():
     except Exception as e:
         return {"success": False, "data": []}
 
+@app.get("/api/usuario/{correo}")
+def obtener_usuario(correo: str):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Sin conexión a BD")
+    try:
+        res = supabase.table("usuarios").select("*").eq("correo", correo).execute()
+        if res.data and len(res.data) > 0:
+            return {"success": True, "data": res.data[0]}
+        return {"success": False, "detail": "Usuario no encontrado"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/registrar-comercio")
 def registrar_comercio(comercio: ComercioModel):
     if not supabase:
-        raise HTTPException(status_code=500, detail="Base de datos no conectada.")
+        raise HTTPException(status_code=500, detail="Sin conexión a BD")
     try:
-        response = supabase.table("comercios").insert(comercio.dict()).execute()
-        
-        asunto = "¡Tu comercio ha sido adherido a MaxShop!"
-        html = f"""
-        <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 15px;">
-            <h2 style="color: #22d3ee;">¡Hola, {comercio.nombre_completo}!</h2>
-            <p>El comercio <b>{comercio.nombre_fantasias}</b> ya forma parte de la red B2B de <b>MaxShop</b>.</p>
-            <p>Tu código QR y tu perfil multimedia ya se encuentran activos.</p>
-            <hr style="border-color: #334155;">
-            <p style="font-size: 11px; color: #94a3b8;">AsistMax - Red Fintech Global</p>
-        </div>
-        """
-        enviar_correo_transaccional(comercio.correo, asunto, html)
-        return {"success": True, "data": response.data}
+        res = supabase.table("comercios").insert(comercio.dict()).execute()
+        return {"success": True, "data": res.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/registrar-usuario")
 def registrar_usuario(usuario: UsuarioModel):
     if not supabase:
-        raise HTTPException(status_code=500, detail="Base de datos no conectada.")
+        raise HTTPException(status_code=500, detail="Sin conexión a BD")
     try:
-        response = supabase.table("usuarios").insert(usuario.dict()).execute()
+        # Guardamos el usuario con suscripción inactiva inicialmente hasta que pague
+        datos = usuario.dict()
+        datos["suscripcion_activa"] = False
+        res = supabase.table("usuarios").upsert(datos, on_conflict="correo").execute()
         
-        asunto = "¡Bienvenido a MaxShop! Completa tu pago para activar beneficios"
-        html = f"""
-        <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 15px;">
-            <h2 style="color: #22d3ee;">¡Hola, {usuario.nombre_completo}!</h2>
-            <p>Te registraste en la red de consumidores <b>MaxShop</b>.</p>
-            <p>Una vez que abones tu membresía, tu cuenta se activará de forma automática y recibirás una notificación.</p>
-            <hr style="border-color: #334155;">
-            <p style="font-size: 11px; color: #94a3b8;">AsistMax - Red Fintech Global</p>
-        </div>
-        """
-        enviar_correo_transaccional(usuario.correo, asunto, html)
-        return {"success": True, "data": response.data}
+        # Aquí simulamos o devolvemos el link de pago de Mercado Pago
+        return {"success": True, "init_point": "https://mpago.la/12kwFZe"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# WEBHOOK PARA MERCADO PAGO (AUTOMATIZACIÓN DE PAGOS)
+@app.post("/api/consumir-credito")
+def consumir_credito(consumo: ConsumoQRModel):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Sin conexión a BD")
+    try:
+        # Buscamos al usuario
+        res = supabase.table("usuarios").select("*").eq("correo", consumo.correo_usuario).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+        usuario = res.data[0]
+        if not usuario.get("suscripcion_activa"):
+            raise HTTPException(status_code=400, detail="Membresía inactiva.")
+        
+        credito_disponible = float(usuario.get("credito_descuento_disponible", 0))
+        ahorro = consumo.monto_compra * 0.05 # 5% de descuento
+        
+        if credito_disponible < ahorro:
+            raise HTTPException(status_code=400, detail="Crédito de descuento insuficiente en su plan.")
+        
+        nuevo_credito = credito_disponible - ahorro
+        
+        # Actualizamos en Supabase
+        supabase.table("usuarios").update({"credito_descuento_disponible": nuevo_credito}).eq("correo", consumo.correo_usuario).execute()
+        
+        return {"success": True, "ahorro_aplicado": ahorro, "credito_restante": nuevo_credito}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# WEBHOOK DE MERCADO PAGO (ACTIVACIÓN AUTÓNOMA Y ASIGNACIÓN DE CRÉDITOS)
 @app.post("/api/webhook/mercadopago")
 async def webhook_mercadopago(request: Request):
     try:
         data = await request.json()
         print("Webhook MP recibido:", data)
         
-        # Verificamos si la notificación corresponde a un pago aprobado
         tipo_evento = data.get("type") or data.get("topic")
         if tipo_evento == "payment":
-            payment_id = data.get("data", {}).get("id")
-            # Aquí podrías consultar la API de Mercado Pago con el payment_id si deseas validar montos exactos,
-            # o automatizar la activación del último usuario registrado o buscando por el email del pagador.
-            
-            # Ejemplo de activación autónoma en Supabase
+            # Automatización: Al aprobarse el pago, activamos al último usuario registrado o mapeamos
             if supabase:
-                # Actualizamos por ejemplo el estado del último usuario pendiente o mapeamos el correo
-                # supabase.table("usuarios").update({"suscripcion_activa": True}).eq("correo", email_del_pago).execute()
-                pass
+                # Obtenemos usuarios inactivos o activamos el último pendiente
+                res = supabase.table("usuarios").select("*").eq("suscripcion_activa", False).order("dni", desc=True).limit(1).execute()
+                if res.data:
+                    u = res.data[0]
+                    plan_monto = float(u.get("plan_monto", 10000))
+                    
+                    # Asignación de créditos según el plan elegido
+                    credito_otorgado = 250000 # Plan estándar por defecto
+                    if plan_monto == 5000: credito_otorgado = 100000
+                    elif plan_monto == 15000: credito_otorgado = 375000
+                    elif plan_monto >= 20000: credito_otorgado = 700000 # Incluye el bono extra de bienvenida
+                    
+                    ahora = datetime.now()
+                    vencimiento = ahora + timedelta(days=30)
+                    
+                    supabase.table("usuarios").update({
+                        "suscripcion_activa": True,
+                        "credito_descuento_disponible": credito_otorgado,
+                        "credito_descuento_total": credito_otorgado,
+                        "fecha_inicio_suscripcion": ahora.isoformat(),
+                        "fecha_vencimiento": vencimiento.isoformat()
+                    }).eq("correo", u["correo"]).execute()
+                    
+                    # Enviar correo de confirmación de activación
+                    asunto = "¡Tu membresía MaxShop ha sido activada con éxito!"
+                    html = f"""
+                    <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 15px;">
+                        <h2 style="color: #22d3ee;">¡Hola, {u['nombre_completo']}!</h2>
+                        <p>Tu pago ha sido procesado de forma automática por <b>Mercado Pago</b>.</p>
+                        <p>Tu membresía está activa por 30 días y se te han acreditado <b>${credito_otorgado:,.0f}</b> en tu línea de consumo para canjear en los comercios adheridos.</p>
+                        <hr style="border-color: #334155;">
+                        <p style="font-size: 11px; color: #94a3b8;">AsistMax - Red Fintech Global</p>
+                    </div>
+                    """
+                    enviar_correo_transaccional(u["correo"], asunto, html)
 
         return {"status": "ok"}
     except Exception as e:
-        print(f"Error procesando webhook MP: {e}")
+        print(f"Error en webhook MP: {e}")
         return {"status": "error", "detail": str(e)}
