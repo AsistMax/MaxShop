@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="6.5")
+app = FastAPI(title="MaxShop - AsistMax", version="6.6")
 
 app.add_middleware(
     CORSMiddleware,
@@ -265,7 +265,7 @@ def mostrar_interfaz():
                         <div id="historialConsumosContainer" class="space-y-2">
                             <div class="text-xs bg-slate-900 p-3 rounded-xl border border-slate-800/80 space-y-1">
                                 <div class="flex justify-between text-slate-400 text-[10px]">
-                                    <span>25/08/2026 - 11:00hs</span>
+                                    <span>26/08/2026 - 11:00hs</span>
                                     <span>Op #1042</span>
                                 </div>
                                 <p class="font-bold text-white">Consumo con Descuento aplicado</p>
@@ -485,6 +485,21 @@ def mostrar_interfaz():
                 }, 3500);
             }
 
+            // FUNCIÓN DE WHATSAPP INTELIGENTE (wa.me)
+            function enviarWhatsAppBienvenida(nombre, tipo, telefonoDestino = "") {
+                let telefono = telefonoDestino || "5493834000000"; // Número de soporte AsistMax
+                let mensaje = "";
+                
+                if (tipo === 'comercio') {
+                    mensaje = `¡Hola! Me acabo de registrar como comercio en *MaxShop* (${nombre}). Quiero coordinar la entrega de mi material y mi código QR oficial.`;
+                } else {
+                    mensaje = `¡Hola! Me acabo de registrar como usuario en *MaxShop* (${nombre}). Ya realicé mi suscripción y quiero activar mi nivel y beneficios.`;
+                }
+                
+                let url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+                window.open(url, '_blank');
+            }
+
             async function cargarComerciosPublicos() {
                 try {
                     let res = await fetch('/api/comercios');
@@ -640,7 +655,7 @@ def mostrar_interfaz():
                     filas = "Roberto Gómez,28999111,3834987654,Pago en el Comercio,10000,Pendiente";
                 } else {
                     cabeceras = "Operacion,Fecha,Participantes,Concepto,Monto\\n";
-                    filas = "#1042,25/08/2026,Juan Pérez a MaxShop,Consumo con Descuento,9500";
+                    filas = "#1042,26/08/2026,Juan Pérez a MaxShop,Consumo con Descuento,9500";
                 }
                 
                 let contenido = "\\uFEFF" + cabeceras + filas;
@@ -673,8 +688,12 @@ def mostrar_interfaz():
                 });
                 let json = await res.json();
                 if(json.success) {
-                    mostrarToast("¡Comercio registrado con éxito y QR generado!", "success");
+                    mostrarToast("¡Comercio registrado con éxito y correo enviado!", "success");
                     cerrarModalComercio();
+                    
+                    // Disparar chat de WhatsApp automático
+                    enviarWhatsAppBienvenida(data.nombre_fantasias, 'comercio', data.whatsapp);
+                    
                     document.getElementById('formComercio').reset();
                     cargarComerciosPublicos();
                 } else { mostrarToast("Error: " + json.detail, "error"); }
@@ -696,7 +715,11 @@ def mostrar_interfaz():
                 let json = await res.json();
                 if(json.success) {
                     cerrarModalUsuario();
-                    mostrarToast("Usuario registrado. Redirigiendo a pago...", "success");
+                    mostrarToast("Usuario registrado. Redirigiendo a pago y WhatsApp...", "success");
+                    
+                    // Disparar chat de WhatsApp automático
+                    enviarWhatsAppBienvenida(data.nombre_completo, 'usuario', data.whatsapp);
+                    
                     window.open("https://mpago.la/12kwFZe", "_blank");
                 } else { mostrarToast("Error: " + json.detail, "error"); }
             }
