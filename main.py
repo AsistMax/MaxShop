@@ -128,10 +128,10 @@ def mostrar_interfaz():
             </div>
             <div class="flex items-center space-x-2">
                 <button onclick="abrirLogin()" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-xl border border-cyan-500/30 transition font-semibold">
-                    🔑 Login
+                    🔐 Login
                 </button>
                 <button onclick="abrirAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700 transition font-medium">
-                    ⚙️ Admin
+                    🗝 Admin
                 </button>
             </div>
         </header>
