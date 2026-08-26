@@ -1,15 +1,17 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from pydantic import BaseModel
 import os
 import smtplib
+import csv
+import io
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="7.2")
+app = FastAPI(title="MaxShop - AsistMax", version="7.3")
 
 app.add_middleware(
     CORSMiddleware,
@@ -55,6 +57,17 @@ class ConsumoQRModel(BaseModel):
     nombre_comercio: str
     monto_compra: float
 
+class ConfigModel(BaseModel):
+    plan_basico_costo: int = 5000
+    plan_basico_credito: int = 100000
+    plan_estandar_costo: int = 10000
+    plan_estandar_credito: int = 250000
+    plan_pro_costo: int = 15000
+    plan_pro_credito: int = 375000
+    plan_vip_costo: int = 20000
+    plan_vip_credito: int = 500000
+    premio_nuevo_registro: int = 200000
+
 def enviar_correo_transaccional(destinatario: str, asunto: str, cuerpo_html: str):
     remitente = os.getenv("SMTP_CORREO")
     password = os.getenv("SMTP_PASSWORD")
@@ -97,10 +110,9 @@ def mostrar_interfaz():
     </head>
     <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950" onload="inicializarApp()">
 
-        <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
         <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-        <!-- Navbar Superior -->
+        <!-- Navbar -->
         <header class="w-full px-4 py-3 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 shadow-lg">
             <div class="flex items-center space-x-3">
                 <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-11 h-11 rounded-xl object-cover border border-cyan-500/50 shadow-md shadow-cyan-500/20 bg-slate-900">
@@ -119,10 +131,10 @@ def mostrar_interfaz():
             </div>
         </header>
 
-        <!-- Contenido Principal -->
+        <!-- Contenido -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- BANNER PRINCIPAL -->
+            <!-- Banner -->
             <div class="space-y-2">
                 <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 flex justify-center items-center">
                     <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-auto object-cover max-h-52">
@@ -135,7 +147,7 @@ def mostrar_interfaz():
                 </div>
             </div>
 
-            <!-- Panel de Estado / Crédito de Descuento del Usuario -->
+            <!-- Estado del Crédito -->
             <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
                 <div class="flex justify-between items-center">
                     <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-800/50" id="lblEstadoSuscripcionBadge">Modo Explorador (Gratis)</span>
@@ -152,11 +164,11 @@ def mostrar_interfaz():
                 </div>
             </div>
 
-            <!-- Escáner QR de Comercio -->
+            <!-- Escáner QR -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
                 <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-1 rounded-full border border-cyan-800/50">Billetera Inteligente</span>
                 <h2 class="text-xl font-bold text-white mt-2">Canjear Descuento en Comercio</h2>
-                <p class="text-xs text-slate-400 mt-1">Escanea el QR del comercio adherido para aplicar tu descuento y descontarlo de tu línea de crédito.</p>
+                <p class="text-xs text-slate-400 mt-1">Escanea el QR del comercio adherido para aplicar tu descuento obligatorio del 5% (o día promo).</p>
                 <div class="mt-4">
                     <button onclick="iniciarEscaneoQR()" class="w-full py-3.5 text-sm font-bold text-slate-950 transition-all bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20">
                         📷 Escanear QR del Comercio
@@ -164,7 +176,7 @@ def mostrar_interfaz():
                 </div>
             </div>
 
-            <!-- Botones de Registro (Freemium) -->
+            <!-- Accesos Rápidos -->
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="abrirModalComercio()" class="bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-cyan-400 text-xl mb-1">🏪</div>
@@ -174,11 +186,11 @@ def mostrar_interfaz():
                 <button onclick="abrirModalUsuario()" class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-blue-400 text-xl mb-1">👤</div>
                     <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Planes & Membresías</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Hasta $500k de ahorro</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Con $200k extra de regalo</p>
                 </button>
             </div>
 
-            <!-- Directorio de Comercios -->
+            <!-- Directorio -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
                 <div class="flex justify-between items-center">
                     <div>
@@ -199,7 +211,7 @@ def mostrar_interfaz():
 
         </main>
 
-        <!-- MODAL LOGIN / PERFIL -->
+        <!-- Modal Login -->
         <div id="modalLogin" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -235,7 +247,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL CÁMARA ESCÁNER QR -->
+        <!-- Modal QR -->
         <div id="modalQR" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl text-center">
                 <div class="flex justify-between items-center">
@@ -248,7 +260,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL MONTO DE VENTA Y APLICACIÓN DE CRÉDITO -->
+        <!-- Modal Monto Venta -->
         <div id="modalMontoVenta" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -257,12 +269,13 @@ def mostrar_interfaz():
                 </div>
                 <div class="space-y-3 text-xs">
                     <p class="text-slate-400">Comercio: <strong id="lblComercioEscaneado" class="text-cyan-400">Comercio</strong></p>
+                    <p class="text-[11px] text-cyan-300 bg-cyan-950/50 p-2 rounded-xl border border-cyan-800/40" id="lblInfoDescuentoComercio">Descuento aplicado: 5% (Base obligatoria permanente)</p>
                     <div>
                         <label class="text-slate-400">Monto Total de la Compra ($)</label>
                         <input type="number" id="inputMontoCompra" placeholder="ej: 10000" onkeyup="calcularDescuentoQR()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1">
-                        <div class="flex justify-between text-slate-400"><span>Descuento estimado (5%):</span> <span id="lblAhorroCalculado" class="text-cyan-400 font-bold">$0</span></div>
+                        <div class="flex justify-between text-slate-400"><span>Descuento estimado:</span> <span id="lblAhorroCalculado" class="text-cyan-400 font-bold">$0</span></div>
                         <div class="flex justify-between text-slate-400 pt-1 border-t border-slate-900"><span>Total con Descuento:</span> <span id="lblTotalFinal" class="text-emerald-400 font-black text-sm">$0</span></div>
                     </div>
                     <button onclick="confirmarConsumoCredito()" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg">Aplicar y Descontar de mi Crédito</button>
@@ -270,14 +283,14 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL REGISTRO COMERCIO (CON TODOS LOS RUBROS) -->
+        <!-- Modal Registro Comercio (Con Logo y Fotos restaurados) -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
                     <h3 class="text-base font-bold text-white">🏪 Sumar mi Comercio (Gratis)</h3>
                     <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                <p class="text-[11px] text-cyan-400 bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-800/30">Inscripción gratuita con generación automática de tu Código QR oficial.</p>
+                <p class="text-[11px] text-cyan-400 bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-800/30">Inscripción gratuita con QR oficial y descuento base permanente del 5%.</p>
                 <form id="formComercio" onsubmit="enviarComercio(event)" class="space-y-3">
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Nombre Completo (Titular)</label>
@@ -311,22 +324,35 @@ def mostrar_interfaz():
                             <option value="Otro">Otro</option>
                         </select>
                     </div>
+
+                    <!-- Campos Restaurados Logo y Fotos -->
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="text-[10px] font-semibold text-cyan-400">Porcentaje Descuento (%)</label>
-                            <input type="number" id="c_porcentaje" min="5" value="5" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
+                            <label class="text-[10px] font-semibold text-cyan-400">Logo o Img. del Negocio (URL)</label>
+                            <input type="url" id="c_logo" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
                         </div>
                         <div>
-                            <label class="text-[10px] font-semibold text-cyan-400">Día de Promoción</label>
+                            <label class="text-[10px] font-semibold text-cyan-400">Fotos del Negocio (Opcional)</label>
+                            <input type="text" id="c_fotos" placeholder="URLs separadas por coma" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] font-semibold text-cyan-400">Descuento Base (%)</label>
+                            <input type="number" id="c_porcentaje" value="5" readonly class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 outline-none mt-1 cursor-not-allowed" title="Obligatorio permanente 5%">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-semibold text-cyan-400">Día de Promoción Especial</label>
                             <select id="c_dia_promo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
-                                <option value="Ninguno">Ninguno</option>
-                                <option value="Lunes">Lunes</option>
-                                <option value="Martes">Martes</option>
-                                <option value="Miércoles">Miércoles</option>
-                                <option value="Jueves">Jueves</option>
-                                <option value="Viernes">Viernes</option>
-                                <option value="Sábado">Sábado</option>
-                                <option value="Domingo">Domingo</option>
+                                <option value="Ninguno">Ninguno (Rige 5%)</option>
+                                <option value="Lunes">Lunes (Ej: 10%)</option>
+                                <option value="Martes">Martes (Ej: 10%)</option>
+                                <option value="Miércoles">Miércoles (Ej: 10%)</option>
+                                <option value="Jueves">Jueves (Ej: 10%)</option>
+                                <option value="Viernes">Viernes (Ej: 10%)</option>
+                                <option value="Sábado">Sábado (Ej: 10%)</option>
+                                <option value="Domingo">Domingo (Ej: 10%)</option>
                             </select>
                         </div>
                     </div>
@@ -343,7 +369,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL REGISTRO USUARIO Y SELECCIÓN DE PLANES -->
+        <!-- Modal Registro Usuario con Pago Integrado (Con $200k extra de bienvenida para nuevo registro en cualquier plan) -->
         <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
@@ -360,7 +386,7 @@ def mostrar_interfaz():
                         <input type="text" id="u_dni" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
                     <div>
-                        <input type="text" id="u_dir" placeholder="Dirección" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
+                        <input type="text" id="u_dir" placeholder="Dirección" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                         <input type="text" id="u_loc" placeholder="Localidad" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1.5">
                     </div>
                     <div>
@@ -373,21 +399,22 @@ def mostrar_interfaz():
                     </div>
 
                     <div>
-                        <label class="text-cyan-400 font-bold">Seleccionar Plan Mensual & Crédito de Ahorro:</label>
+                        <label class="text-cyan-400 font-bold">Seleccionar Plan Mensual (Incluye $200k Extra si es Nuevo Registro):</label>
                         <select id="u_plan_monto" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-3 py-2.5 text-white font-bold outline-none mt-1">
-                            <option value="5000">Plan Básico ($5.000/mes) ➔ $100.000 Crédito Ahorro</option>
-                            <option value="10000" selected>Plan Estándar ($10.000/mes) ➔ $250.000 Crédito Ahorro</option>
-                            <option value="15000">Plan Pro ($15.000/mes) ➔ $375.000 Crédito Ahorro</option>
-                            <option value="20000">Plan VIP ($20.000/mes) ➔ $500.000 Crédito Ahorro + $200k Extra (Nuevo Registro)</option>
+                            <option value="5000">Plan Básico ($5.000/mes) ➔ $100k Crédito + $200k Extra Nuevo</option>
+                            <option value="10000" selected>Plan Estándar ($10.000/mes) ➔ $250k Crédito + $200k Extra Nuevo</option>
+                            <option value="15000">Plan Pro ($15.000/mes) ➔ $375k Crédito + $200k Extra Nuevo</option>
+                            <option value="20000">Plan VIP ($20.000/mes) ➔ $500k Crédito + $200k Extra Nuevo</option>
                         </select>
                     </div>
 
-                    <button type="submit" id="btnPagarMP" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2 transition hover:opacity-90">Pagar con Mercado Pago</button>
+                    <!-- Botón de Pago Integrado Seguro en la página -->
+                    <button type="submit" id="btnPagarIntegrado" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2 transition hover:opacity-90">💳 Confirmar Pago y Activar Membresía</button>
                 </form>
             </div>
         </div>
 
-        <!-- MODAL ADMINISTRADOR -->
+        <!-- Modal Admin con Exportación de Tablas y Configuración de Costos -->
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -397,15 +424,74 @@ def mostrar_interfaz():
                 <div class="flex border-b border-slate-800 space-x-4 pt-2 overflow-x-auto text-xs">
                     <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400">🏪 Comercios</button>
                     <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 font-bold text-slate-400">👤 Usuarios & Créditos</button>
+                    <button onclick="cambiarPestanaAdmin('config')" id="btnTabConfig" class="pb-2 font-bold text-slate-400">⚙️ Costos y Créditos</button>
                 </div>
 
                 <div id="seccionComerciosAdmin" class="space-y-3">
-                    <h4 class="text-xs font-bold text-cyan-400 uppercase">Comercios Adheridos</h4>
-                    <div id="tablaComerciosAdminList" class="text-xs text-slate-400">Cargando...</div>
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold text-cyan-400 uppercase">Comercios Adheridos Registrados</h4>
+                        <a href="/api/admin/exportar/comercios" target="_blank" class="text-[10px] bg-cyan-500/20 text-cyan-300 px-3 py-1.5 rounded-xl border border-cyan-500/40 font-bold">📥 Descargar Base Comercios (CSV)</a>
+                    </div>
+                    <div id="tablaComerciosAdminList" class="text-xs text-slate-400 max-h-60 overflow-y-auto space-y-2">Cargando...</div>
                 </div>
+
                 <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
-                    <h4 class="text-xs font-bold text-blue-400 uppercase">Usuarios con Créditos Activos</h4>
-                    <div id="tablaUsuariosAdminList" class="text-xs text-slate-400">Cargando...</div>
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold text-blue-400 uppercase">Usuarios & Clientes Registrados</h4>
+                        <a href="/api/admin/exportar/usuarios" target="_blank" class="text-[10px] bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded-xl border border-blue-500/40 font-bold">📥 Descargar Base Usuarios (CSV)</a>
+                    </div>
+                    <div id="tablaUsuariosAdminList" class="text-xs text-slate-400 max-h-60 overflow-y-auto space-y-2">Cargando...</div>
+                </div>
+
+                <div id="seccionConfigAdmin" class="space-y-3 hidden">
+                    <h4 class="text-xs font-bold text-amber-400 uppercase">Configuración de Costos y Créditos de Planes</h4>
+                    <form id="formConfigAdmin" onsubmit="guardarConfigAdmin(event)" class="space-y-3 text-xs">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400">Costo Plan Básico ($)</label>
+                                <input type="number" id="cfg_basico_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
+                            </div>
+                            <div>
+                                <label class="text-slate-400">Crédito Plan Básico ($)</label>
+                                <input type="number" id="cfg_basico_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400">Costo Plan Estándar ($)</label>
+                                <input type="number" id="cfg_estandar_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
+                            </div>
+                            <div>
+                                <label class="text-slate-400">Crédito Plan Estándar ($)</label>
+                                <input type="number" id="cfg_estandar_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400">Costo Plan Pro ($)</label>
+                                <input type="number" id="cfg_pro_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
+                            </div>
+                            <div>
+                                <label class="text-slate-400">Crédito Plan Pro ($)</label>
+                                <input type="number" id="cfg_pro_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400">Costo Plan VIP ($)</label>
+                                <input type="number" id="cfg_vip_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
+                            </div>
+                            <div>
+                                <label class="text-slate-400">Crédito Plan VIP ($)</label>
+                                <input type="number" id="cfg_vip_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-cyan-400 font-bold">Premio Extra Nuevo Registro ($)</label>
+                            <input type="number" id="cfg_premio_nuevo" class="w-full bg-slate-950 border border-cyan-500/50 rounded-xl px-3 py-2 text-white mt-1 font-bold">
+                        </div>
+                        <button type="submit" class="w-full py-2.5 bg-amber-500 text-slate-950 font-bold rounded-xl mt-2">Guardar Nueva Configuración</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -510,6 +596,16 @@ def mostrar_interfaz():
                         detenerEscaneoQR();
                         comercioEscaneadoActual = decodedText;
                         document.getElementById('lblComercioEscaneado').innerText = decodedText;
+                        
+                        // Buscar el comercio escaneado para ver si tiene día promo activo
+                        let comercioObj = listaComerciosGlobal.find(c => c.nombre_fantasias === decodedText || c.nombre_completo === decodedText);
+                        let descAplicado = 5.0;
+                        if(comercioObj && comercioObj.porcentaje_descuento) {
+                            descAplicado = parseFloat(comercioObj.porcentaje_descuento);
+                        }
+                        window.porcentajeDescActual = descAplicado;
+                        document.getElementById('lblInfoDescuentoComercio').innerText = `Descuento aplicado: ${descAplicado}% (Base permanente 5% + Día especial)`;
+                        
                         document.getElementById('modalMontoVenta').classList.remove('hidden');
                     }, (err) => {}
                 ).catch(() => { modal.classList.add('hidden'); });
@@ -525,7 +621,8 @@ def mostrar_interfaz():
 
             function calcularDescuentoQR() {
                 let monto = parseFloat(document.getElementById('inputMontoCompra').value) || 0;
-                let ahorro = monto * 0.05;
+                let pct = window.porcentajeDescActual || 5.0;
+                let ahorro = monto * (pct / 100);
                 document.getElementById('lblAhorroCalculado').innerText = "$" + ahorro.toLocaleString();
                 document.getElementById('lblTotalFinal').innerText = "$" + (monto - ahorro).toLocaleString();
             }
@@ -600,13 +697,25 @@ def mostrar_interfaz():
                 if(pestana === 'comercios') {
                     document.getElementById('btnTabComercios').className = "pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400";
                     document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-slate-400";
+                    document.getElementById('btnTabConfig').className = "pb-2 font-bold text-slate-400";
                     document.getElementById('seccionComerciosAdmin').classList.remove('hidden');
                     document.getElementById('seccionUsuariosAdmin').classList.add('hidden');
-                } else {
+                    document.getElementById('seccionConfigAdmin').classList.add('hidden');
+                } else if(pestana === 'usuarios') {
                     document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-blue-400 border-b-2 border-blue-400";
                     document.getElementById('btnTabComercios').className = "pb-2 font-bold text-slate-400";
+                    document.getElementById('btnTabConfig').className = "pb-2 font-bold text-slate-400";
                     document.getElementById('seccionUsuariosAdmin').classList.remove('hidden');
                     document.getElementById('seccionComerciosAdmin').classList.add('hidden');
+                    document.getElementById('seccionConfigAdmin').classList.add('hidden');
+                } else {
+                    document.getElementById('btnTabConfig').className = "pb-2 font-bold text-amber-400 border-b-2 border-amber-400";
+                    document.getElementById('btnTabComercios').className = "pb-2 font-bold text-slate-400";
+                    document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-slate-400";
+                    document.getElementById('seccionConfigAdmin').classList.remove('hidden');
+                    document.getElementById('seccionComerciosAdmin').classList.add('hidden');
+                    document.getElementById('seccionUsuariosAdmin').classList.add('hidden');
+                    cargarConfigAdminForm();
                 }
             }
 
@@ -615,11 +724,52 @@ def mostrar_interfaz():
                     let res = await fetch('/api/admin/datos');
                     let json = await res.json();
                     if(json.success) {
-                        document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `<div class="p-2 bg-slate-950 border border-slate-800 rounded mb-1"><b>${c.nombre_fantasias}</b> - ${c.rubro} (${c.localidad})</div>`).join('') || 'Sin comercios';
-                        document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `<div class="p-2 bg-slate-950 border border-slate-800 rounded mb-1"><b>${u.nombre_completo}</b> (${u.correo}) - Crédito: $${u.credito_descuento_disponible || 0}</div>`).join('') || 'Sin usuarios';
+                        document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1 flex justify-between items-center"><div><b>${c.nombre_fantasias}</b> - ${c.rubro} (${c.localidad})<br><span class="text-[10px] text-slate-400">Titular: ${c.nombre_completo} | CUIT: ${c.cuit_cuil}</span></div></div>`).join('') || 'Sin comercios';
+                        document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1 flex justify-between items-center"><div><b>${u.nombre_completo}</b> (${u.correo})<br><span class="text-[10px] text-slate-400">DNI: ${u.dni} | Plan: ${u.plan_seleccionado || '-'} | Crédito: $${u.credito_descuento_disponible || 0}</span></div></div>`).join('') || 'Sin usuarios';
                     }
                 } catch(e) {
                     document.getElementById('tablaComerciosAdminList').innerHTML = "Error al cargar datos";
+                }
+            }
+
+            async function cargarConfigAdminForm() {
+                try {
+                    let res = await fetch('/api/admin/config');
+                    let json = await res.json();
+                    if(json.success) {
+                        let c = json.data;
+                        document.getElementById('cfg_basico_costo').value = c.plan_basico_costo;
+                        document.getElementById('cfg_basico_cred').value = c.plan_basico_credito;
+                        document.getElementById('cfg_estandar_costo').value = c.plan_estandar_costo;
+                        document.getElementById('cfg_estandar_cred').value = c.plan_estandar_credito;
+                        document.getElementById('cfg_pro_costo').value = c.plan_pro_costo;
+                        document.getElementById('cfg_pro_cred').value = c.plan_pro_credito;
+                        document.getElementById('cfg_vip_costo').value = c.plan_vip_costo;
+                        document.getElementById('cfg_vip_cred').value = c.plan_vip_credito;
+                        document.getElementById('cfg_premio_nuevo').value = c.premio_nuevo_registro;
+                    }
+                } catch(e) {}
+            }
+
+            async function guardarConfigAdmin(e) {
+                e.preventDefault();
+                let data = {
+                    plan_basico_costo: parseInt(document.getElementById('cfg_basico_costo').value),
+                    plan_basico_credito: parseInt(document.getElementById('cfg_basico_cred').value),
+                    plan_estandar_costo: parseInt(document.getElementById('cfg_estandar_costo').value),
+                    plan_estandar_credito: parseInt(document.getElementById('cfg_estandar_cred').value),
+                    plan_pro_costo: parseInt(document.getElementById('cfg_pro_costo').value),
+                    plan_pro_credito: parseInt(document.getElementById('cfg_pro_cred').value),
+                    plan_vip_costo: parseInt(document.getElementById('cfg_vip_costo').value),
+                    plan_vip_credito: parseInt(document.getElementById('cfg_vip_cred').value),
+                    premio_nuevo_registro: parseInt(document.getElementById('cfg_premio_nuevo').value)
+                };
+                let res = await fetch('/api/admin/config', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+                let json = await res.json();
+                if(json.success) {
+                    mostrarToast("Configuración guardada correctamente", "success");
+                } else {
+                    mostrarToast("Error al guardar configuración", "error");
                 }
             }
 
@@ -634,13 +784,15 @@ def mostrar_interfaz():
                     direccion: document.getElementById('c_dir').value,
                     localidad: document.getElementById('c_loc').value,
                     cuit_cuil: document.getElementById('c_cuit').value,
-                    porcentaje_descuento: parseFloat(document.getElementById('c_porcentaje').value) || 5.0,
-                    dia_promocion: document.getElementById('c_dia_promo').value
+                    porcentaje_descuento: 5.0, // Base permanente obligatoria
+                    dia_promocion: document.getElementById('c_dia_promo').value,
+                    logo_url: document.getElementById('c_logo').value || "",
+                    fotos_url: document.getElementById('c_fotos').value || ""
                 };
                 let res = await fetch('/api/registrar-comercio', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                 let json = await res.json();
                 if(json.success) {
-                    mostrarToast("¡Comercio registrado con éxito!", "success");
+                    mostrarToast("¡Comercio registrado con éxito con QR oficial!", "success");
                     cerrarModalComercio();
                     cargarComerciosPublicos();
                 }
@@ -648,8 +800,8 @@ def mostrar_interfaz():
 
             async function enviarUsuario(e) {
                 e.preventDefault();
-                const btn = document.getElementById('btnPagarMP');
-                btn.innerText = "Conectando con Mercado Pago...";
+                const btn = document.getElementById('btnPagarIntegrado');
+                btn.innerText = "Procesando pago seguro...";
                 btn.disabled = true;
 
                 const data = {
@@ -663,22 +815,22 @@ def mostrar_interfaz():
                 };
                 
                 try {
-                    let res = await fetch('/api/registrar-usuario', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+                    let res = await fetch('/api/registrar-y-pagar-usuario', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                     let json = await res.json();
                     if(json.success) {
                         cerrarModalUsuario();
-                        mostrarToast("Redirigiendo a pasarela segura...", "success");
-                        setTimeout(() => {
-                            window.location.href = json.init_point || "https://mpago.la/12kwFZe";
-                        }, 800);
+                        mostrarToast("¡Pago procesado con éxito! Membresía activada.", "success");
+                        verificarEstadoUsuario(data.correo);
+                        btn.innerText = "💳 Confirmar Pago y Activar Membresía";
+                        btn.disabled = false;
                     } else {
-                        mostrarToast("Error al procesar registro", "error");
-                        btn.innerText = "Pagar con Mercado Pago";
+                        mostrarToast("Error al procesar pago: " + (json.detail || ''), "error");
+                        btn.innerText = "💳 Confirmar Pago y Activar Membresía";
                         btn.disabled = false;
                     }
                 } catch(err) {
                     mostrarToast("Error de conexión con el servidor", "error");
-                    btn.innerText = "Pagar con Mercado Pago";
+                    btn.innerText = "💳 Confirmar Pago y Activar Membresía";
                     btn.disabled = false;
                 }
             }
@@ -720,18 +872,94 @@ def admin_datos():
     except Exception as e:
         return {"success": False, "comercios": [], "usuarios": []}
 
+@app.get("/api/admin/exportar/comercios", response_class=PlainTextResponse)
+def exportar_comercios():
+    if not supabase:
+        return "Sin conexión a BD"
+    try:
+        res = supabase.table("comercios").select("*").execute()
+        output = io.StringIO()
+        writer = csv.writer(output)
+        if res.data:
+            keys = res.data[0].keys()
+            writer.writerow(keys)
+            for row in res.data:
+                writer.writerow(row.values())
+        return output.getvalue()
+    except Exception as e:
+        return f"Error: {e}"
+
+@app.get("/api/admin/exportar/usuarios", response_class=PlainTextResponse)
+def exportar_usuarios():
+    if not supabase:
+        return "Sin conexión a BD"
+    try:
+        res = supabase.table("usuarios").select("*").execute()
+        output = io.StringIO()
+        writer = csv.writer(output)
+        if res.data:
+            keys = res.data[0].keys()
+            writer.writerow(keys)
+            for row in res.data:
+                writer.writerow(row.values())
+        return output.getvalue()
+    except Exception as e:
+        return f"Error: {e}"
+
+@app.get("/api/admin/config")
+def obtener_config():
+    if not supabase:
+        return {"success": True, "data": {
+            "plan_basico_costo": 5000, "plan_basico_credito": 100000,
+            "plan_estandar_costo": 10000, "plan_estandar_credito": 250000,
+            "plan_pro_costo": 15000, "plan_pro_credito": 375000,
+            "plan_vip_costo": 20000, "plan_vip_credito": 500000,
+            "premio_nuevo_registro": 200000
+        }}
+    try:
+        res = supabase.table("configuracion").select("*").eq("id", 1).execute()
+        if res.data:
+            return {"success": True, "data": res.data[0]}
+        else:
+            default_cfg = {
+                "id": 1,
+                "plan_basico_costo": 5000, "plan_basico_credito": 100000,
+                "plan_estandar_costo": 10000, "plan_estandar_credito": 250000,
+                "plan_pro_costo": 15000, "plan_pro_credito": 375000,
+                "plan_vip_costo": 20000, "plan_vip_credito": 500000,
+                "premio_nuevo_registro": 200000
+            }
+            supabase.table("configuracion").upsert(default_cfg).execute()
+            return {"success": True, "data": default_cfg}
+    except Exception as e:
+        return {"success": False, "detail": str(e)}
+
+@app.post("/api/admin/config")
+def guardar_config(cfg: ConfigModel):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Sin conexión a BD")
+    try:
+        data = cfg.dict()
+        data["id"] = 1
+        supabase.table("configuracion").upsert(data).execute()
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/registrar-comercio")
 def registrar_comercio(comercio: ComercioModel):
     if not supabase:
         raise HTTPException(status_code=500, detail="Sin conexión a BD")
     try:
+        # El 5% es base permanente obligatoria
+        comercio.porcentaje_descuento = 5.0
         res = supabase.table("comercios").insert(comercio.dict()).execute()
         return {"success": True, "data": res.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/registrar-usuario")
-def registrar_usuario(usuario: UsuarioModel):
+@app.post("/api/registrar-y-pagar-usuario")
+def registrar_y_pagar_usuario(usuario: UsuarioModel):
     if not supabase:
         raise HTTPException(status_code=500, detail="Sin conexión a BD")
     try:
@@ -739,13 +967,63 @@ def registrar_usuario(usuario: UsuarioModel):
         existente = supabase.table("usuarios").select("*").eq("correo", usuario.correo).execute()
         es_primer_registro = not (existente.data and len(existente.data) > 0)
 
+        # Obtener configuración actual de costos y créditos
+        cfg_res = supabase.table("configuracion").select("*").eq("id", 1).execute()
+        cfg = cfg_res.data[0] if cfg_res.data else {
+            "plan_basico_costo": 5000, "plan_basico_credito": 100000,
+            "plan_estandar_costo": 10000, "plan_estandar_credito": 250000,
+            "plan_pro_costo": 15000, "plan_pro_credito": 375000,
+            "plan_vip_costo": 20000, "plan_vip_credito": 500000,
+            "premio_nuevo_registro": 200000
+        }
+
+        # Determinar crédito base según el plan elegido
+        plan_monto = usuario.plan_monto
+        credito_otorgado = cfg["plan_estandar_credito"]
+        plan_nombre = "Estándar"
+
+        if plan_monto == cfg["plan_basico_costo"]:
+            credito_otorgado = cfg["plan_basico_credito"]
+            plan_nombre = "Básico"
+        elif plan_monto == cfg["plan_pro_costo"]:
+            credito_otorgado = cfg["plan_pro_credito"]
+            plan_nombre = "Pro"
+        elif plan_monto >= cfg["plan_vip_costo"]:
+            credito_otorgado = cfg["plan_vip_credito"]
+            plan_nombre = "VIP"
+
+        # Aplicar los $200.000 (o valor configurado) de premio extra si es NUEVO registro en CUALQUIER plan
+        if es_primer_registro:
+            credito_otorgado += cfg["premio_nuevo_registro"]
+
+        ahora = datetime.now()
+        vencimiento = ahora + timedelta(days=30)
+
         datos = usuario.dict()
-        datos["suscripcion_activa"] = False
-        # Guardamos un marcador indicando si es primer registro o usuario que reingresa
-        datos["es_nuevo_registro"] = es_primer_registro
+        datos["suscripcion_activa"] = True
+        datos["plan_seleccionado"] = plan_nombre
+        datos["credito_descuento_disponible"] = credito_otorgado
+        datos["credito_descuento_total"] = credito_otorgado
+        datos["fecha_inicio_suscripcion"] = ahora.isoformat()
+        datos["fecha_vencimiento"] = vencimiento.isoformat()
+        datos["es_nuevo_registro"] = False
 
         res = supabase.table("usuarios").upsert(datos, on_conflict="correo").execute()
-        return {"success": True, "init_point": "https://mpago.la/12kwFZe"}
+
+        # Enviar correo transaccional de bienvenida y activación
+        asunto = "¡Tu membresía MaxShop ha sido activada con éxito!"
+        html = f"""
+        <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 15px;">
+            <h2 style="color: #22d3ee;">¡Hola, {usuario.nombre_completo}!</h2>
+            <p>Tu pago ha sido procesado con éxito de forma segura dentro de la plataforma.</p>
+            <p>Tu membresía <b>Plan {plan_nombre}</b> está activa por 30 días y se te han acreditado <b>${credito_otorgado:,.0f}</b> en tu línea de consumo (incluyendo incentivo de bienvenida).</p>
+            <hr style="border-color: #334155;">
+            <p style="font-size: 11px; color: #94a3b8;">AsistMax - Red Fintech Global</p>
+        </div>
+        """
+        enviar_correo_transaccional(usuario.correo, asunto, html)
+
+        return {"success": True, "credito_otorgado": credito_otorgado}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -754,6 +1032,12 @@ def consumir_credito(consumo: ConsumoQRModel):
     if not supabase:
         raise HTTPException(status_code=500, detail="Sin conexión a BD")
     try:
+        # Buscar comercio para verificar porcentaje de descuento (5% base o día promo)
+        comercio_res = supabase.table("comercios").select("*").eq("nombre_fantasias", consumo.nombre_comercio).execute()
+        pct_descuento = 5.0 # Obligatorio permanente por defecto
+        if comercio_res.data and len(comercio_res.data) > 0:
+            pct_descuento = float(comercio_res.data[0].get("porcentaje_descuento", 5.0))
+
         res = supabase.table("usuarios").select("*").eq("correo", consumo.correo_usuario).execute()
         if not res.data:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -763,7 +1047,7 @@ def consumir_credito(consumo: ConsumoQRModel):
             raise HTTPException(status_code=400, detail="Membresía inactiva.")
         
         credito_disponible = float(usuario.get("credito_descuento_disponible", 0))
-        ahorro = consumo.monto_compra * 0.05
+        ahorro = consumo.monto_compra * (pct_descuento / 100.0)
         
         if credito_disponible < ahorro:
             raise HTTPException(status_code=400, detail="Crédito de descuento insuficiente en su plan.")
@@ -773,58 +1057,4 @@ def consumir_credito(consumo: ConsumoQRModel):
         
         return {"success": True, "ahorro_aplicado": ahorro, "credito_restante": nuevo_credito}
     except Exception as e:
-        raise HTTPException(status_0=400, detail=str(e))
-
-@app.post("/api/webhook/mercadopago")
-async def webhook_mercadopago(request: Request):
-    try:
-        data = await request.json()
-        print("Webhook MP recibido:", data)
-        
-        tipo_evento = data.get("type") or data.get("topic")
-        if tipo_evento == "payment":
-            if supabase:
-                res = supabase.table("usuarios").select("*").eq("suscripcion_activa", False).order("dni", desc=True).limit(1).execute()
-                if res.data:
-                    u = res.data[0]
-                    plan_monto = float(u.get("plan_monto", 10000))
-                    es_nuevo = u.get("es_nuevo_registro", True)
-                    
-                    # Cálculo base de créditos según el plan seleccionado
-                    credito_otorgado = 250000
-                    if plan_monto == 5000: credito_otorgado = 100000
-                    elif plan_monto == 15000: credito_otorgado = 375000
-                    elif plan_monto >= 20000: 
-                        credito_otorgado = 500000
-                        # Si es VIP Y es un usuario totalmente NUEVO, le sumamos los $200k extra de bienvenida
-                        if es_nuevo:
-                            credito_otorgado += 200000
-                    
-                    ahora = datetime.now()
-                    vencimiento = ahora + timedelta(days=30)
-                    
-                    supabase.table("usuarios").update({
-                        "suscripcion_activa": True,
-                        "credito_descuento_disponible": credito_otorgado,
-                        "credito_descuento_total": credito_otorgado,
-                        "fecha_inicio_suscripcion": ahora.isoformat(),
-                        "fecha_vencimiento": vencimiento.isoformat(),
-                        "es_nuevo_registro": False # Ya queda marcado como usuario histórico
-                    }).eq("correo", u["correo"]).execute()
-                    
-                    asunto = "¡Tu membresía MaxShop ha sido activada con éxito!"
-                    html = f"""
-                    <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 15px;">
-                        <h2 style="color: #22d3ee;">¡Hola, {u['nombre_completo']}!</h2>
-                        <p>Tu pago ha sido procesado de forma automática por <b>Mercado Pago</b>.</p>
-                        <p>Tu membresía está activa por 30 días y se te han acreditado <b>${credito_otorgado:,.0f}</b> en tu línea de consumo para canjear en los comercios adheridos.</p>
-                        <hr style="border-color: #334155;">
-                        <p style="font-size: 11px; color: #94a3b8;">AsistMax - Red Fintech Global</p>
-                    </div>
-                    """
-                    enviar_correo_transaccional(u["correo"], asunto, html)
-
-        return {"status": "ok"}
-    except Exception as e:
-        print(f"Error en webhook MP: {e}")
-        return {"status": "error", "detail": str(e)}
+        raise HTTPException(status_code=400, detail=str(e))
