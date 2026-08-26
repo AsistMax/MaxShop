@@ -9,7 +9,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="7.1")
+app = FastAPI(title="MaxShop - AsistMax", version="7.2")
 
 app.add_middleware(
     CORSMiddleware,
@@ -178,7 +178,7 @@ def mostrar_interfaz():
                 </button>
             </div>
 
-            <!-- Directorio de Comercios (100% Público y Gratuito) -->
+            <!-- Directorio de Comercios -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
                 <div class="flex justify-between items-center">
                     <div>
@@ -231,13 +231,6 @@ def mostrar_interfaz():
                         <p class="text-[11px] text-slate-300">Crédito de Ahorro: <strong id="sesionCredito" class="text-emerald-400">$0</strong></p>
                         <p class="text-[11px] text-slate-300">Vencimiento: <strong id="sesionVencimiento" class="text-amber-400">-</strong></p>
                     </div>
-
-                    <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 space-y-3">
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-400">🧾 Historial de Consumos</h3>
-                        <div id="historialConsumosContainer" class="space-y-2 text-xs text-slate-400">
-                            No hay consumos recientes registrados.
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -277,7 +270,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- MODAL REGISTRO COMERCIO -->
+        <!-- MODAL REGISTRO COMERCIO (CON TODOS LOS RUBROS) -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
@@ -309,6 +302,13 @@ def mostrar_interfaz():
                             <option value="Gastronomía (Restaurantes, Cafés, Bares)">Gastronomía (Restaurantes, Cafés, Bares)</option>
                             <option value="Indumentaria, Calzado y Marroquinería">Indumentaria, Calzado y Marroquinería</option>
                             <option value="Salud, Farmacias y Perfumerías">Salud, Farmacias y Perfumerías</option>
+                            <option value="Electro, Tecnología y Hogar">Electro, Tecnología y Hogar</option>
+                            <option value="Construcción, Ferretería y Pinturería">Construcción, Ferretería y Pinturería</option>
+                            <option value="Automotor, Repuestos y Lubricentros">Automotor, Repuestos y Lubricentros</option>
+                            <option value="Belleza, Estética y Peluquerías">Belleza, Estética y Peluquerías</option>
+                            <option value="Entretenimiento, Turismo y Hotelería">Entretenimiento, Turismo y Hotelería</option>
+                            <option value="Servicios Profesionales y Oficios">Servicios Profesionales y Oficios</option>
+                            <option value="Otro">Otro</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
@@ -360,8 +360,8 @@ def mostrar_interfaz():
                         <input type="text" id="u_dni" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
                     <div>
-                        <input type="text" id="u_dir" placeholder="Dirección" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
-                        <input type="text" id="u_loc" placeholder="Localidad" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1.5">
+                        <input type="text" id="u_dir" placeholder="Dirección" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
+                        <input type="text" id="u_loc" placeholder="Localidad" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1.5">
                     </div>
                     <div>
                         <label class="text-slate-400">WhatsApp</label>
@@ -378,11 +378,11 @@ def mostrar_interfaz():
                             <option value="5000">Plan Básico ($5.000/mes) ➔ $100.000 Crédito Ahorro</option>
                             <option value="10000" selected>Plan Estándar ($10.000/mes) ➔ $250.000 Crédito Ahorro</option>
                             <option value="15000">Plan Pro ($15.000/mes) ➔ $375.000 Crédito Ahorro</option>
-                            <option value="20000">Plan VIP ($20.000/mes) ➔ $500.000 Crédito Ahorro + $200k Extra</option>
+                            <option value="20000">Plan VIP ($20.000/mes) ➔ $500.000 Crédito Ahorro + $200k Extra (Nuevo Registro)</option>
                         </select>
                     </div>
 
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2">Continuar al Pago en Mercado Pago</button>
+                    <button type="submit" id="btnPagarMP" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2 transition hover:opacity-90">Pagar con Mercado Pago</button>
                 </form>
             </div>
         </div>
@@ -648,6 +648,10 @@ def mostrar_interfaz():
 
             async function enviarUsuario(e) {
                 e.preventDefault();
+                const btn = document.getElementById('btnPagarMP');
+                btn.innerText = "Conectando con Mercado Pago...";
+                btn.disabled = true;
+
                 const data = {
                     nombre_completo: document.getElementById('u_nombre').value,
                     dni: document.getElementById('u_dni').value,
@@ -657,12 +661,25 @@ def mostrar_interfaz():
                     correo: document.getElementById('u_correo').value,
                     plan_monto: parseInt(document.getElementById('u_plan_monto').value)
                 };
-                let res = await fetch('/api/registrar-usuario', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-                let json = await res.json();
-                if(json.success) {
-                    cerrarModalUsuario();
-                    mostrarToast("Redirigiendo a Mercado Pago...", "success");
-                    window.open(json.init_point || "https://mpago.la/12kwFZe", "_blank");
+                
+                try {
+                    let res = await fetch('/api/registrar-usuario', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+                    let json = await res.json();
+                    if(json.success) {
+                        cerrarModalUsuario();
+                        mostrarToast("Redirigiendo a pasarela segura...", "success");
+                        setTimeout(() => {
+                            window.location.href = json.init_point || "https://mpago.la/12kwFZe";
+                        }, 800);
+                    } else {
+                        mostrarToast("Error al procesar registro", "error");
+                        btn.innerText = "Pagar con Mercado Pago";
+                        btn.disabled = false;
+                    }
+                } catch(err) {
+                    mostrarToast("Error de conexión con el servidor", "error");
+                    btn.innerText = "Pagar con Mercado Pago";
+                    btn.disabled = false;
                 }
             }
         </script>
@@ -718,8 +735,15 @@ def registrar_usuario(usuario: UsuarioModel):
     if not supabase:
         raise HTTPException(status_code=500, detail="Sin conexión a BD")
     try:
+        # Verificar si el usuario ya existe previamente en la base de datos
+        existente = supabase.table("usuarios").select("*").eq("correo", usuario.correo).execute()
+        es_primer_registro = not (existente.data and len(existente.data) > 0)
+
         datos = usuario.dict()
         datos["suscripcion_activa"] = False
+        # Guardamos un marcador indicando si es primer registro o usuario que reingresa
+        datos["es_nuevo_registro"] = es_primer_registro
+
         res = supabase.table("usuarios").upsert(datos, on_conflict="correo").execute()
         return {"success": True, "init_point": "https://mpago.la/12kwFZe"}
     except Exception as e:
@@ -749,7 +773,7 @@ def consumir_credito(consumo: ConsumoQRModel):
         
         return {"success": True, "ahorro_aplicado": ahorro, "credito_restante": nuevo_credito}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_0=400, detail=str(e))
 
 @app.post("/api/webhook/mercadopago")
 async def webhook_mercadopago(request: Request):
@@ -764,11 +788,17 @@ async def webhook_mercadopago(request: Request):
                 if res.data:
                     u = res.data[0]
                     plan_monto = float(u.get("plan_monto", 10000))
+                    es_nuevo = u.get("es_nuevo_registro", True)
                     
+                    # Cálculo base de créditos según el plan seleccionado
                     credito_otorgado = 250000
                     if plan_monto == 5000: credito_otorgado = 100000
                     elif plan_monto == 15000: credito_otorgado = 375000
-                    elif plan_monto >= 20000: credito_otorgado = 700000
+                    elif plan_monto >= 20000: 
+                        credito_otorgado = 500000
+                        # Si es VIP Y es un usuario totalmente NUEVO, le sumamos los $200k extra de bienvenida
+                        if es_nuevo:
+                            credito_otorgado += 200000
                     
                     ahora = datetime.now()
                     vencimiento = ahora + timedelta(days=30)
@@ -778,7 +808,8 @@ async def webhook_mercadopago(request: Request):
                         "credito_descuento_disponible": credito_otorgado,
                         "credito_descuento_total": credito_otorgado,
                         "fecha_inicio_suscripcion": ahora.isoformat(),
-                        "fecha_vencimiento": vencimiento.isoformat()
+                        "fecha_vencimiento": vencimiento.isoformat(),
+                        "es_nuevo_registro": False # Ya queda marcado como usuario histórico
                     }).eq("correo", u["correo"]).execute()
                     
                     asunto = "¡Tu membresía MaxShop ha sido activada con éxito!"
