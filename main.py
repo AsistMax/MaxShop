@@ -9,7 +9,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="7.0")
+app = FastAPI(title="MaxShop - AsistMax", version="7.1")
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,14 +48,13 @@ class UsuarioModel(BaseModel):
     localidad: str
     whatsapp: str
     correo: str
-    plan_monto: int = 10000  # Por defecto plan de $10.000
+    plan_monto: int = 10000
 
 class ConsumoQRModel(BaseModel):
     correo_usuario: str
     nombre_comercio: str
     monto_compra: float
 
-# FUNCIÓN PARA ENVIAR CORREOS AUTOMÁTICOS (SMTP)
 def enviar_correo_transaccional(destinatario: str, asunto: str, cuerpo_html: str):
     remitente = os.getenv("SMTP_CORREO")
     password = os.getenv("SMTP_PASSWORD")
@@ -373,7 +372,6 @@ def mostrar_interfaz():
                         <input type="email" id="u_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
 
-                    <!-- SELECTOR DE PLANES ESCALABLES -->
                     <div>
                         <label class="text-cyan-400 font-bold">Seleccionar Plan Mensual & Crédito de Ahorro:</label>
                         <select id="u_plan_monto" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-3 py-2.5 text-white font-bold outline-none mt-1">
@@ -447,7 +445,7 @@ def mostrar_interfaz():
                         renderizarComercios(listaComerciosGlobal);
                     }
                 } catch(e) {
-                    listaComerciosGlobal = [{ nombre_fantasias: "MaxShop Central", rubro: "Supermercados", localidad: "Centro", whatsapp: "3834000000", porcentaje_descuento: 5 }];
+                    listaComerciosGlobal = [];
                     renderizarComercios(listaComerciosGlobal);
                 }
             }
@@ -455,7 +453,7 @@ def mostrar_interfaz():
             function renderizarComercios(comercios) {
                 const contenedor = document.getElementById('listaComerciosPublicos');
                 if(!comercios || comercios.length === 0) {
-                    contenedor.innerHTML = '<div class="text-center py-4 text-xs text-slate-500">No hay comercios.</div>';
+                    contenedor.innerHTML = '<div class="text-center py-4 text-xs text-slate-500">No hay comercios registrados aún.</div>';
                     return;
                 }
                 let html = '';
@@ -527,7 +525,7 @@ def mostrar_interfaz():
 
             function calcularDescuentoQR() {
                 let monto = parseFloat(document.getElementById('inputMontoCompra').value) || 0;
-                let ahorro = monto * 0.05; // 5% de descuento estimado
+                let ahorro = monto * 0.05;
                 document.getElementById('lblAhorroCalculado').innerText = "$" + ahorro.toLocaleString();
                 document.getElementById('lblTotalFinal').innerText = "$" + (monto - ahorro).toLocaleString();
             }
@@ -589,17 +587,39 @@ def mostrar_interfaz():
 
             function abrirAdmin() {
                 let c = prompt("Clave Admin:");
-                if(c === "AsistMaxAdmin2026Secure") { document.getElementById('modalAdmin').classList.remove('hidden'); cargarDatosAdmin(); }
-                else if(c !== null) { mostrarToast("Clave incorrecta", "error"); }
+                if(c === "AsistMaxAdmin2026Secure") { 
+                    document.getElementById('modalAdmin').classList.remove('hidden'); 
+                    cargarDatosAdmin(); 
+                } else if(c !== null) { 
+                    mostrarToast("Clave incorrecta", "error"); 
+                }
             }
             function cerrarAdmin() { document.getElementById('modalAdmin').classList.add('hidden'); }
 
+            function cambiarPestanaAdmin(pestana) {
+                if(pestana === 'comercios') {
+                    document.getElementById('btnTabComercios').className = "pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400";
+                    document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-slate-400";
+                    document.getElementById('seccionComerciosAdmin').classList.remove('hidden');
+                    document.getElementById('seccionUsuariosAdmin').classList.add('hidden');
+                } else {
+                    document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-blue-400 border-b-2 border-blue-400";
+                    document.getElementById('btnTabComercios').className = "pb-2 font-bold text-slate-400";
+                    document.getElementById('seccionUsuariosAdmin').classList.remove('hidden');
+                    document.getElementById('seccionComerciosAdmin').classList.add('hidden');
+                }
+            }
+
             async function cargarDatosAdmin() {
-                let res = await res = await fetch('/api/admin/datos');
-                let json = await res.json();
-                if(json.success) {
-                    document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `<div class="p-2 bg-slate-950 border border-slate-800 rounded mb-1"><b>${c.nombre_fantasias}</b> - ${c.rubro}</div>`).join('');
-                    document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `<div class="p-2 bg-slate-950 border border-slate-800 rounded mb-1"><b>${u.nombre_completo}</b> (${u.correo}) - Crédito: $${u.credito_descuento_disponible || 0}</div>`).join('');
+                try {
+                    let res = await fetch('/api/admin/datos');
+                    let json = await res.json();
+                    if(json.success) {
+                        document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `<div class="p-2 bg-slate-950 border border-slate-800 rounded mb-1"><b>${c.nombre_fantasias}</b> - ${c.rubro} (${c.localidad})</div>`).join('') || 'Sin comercios';
+                        document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `<div class="p-2 bg-slate-950 border border-slate-800 rounded mb-1"><b>${u.nombre_completo}</b> (${u.correo}) - Crédito: $${u.credito_descuento_disponible || 0}</div>`).join('') || 'Sin usuarios';
+                    }
+                } catch(e) {
+                    document.getElementById('tablaComerciosAdminList').innerHTML = "Error al cargar datos";
                 }
             }
 
@@ -672,6 +692,17 @@ def obtener_usuario(correo: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/admin/datos")
+def admin_datos():
+    if not supabase:
+        return {"success": False, "comercios": [], "usuarios": []}
+    try:
+        res_c = supabase.table("comercios").select("*").execute()
+        res_u = supabase.table("usuarios").select("*").execute()
+        return {"success": True, "comercios": res_c.data, "usuarios": res_u.data}
+    except Exception as e:
+        return {"success": False, "comercios": [], "usuarios": []}
+
 @app.post("/api/registrar-comercio")
 def registrar_comercio(comercio: ComercioModel):
     if not supabase:
@@ -687,12 +718,9 @@ def registrar_usuario(usuario: UsuarioModel):
     if not supabase:
         raise HTTPException(status_code=500, detail="Sin conexión a BD")
     try:
-        # Guardamos el usuario con suscripción inactiva inicialmente hasta que pague
         datos = usuario.dict()
         datos["suscripcion_activa"] = False
         res = supabase.table("usuarios").upsert(datos, on_conflict="correo").execute()
-        
-        # Aquí simulamos o devolvemos el link de pago de Mercado Pago
         return {"success": True, "init_point": "https://mpago.la/12kwFZe"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -702,7 +730,6 @@ def consumir_credito(consumo: ConsumoQRModel):
     if not supabase:
         raise HTTPException(status_code=500, detail="Sin conexión a BD")
     try:
-        # Buscamos al usuario
         res = supabase.table("usuarios").select("*").eq("correo", consumo.correo_usuario).execute()
         if not res.data:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -712,21 +739,18 @@ def consumir_credito(consumo: ConsumoQRModel):
             raise HTTPException(status_code=400, detail="Membresía inactiva.")
         
         credito_disponible = float(usuario.get("credito_descuento_disponible", 0))
-        ahorro = consumo.monto_compra * 0.05 # 5% de descuento
+        ahorro = consumo.monto_compra * 0.05
         
         if credito_disponible < ahorro:
             raise HTTPException(status_code=400, detail="Crédito de descuento insuficiente en su plan.")
         
         nuevo_credito = credito_disponible - ahorro
-        
-        # Actualizamos en Supabase
         supabase.table("usuarios").update({"credito_descuento_disponible": nuevo_credito}).eq("correo", consumo.correo_usuario).execute()
         
         return {"success": True, "ahorro_aplicado": ahorro, "credito_restante": nuevo_credito}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-# WEBHOOK DE MERCADO PAGO (ACTIVACIÓN AUTÓNOMA Y ASIGNACIÓN DE CRÉDITOS)
 @app.post("/api/webhook/mercadopago")
 async def webhook_mercadopago(request: Request):
     try:
@@ -735,19 +759,16 @@ async def webhook_mercadopago(request: Request):
         
         tipo_evento = data.get("type") or data.get("topic")
         if tipo_evento == "payment":
-            # Automatización: Al aprobarse el pago, activamos al último usuario registrado o mapeamos
             if supabase:
-                # Obtenemos usuarios inactivos o activamos el último pendiente
                 res = supabase.table("usuarios").select("*").eq("suscripcion_activa", False).order("dni", desc=True).limit(1).execute()
                 if res.data:
                     u = res.data[0]
                     plan_monto = float(u.get("plan_monto", 10000))
                     
-                    # Asignación de créditos según el plan elegido
-                    credito_otorgado = 250000 # Plan estándar por defecto
+                    credito_otorgado = 250000
                     if plan_monto == 5000: credito_otorgado = 100000
                     elif plan_monto == 15000: credito_otorgado = 375000
-                    elif plan_monto >= 20000: credito_otorgado = 700000 # Incluye el bono extra de bienvenida
+                    elif plan_monto >= 20000: credito_otorgado = 700000
                     
                     ahora = datetime.now()
                     vencimiento = ahora + timedelta(days=30)
@@ -760,7 +781,6 @@ async def webhook_mercadopago(request: Request):
                         "fecha_vencimiento": vencimiento.isoformat()
                     }).eq("correo", u["correo"]).execute()
                     
-                    # Enviar correo de confirmación de activación
                     asunto = "¡Tu membresía MaxShop ha sido activada con éxito!"
                     html = f"""
                     <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 15px;">
