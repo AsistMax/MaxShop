@@ -113,7 +113,7 @@ def mostrar_interfaz():
         <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
         <!-- Botón flotante de WhatsApp / IA (Atención al Cliente) -->
-        <a href="https://wa.me/5493834000000?text=Hola,%20necesito%20asistencia%20con%20el%20sistema%20MaxShop%20(Atenci%C3%B3n%20al%20Cliente)." target="_blank" class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-4 rounded-full shadow-2xl flex items-center justify-center transition transform hover:scale-105 border border-emerald-300/50" title="Asistencia IA & Atención al Cliente">
+        <a href="https://wa.me/5493834607740?text=Hola,%20necesito%20asistencia%20con%20el%20sistema%20MaxShop%20(Atenci%C3%B3n%20al%20Cliente)." target="_blank" class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-4 rounded-full shadow-2xl flex items-center justify-center transition transform hover:scale-105 border border-emerald-300/50" title="Asistencia IA & Atención al Cliente">
             <span class="text-2xl">💬</span>
         </a>
 
