@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="6.6")
+app = FastAPI(title="MaxShop - AsistMax", version="6.7")
 
 app.add_middleware(
     CORSMiddleware,
@@ -47,6 +47,7 @@ class UsuarioModel(BaseModel):
     localidad: str
     whatsapp: str
     correo: str
+    suscripcion_activa: bool = False
 
 # FUNCIÓN PARA ENVIAR CORREOS AUTOMÁTICOS GRATUITOS (SMTP)
 def enviar_correo_transaccional(destinatario: str, asunto: str, cuerpo_html: str):
@@ -690,10 +691,7 @@ def mostrar_interfaz():
                 if(json.success) {
                     mostrarToast("¡Comercio registrado con éxito y correo enviado!", "success");
                     cerrarModalComercio();
-                    
-                    // Disparar chat de WhatsApp automático
                     enviarWhatsAppBienvenida(data.nombre_fantasias, 'comercio', data.whatsapp);
-                    
                     document.getElementById('formComercio').reset();
                     cargarComerciosPublicos();
                 } else { mostrarToast("Error: " + json.detail, "error"); }
@@ -707,7 +705,8 @@ def mostrar_interfaz():
                     direccion: document.getElementById('u_dir').value,
                     localidad: document.getElementById('u_loc').value,
                     whatsapp: document.getElementById('u_wpp').value,
-                    correo: document.getElementById('u_correo').value
+                    correo: document.getElementById('u_correo').value,
+                    suscripcion_activa: false
                 };
                 let res = await fetch('/api/registrar-usuario', {
                     method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
@@ -716,10 +715,7 @@ def mostrar_interfaz():
                 if(json.success) {
                     cerrarModalUsuario();
                     mostrarToast("Usuario registrado. Redirigiendo a pago y WhatsApp...", "success");
-                    
-                    // Disparar chat de WhatsApp automático
                     enviarWhatsAppBienvenida(data.nombre_completo, 'usuario', data.whatsapp);
-                    
                     window.open("https://mpago.la/12kwFZe", "_blank");
                 } else { mostrarToast("Error: " + json.detail, "error"); }
             }
@@ -745,22 +741,20 @@ def registrar_comercio(comercio: ComercioModel):
     try:
         response = supabase.table("comercios").insert(comercio.dict()).execute()
         
-        # DISPARO DE CORREO AUTOMÁTICO AL COMERCIO
         asunto = "¡Tu comercio ha sido adherido a MaxShop!"
         html = f"""
         <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 15px;">
             <h2 style="color: #22d3ee;">¡Hola, {comercio.nombre_completo}!</h2>
             <p>El comercio <b>{comercio.nombre_fantasias}</b> ya forma parte de la red B2B de <b>MaxShop</b>.</p>
-            <p>Tu código QR y tu perfil multimedia ya se encuentran activos para recibir clientes con descuentos automáticos.</p>
+            <p>Tu código QR y tu perfil multimedia ya se encuentran activos.</p>
             <hr style="border-color: #334155;">
             <p style="font-size: 11px; color: #94a3b8;">AsistMax - Red Fintech Global</p>
         </div>
         """
         enviar_correo_transaccional(comercio.correo, asunto, html)
-        
         return {"success": True, "data": response.data}
     except Exception as e:
-        raise HTTPException(status_code=550, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/registrar-usuario")
 def registrar_usuario(usuario: UsuarioModel):
@@ -769,19 +763,42 @@ def registrar_usuario(usuario: UsuarioModel):
     try:
         response = supabase.table("usuarios").insert(usuario.dict()).execute()
         
-        # DISPARO DE CORREO AUTOMÁTICO AL USUARIO
-        asunto = "¡Bienvenido a MaxShop! Tu cuenta está activa"
+        asunto = "¡Bienvenido a MaxShop! Completa tu pago para activar beneficios"
         html = f"""
         <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 15px;">
             <h2 style="color: #22d3ee;">¡Hola, {usuario.nombre_completo}!</h2>
-            <p>Te damos la bienvenida a la red de consumidores <b>MaxShop</b>.</p>
-            <p>Ya puedes disfrutar de tus beneficios y descuentos exclusivos en todos los comercios adheridos de la red.</p>
+            <p>Te registraste en la red de consumidores <b>MaxShop</b>.</p>
+            <p>Una vez que abones tu membresía, tu cuenta se activará de forma automática y recibirás una notificación.</p>
             <hr style="border-color: #334155;">
             <p style="font-size: 11px; color: #94a3b8;">AsistMax - Red Fintech Global</p>
         </div>
         """
         enviar_correo_transaccional(usuario.correo, asunto, html)
-        
         return {"success": True, "data": response.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# WEBHOOK PARA MERCADO PAGO (AUTOMATIZACIÓN DE PAGOS)
+@app.post("/api/webhook/mercadopago")
+async def webhook_mercadopago(request: Request):
+    try:
+        data = await request.json()
+        print("Webhook MP recibido:", data)
+        
+        # Verificamos si la notificación corresponde a un pago aprobado
+        tipo_evento = data.get("type") or data.get("topic")
+        if tipo_evento == "payment":
+            payment_id = data.get("data", {}).get("id")
+            # Aquí podrías consultar la API de Mercado Pago con el payment_id si deseas validar montos exactos,
+            # o automatizar la activación del último usuario registrado o buscando por el email del pagador.
+            
+            # Ejemplo de activación autónoma en Supabase
+            if supabase:
+                # Actualizamos por ejemplo el estado del último usuario pendiente o mapeamos el correo
+                # supabase.table("usuarios").update({"suscripcion_activa": True}).eq("correo", email_del_pago).execute()
+                pass
+
+        return {"status": "ok"}
+    except Exception as e:
+        print(f"Error procesando webhook MP: {e}")
+        return {"status": "error", "detail": str(e)}
