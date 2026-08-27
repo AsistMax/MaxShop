@@ -1,7 +1,6 @@
 fastapi
 uvicorn
 sqlmodel
-mercadopago
 python-multipart
 requests
 supabase
@@ -10,3 +9,4 @@ psycopg2-binary
 jinja2
 flask==3.0.3
 apscheduler
+mercadopago==2.3.0
