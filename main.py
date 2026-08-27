@@ -10,8 +10,9 @@ from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
+import mercadopago
 
-app = FastAPI(title="MaxShop - AsistMax", version="7.4")
+app = FastAPI(title="MaxShop - AsistMax", version="7.5")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,11 +24,17 @@ app.add_middleware(
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN")
 
 if SUPABASE_URL and SUPABASE_KEY:
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 else:
     supabase = None
+
+if MP_ACCESS_TOKEN:
+    sdk_mp = mercadopago.SDK(MP_ACCESS_TOKEN)
+else:
+    sdk_mp = None
 
 class ComercioModel(BaseModel):
     nombre_completo: str
@@ -73,7 +80,6 @@ def enviar_correo_transaccional(destinatario: str, asunto: str, cuerpo_html: str
     password = os.getenv("SMTP_PASSWORD")
     
     if not remitente or not password:
-        print("SMTP no configurado. Omitiendo envío.")
         return False
 
     try:
@@ -93,7 +99,6 @@ def enviar_correo_transaccional(destinatario: str, asunto: str, cuerpo_html: str
         servidor.quit()
         return True
     except Exception as e:
-        print(f"Error al enviar correo: {e}")
         return False
 
 @app.get("/", response_class=HTMLResponse)
@@ -112,8 +117,8 @@ def mostrar_interfaz():
 
         <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-        <!-- Botón flotante de WhatsApp / IA (Atención al Cliente) -->
-        <a href="https://wa.me/5493834607740?text=Hola,%20necesito%20asistencia%20con%20el%20sistema%20MaxShop%20(Atenci%C3%B3n%20al%20Cliente)." target="_blank" class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-4 rounded-full shadow-2xl flex items-center justify-center transition transform hover:scale-105 border border-emerald-300/50" title="Asistencia IA & Atención al Cliente">
+        <!-- Botón flotante de WhatsApp / IA -->
+        <a href="https://wa.me/5493834000000?text=Hola,%20necesito%20asistencia%20con%20el%20sistema%20MaxShop." target="_blank" class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-4 rounded-full shadow-2xl flex items-center justify-center transition transform hover:scale-105 border border-emerald-300/50" title="Asistencia IA & Atención al Cliente">
             <span class="text-2xl">💬</span>
         </a>
 
@@ -128,15 +133,15 @@ def mostrar_interfaz():
             </div>
             <div class="flex items-center space-x-2">
                 <button onclick="abrirLogin()" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-xl border border-cyan-500/30 transition font-semibold">
-                    🔐 Login
+                    🔑 Login
                 </button>
                 <button onclick="abrirAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700 transition font-medium">
-                    🗝 Admin
+                    ⚙️ Admin
                 </button>
             </div>
         </header>
 
-        <!-- Contenido -->
+        <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
             <!-- Banner -->
@@ -181,7 +186,7 @@ def mostrar_interfaz():
                 </div>
             </div>
 
-            <!-- Accesos Rápidos -->
+            <!-- Accesos Rápidos (Corregido sin 'k') -->
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="abrirModalComercio()" class="bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-cyan-400 text-xl mb-1">🏪</div>
@@ -191,7 +196,7 @@ def mostrar_interfaz():
                 <button onclick="abrirModalUsuario()" class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-blue-400 text-xl mb-1">👤</div>
                     <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Planes & Membresías</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Con $200k extra de regalo</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Con $200.000 extra de regalo</p>
                 </button>
             </div>
 
@@ -344,19 +349,19 @@ def mostrar_interfaz():
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="text-[10px] font-semibold text-cyan-400">Descuento Base (%)</label>
-                            <input type="number" id="c_porcentaje" value="5" readonly class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 outline-none mt-1 cursor-not-allowed" title="Obligatorio permanente 5%">
+                            <input type="number" id="c_porcentaje" value="5" readonly class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 outline-none mt-1 cursor-not-allowed">
                         </div>
                         <div>
                             <label class="text-[10px] font-semibold text-cyan-400">Día de Promoción Especial</label>
                             <select id="c_dia_promo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
                                 <option value="Ninguno">Ninguno (Rige 5%)</option>
-                                <option value="Lunes">Lunes (Ej: 10%)</option>
-                                <option value="Martes">Martes (Ej: 10%)</option>
-                                <option value="Miércoles">Miércoles (Ej: 10%)</option>
-                                <option value="Jueves">Jueves (Ej: 10%)</option>
-                                <option value="Viernes">Viernes (Ej: 10%)</option>
-                                <option value="Sábado">Sábado (Ej: 10%)</option>
-                                <option value="Domingo">Domingo (Ej: 10%)</option>
+                                <option value="Lunes">Lunes</option>
+                                <option value="Martes">Martes</option>
+                                <option value="Miércoles">Miércoles</option>
+                                <option value="Jueves">Jueves</option>
+                                <option value="Viernes">Viernes</option>
+                                <option value="Sábado">Sábado</option>
+                                <option value="Domingo">Domingo</option>
                             </select>
                         </div>
                     </div>
@@ -373,7 +378,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Modal Registro Usuario con Pago Integrado Seguro -->
+        <!-- Modal Registro Usuario con Mercado Pago Real (Sin 'k' en valores) -->
         <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
@@ -403,25 +408,23 @@ def mostrar_interfaz():
                     </div>
 
                     <div>
-                        <label class="text-cyan-400 font-bold">Seleccionar Plan Mensual (Incluye $200k Extra si es Nuevo Registro):</label>
+                        <label class="text-cyan-400 font-bold">Seleccionar Plan Mensual (Incluye $200.000 Extra si es Nuevo Registro):</label>
                         <select id="u_plan_monto" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-3 py-2.5 text-white font-bold outline-none mt-1">
-                            <option value="5000">Plan Básico ($5.000) ➔ $100k Crédito + $200k Extra Nuevo</option>
-                            <option value="10000" selected>Plan Estándar ($10.000) ➔ $250k Crédito + $200k Extra Nuevo</option>
-                            <option value="15000">Plan Pro ($15.000) ➔ $375k Crédito + $200k Extra Nuevo</option>
-                            <option value="20000">Plan VIP ($20.000) ➔ $500k Crédito + $200k Extra Nuevo</option>
+                            <option value="5000">Plan Básico ($5.000) ➔ $100.000 Crédito + $200.000 Extra Nuevo</option>
+                            <option value="10000" selected>Plan Estándar ($10.000) ➔ $250.000 Crédito + $200.000 Extra Nuevo</option>
+                            <option value="15000">Plan Pro ($15.000) ➔ $375.000 Crédito + $200.000 Extra Nuevo</option>
+                            <option value="20000">Plan VIP ($20.000) ➔ $500.000 Crédito + $200.000 Extra Nuevo</option>
                         </select>
                     </div>
 
-                    <!-- Nota informativa de pago seguro dentro de la plataforma -->
-                    <p class="text-[10px] text-slate-400 italic bg-slate-950 p-2 rounded-xl border border-slate-800">ℹ️ El pago se procesa de forma segura dentro de la página (medios de Mercado Pago). No se solicitará clave ni huella digital personal.</p>
+                    <p class="text-[10px] text-slate-400 italic bg-slate-950 p-2 rounded-xl border border-slate-800">ℹ️ Al confirmar, será redirigido de manera segura a la pasarela de pago oficial de Mercado Pago.</p>
 
-                    <!-- Botón de Pago Integrado Seguro -->
                     <button type="submit" id="btnPagarIntegrado" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2 transition hover:opacity-90">💳 Confirmar Pago y Activar Membresía</button>
                 </form>
             </div>
         </div>
 
-        <!-- Modal Admin con Exportación de Tablas y Configuración de Costos -->
+        <!-- Modal Admin -->
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -444,7 +447,7 @@ def mostrar_interfaz():
 
                 <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-bold text-blue-400 uppercase">Usuarios & Clientes Registrados (Único Registro Consolidado)</h4>
+                        <h4 class="text-xs font-bold text-blue-400 uppercase">Usuarios & Clientes Registrados</h4>
                         <a href="/api/admin/exportar/usuarios" target="_blank" class="text-[10px] bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded-xl border border-blue-500/40 font-bold">📥 Descargar Base Usuarios (CSV)</a>
                     </div>
                     <div id="tablaUsuariosAdminList" class="text-xs text-slate-400 max-h-60 overflow-y-auto space-y-2">Cargando...</div>
@@ -733,9 +736,7 @@ def mostrar_interfaz():
                         document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1 flex justify-between items-center"><div><b>${c.nombre_fantasias}</b> - ${c.rubro} (${c.localidad})<br><span class="text-[10px] text-slate-400">Titular: ${c.nombre_completo} | CUIT: ${c.cuit_cuil}</span></div></div>`).join('') || 'Sin comercios';
                         document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1 flex justify-between items-center"><div><b>${u.nombre_completo}</b> (${u.correo})<br><span class="text-[10px] text-slate-400">DNI: ${u.dni} | Wpp: ${u.whatsapp || '-'} | Plan: ${u.plan_seleccionado || '-'} | Crédito: $${u.credito_descuento_disponible || 0}</span></div></div>`).join('') || 'Sin usuarios';
                     }
-                } catch(e) {
-                    document.getElementById('tablaUsuariosAdminList').innerHTML = "Error al cargar datos";
-                }
+                } catch(e) {}
             }
 
             async function cargarConfigAdminForm() {
@@ -798,7 +799,7 @@ def mostrar_interfaz():
                 let res = await fetch('/api/registrar-comercio', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                 let json = await res.json();
                 if(json.success) {
-                    mostrarToast("¡Comercio registrado con éxito con QR oficial!", "success");
+                    mostrarToast("¡Comercio registrado con éxito!", "success");
                     cerrarModalComercio();
                     cargarComerciosPublicos();
                 }
@@ -807,7 +808,7 @@ def mostrar_interfaz():
             async function enviarUsuario(e) {
                 e.preventDefault();
                 const btn = document.getElementById('btnPagarIntegrado');
-                btn.innerText = "Procesando pago seguro...";
+                btn.innerText = "Conectando con Mercado Pago...";
                 btn.disabled = true;
 
                 const data = {
@@ -823,12 +824,9 @@ def mostrar_interfaz():
                 try {
                     let res = await fetch('/api/registrar-y-pagar-usuario', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                     let json = await res.json();
-                    if(json.success) {
-                        cerrarModalUsuario();
-                        mostrarToast("¡Pago procesado con éxito! Membresía activada.", "success");
-                        verificarEstadoUsuario(data.correo);
-                        btn.innerText = "💳 Confirmar Pago y Activar Membresía";
-                        btn.disabled = false;
+                    if(json.success && json.link_pago) {
+                        mostrarToast("Redirigiendo a Mercado Pago...", "success");
+                        window.location.href = json.link_pago;
                     } else {
                         mostrarToast("Error al procesar pago: " + (json.detail || ''), "error");
                         btn.innerText = "💳 Confirmar Pago y Activar Membresía";
@@ -967,11 +965,10 @@ def registrar_comercio(comercio: ComercioModel):
 def registrar_y_pagar_usuario(usuario: UsuarioModel):
     if not supabase:
         raise HTTPException(status_code=500, detail="Sin conexión a BD")
-    try:
-        # Consolidación: Verificar si el usuario ya existe en la base de datos por correo
-        existente = supabase.table("usuarios").select("*").eq("correo", usuario.correo).execute()
-        es_primer_registro = not (existente.data and len(existente.data) > 0)
+    if not sdk_mp:
+        raise HTTPException(status_code=500, detail="Falta configurar el MP_ACCESS_TOKEN en las variables de entorno de Render.")
 
+    try:
         cfg_res = supabase.table("configuracion").select("*").eq("id", 1).execute()
         cfg = cfg_res.data[0] if cfg_res.data else {
             "plan_basico_costo": 5000, "plan_basico_credito": 100000,
@@ -995,7 +992,8 @@ def registrar_y_pagar_usuario(usuario: UsuarioModel):
             credito_otorgado = cfg["plan_vip_credito"]
             plan_nombre = "VIP"
 
-        if es_primer_registro:
+        existente = supabase.table("usuarios").select("*").eq("correo", usuario.correo).execute()
+        if not (existente.data and len(existente.data) > 0):
             credito_otorgado += cfg["premio_nuevo_registro"]
 
         ahora = datetime.now()
@@ -1008,24 +1006,35 @@ def registrar_y_pagar_usuario(usuario: UsuarioModel):
         datos["credito_descuento_total"] = credito_otorgado
         datos["fecha_inicio_suscripcion"] = ahora.isoformat()
         datos["fecha_vencimiento"] = vencimiento.isoformat()
-        datos["es_nuevo_registro"] = False
 
-        # UPSERT por correo para evitar duplicados en la base de datos por múltiples intentos de pago
-        res = supabase.table("usuarios").upsert(datos, on_conflict="correo").execute()
+        supabase.table("usuarios").upsert(datos, on_conflict="correo").execute()
 
-        asunto = "¡Tu membresía MaxShop ha sido activada con éxito!"
-        html = f"""
-        <div style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 15px;">
-            <h2 style="color: #22d3ee;">¡Hola, {usuario.nombre_completo}!</h2>
-            <p>Tu pago ha sido procesado con éxito de forma segura dentro de la plataforma.</p>
-            <p>Tu membresía <b>Plan {plan_nombre}</b> está activa por 30 días y se te han acreditado <b>${credito_otorgado:,.0f}</b> en tu línea de consumo (incluyendo incentivo de bienvenida).</p>
-            <hr style="border-color: #334155;">
-            <p style="font-size: 11px; color: #94a3b8;">AsistMax - Red Fintech Global</p>
-        </div>
-        """
-        enviar_correo_transaccional(usuario.correo, asunto, html)
+        # Generar preferencia real en Mercado Pago
+        preference_data = {
+            "items": [
+                {
+                    "title": f"Membresía MaxShop - Plan {plan_nombre}",
+                    "quantity": 1,
+                    "currency_id": "ARS",
+                    "unit_price": float(plan_monto)
+                }
+            ],
+            "payer": {
+                "name": usuario.nombre_completo,
+                "email": usuario.correo
+            },
+            "back_urls": {
+                "success": "https://asistmax.onrender.com/",
+                "failure": "https://asistmax.onrender.com/",
+                "pending": "https://asistmax.onrender.com/"
+            },
+            "auto_return": "approved"
+        }
 
-        return {"success": True, "credito_otorgado": credito_otorgado}
+        preference_response = sdk_mp.preference().create(preference_data)
+        init_point = preference_response["response"]["init_point"]
+
+        return {"success": True, "link_pago": init_point}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
