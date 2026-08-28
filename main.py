@@ -6,13 +6,14 @@ import os
 import smtplib
 import csv
 import io
+import traceback
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
 import mercadopago
 
-app = FastAPI(title="MaxShop - AsistMax", version="7.5")
+app = FastAPI(title="MaxShop - AsistMax", version="7.6")
 
 app.add_middleware(
     CORSMiddleware,
@@ -186,7 +187,7 @@ def mostrar_interfaz():
                 </div>
             </div>
 
-            <!-- Accesos Rápidos (Corregido sin 'k') -->
+            <!-- Accesos Rápidos -->
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="abrirModalComercio()" class="bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-cyan-400 text-xl mb-1">🏪</div>
@@ -378,7 +379,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Modal Registro Usuario con Mercado Pago Real (Sin 'k' en valores) -->
+        <!-- Modal Registro Usuario con Mercado Pago Real -->
         <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
@@ -824,16 +825,18 @@ def mostrar_interfaz():
                 try {
                     let res = await fetch('/api/registrar-y-pagar-usuario', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                     let json = await res.json();
+                    
                     if(json.success && json.link_pago) {
                         mostrarToast("Redirigiendo a Mercado Pago...", "success");
                         window.location.href = json.link_pago;
                     } else {
-                        mostrarToast("Error al procesar pago: " + (json.detail || ''), "error");
+                        // AQUÍ VERÁS EL ERROR EXACTO EN TU CELULAR SI FALLA EL SERVIDOR
+                        alert("Error del Servidor: " + (json.detail || JSON.stringify(json)));
                         btn.innerText = "💳 Confirmar Pago y Activar Membresía";
                         btn.disabled = false;
                     }
                 } catch(err) {
-                    mostrarToast("Error de conexión con el servidor", "error");
+                    alert("Error de red o conexión: " + err);
                     btn.innerText = "💳 Confirmar Pago y Activar Membresía";
                     btn.disabled = false;
                 }
@@ -964,9 +967,9 @@ def registrar_comercio(comercio: ComercioModel):
 @app.post("/api/registrar-y-pagar-usuario")
 def registrar_y_pagar_usuario(usuario: UsuarioModel):
     if not supabase:
-        raise HTTPException(status_code=500, detail="Sin conexión a BD")
+        return {"success": False, "detail": "Sin conexión a Base de Datos (Supabase no inicializado)."}, 500
     if not sdk_mp:
-        raise HTTPException(status_code=500, detail="Falta configurar el MP_ACCESS_TOKEN en las variables de entorno de Render.")
+        return {"success": False, "detail": "Falta configurar el MP_ACCESS_TOKEN en las variables de entorno de Render."}, 500
 
     try:
         cfg_res = supabase.table("configuracion").select("*").eq("id", 1).execute()
@@ -1032,11 +1035,19 @@ def registrar_y_pagar_usuario(usuario: UsuarioModel):
         }
 
         preference_response = sdk_mp.preference().create(preference_data)
-        init_point = preference_response["response"]["init_point"]
+        
+        # Validación de respuesta de Mercado Pago para prevenir fallos silenciosos
+        if not preference_response or "response" not in preference_response or "init_point" not in preference_response["response"]:
+            error_mp = str(preference_response)
+            return {"success": False, "detail": f"Error devuelto por Mercado Pago: {error_mp}"}, 500
 
+        init_point = preference_response["response"]["init_point"]
         return {"success": True, "link_pago": init_point}
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        error_completo = traceback.format_exc()
+        print("ERROR EN REGISTRO/PAGO:", error_completo)
+        return {"success": False, "detail": f"{str(e)} | Trace: {error_completo}"}, 500
 
 @app.post("/api/consumir-credito")
 def consumir_credito(consumo: ConsumoQRModel):
