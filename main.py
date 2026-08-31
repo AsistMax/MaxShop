@@ -85,7 +85,7 @@ def mostrar_interfaz():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>MaxShop & AsistMax - Red Fintech B2B</title>
-        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </head>
     <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950" onload="inicializarApp()">
@@ -119,10 +119,10 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- Banner Ajustado sin cortes (object-contain) -->
+            <!-- Banner con Estilo Original Nítido (object-cover) -->
             <div class="space-y-2">
-                <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 flex items-center justify-center relative">
-                    <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-auto object-contain block mx-auto" style="image-rendering: -webkit-optimize-contrast;">
+                <div class="w-full h-52 sm:h-64 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 relative">
+                    <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-full object-cover object-center block" style="image-rendering: -webkit-optimize-contrast;">
                 </div>
                 <div class="px-2 flex justify-between items-center">
                     <div>
