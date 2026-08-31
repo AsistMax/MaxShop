@@ -118,18 +118,18 @@ def mostrar_interfaz():
 
         <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-        <!-- Botón flotante de WhatsApp / IA -->
+        <!-- Botón flotante de WhatsApp / IA corregido con bottom-6 right-6 z-50 -->
         <a href="https://wa.me/5493834000000?text=Hola,%20necesito%20asistencia%20con%20el%20sistema%20MaxShop." target="_blank" class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-4 rounded-full shadow-2xl flex items-center justify-center transition transform hover:scale-105 border border-emerald-300/50" title="Asistencia IA & Atención al Cliente">
             <span class="text-2xl">💬</span>
         </a>
 
-        <!-- Navbar -->
+        <!-- Navbar optimizado para pantallas estrechas -->
         <header class="w-full px-4 py-3 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 shadow-lg">
             <div class="flex items-center space-x-3">
                 <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-11 h-11 rounded-xl object-cover border border-cyan-500/50 shadow-md shadow-cyan-500/20 bg-slate-900">
                 <div class="flex flex-col">
                     <span class="text-xs font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></span>
-                    <span class="text-[9px] text-cyan-400 font-semibold tracking-widest uppercase">Red B2B & Consumidores</span>
+                    <span class="text-[10px] sm:text-[9px] text-cyan-400 font-semibold tracking-widest uppercase truncate max-w-[150px] sm:max-w-none">Red B2B & Consumidores</span>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
@@ -145,10 +145,10 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- Banner -->
+            <!-- Banner HD Nítido -->
             <div class="space-y-2">
-                <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 flex justify-center items-center">
-                    <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-auto object-cover max-h-52">
+                <div class="w-full h-44 sm:h-52 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 relative">
+                    <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-full object-cover object-center transform scale-100" style="image-rendering: -webkit-optimize-contrast;">
                 </div>
                 <div class="px-2 flex justify-between items-center">
                     <div>
@@ -550,7 +550,13 @@ def mostrar_interfaz():
             function renderizarComercios(comercios) {
                 const contenedor = document.getElementById('listaComerciosPublicos');
                 if(!comercios || comercios.length === 0) {
-                    contenedor.innerHTML = '<div class="text-center py-4 text-xs text-slate-500">No hay comercios registrados aún.</div>';
+                    contenedor.innerHTML = `
+                        <div class="text-center py-6 space-y-3">
+                            <p class="text-xs text-slate-500">No hay comercios registrados aún.</p>
+                            <button onclick="abrirModalComercio()" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-4 py-2 rounded-xl border border-cyan-500/30 font-bold transition">
+                                ➕ Sumar mi Comercio Ahora
+                            </button>
+                        </div>`;
                     return;
                 }
                 let html = '';
@@ -830,7 +836,6 @@ def mostrar_interfaz():
                         mostrarToast("Redirigiendo a Mercado Pago...", "success");
                         window.location.href = json.link_pago;
                     } else {
-                        // AQUÍ VERÁS EL ERROR EXACTO EN TU CELULAR SI FALLA EL SERVIDOR
                         alert("Error del Servidor: " + (json.detail || JSON.stringify(json)));
                         btn.innerText = "💳 Confirmar Pago y Activar Membresía";
                         btn.disabled = false;
@@ -1012,7 +1017,6 @@ def registrar_y_pagar_usuario(usuario: UsuarioModel):
 
         supabase.table("usuarios").upsert(datos, on_conflict="correo").execute()
 
-        # Generar preferencia real en Mercado Pago
         preference_data = {
             "items": [
                 {
@@ -1036,7 +1040,6 @@ def registrar_y_pagar_usuario(usuario: UsuarioModel):
 
         preference_response = sdk_mp.preference().create(preference_data)
         
-        # Validación de respuesta de Mercado Pago para prevenir fallos silenciosos
         if not preference_response or "response" not in preference_response or "init_point" not in preference_response["response"]:
             error_mp = str(preference_response)
             return {"success": False, "detail": f"Error devuelto por Mercado Pago: {error_mp}"}, 500
