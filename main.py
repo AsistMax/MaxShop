@@ -13,7 +13,7 @@ from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
 import mercadopago
 
-app = FastAPI(title="MaxShop - AsistMax", version="7.6")
+app = FastAPI(title="MaxShop - AsistMax", version="7.7")
 
 app.add_middleware(
     CORSMiddleware,
@@ -76,32 +76,6 @@ class ConfigModel(BaseModel):
     plan_vip_credito: int = 500000
     premio_nuevo_registro: int = 200000
 
-def enviar_correo_transaccional(destinatario: str, asunto: str, cuerpo_html: str):
-    remitente = os.getenv("SMTP_CORREO")
-    password = os.getenv("SMTP_PASSWORD")
-    
-    if not remitente or not password:
-        return False
-
-    try:
-        servidor = smtplib.SMTP("smtp.gmail.com", 587)
-        servidor.starttls()
-        servidor.login(remitente, password)
-        
-        mensaje = MIMEMultipart("alternative")
-        mensaje["Subject"] = asunto
-        mensaje["From"] = f"MaxShop <{remitente}>"
-        mensaje["To"] = destinatario
-        
-        parte_html = MIMEText(cuerpo_html, "html", "utf-8")
-        mensaje.attach(parte_html)
-        
-        servidor.sendmail(remitente, destinatario, mensaje.as_string())
-        servidor.quit()
-        return True
-    except Exception as e:
-        return False
-
 @app.get("/", response_class=HTMLResponse)
 def mostrar_interfaz():
     return """
@@ -118,12 +92,12 @@ def mostrar_interfaz():
 
         <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-        <!-- Botón flotante de WhatsApp / IA corregido con bottom-6 right-6 z-50 -->
+        <!-- Botón flotante de WhatsApp / IA -->
         <a href="https://wa.me/5493834000000?text=Hola,%20necesito%20asistencia%20con%20el%20sistema%20MaxShop." target="_blank" class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-4 rounded-full shadow-2xl flex items-center justify-center transition transform hover:scale-105 border border-emerald-300/50" title="Asistencia IA & Atención al Cliente">
             <span class="text-2xl">💬</span>
         </a>
 
-        <!-- Navbar optimizado para pantallas estrechas -->
+        <!-- Navbar -->
         <header class="w-full px-4 py-3 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 shadow-lg">
             <div class="flex items-center space-x-3">
                 <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-11 h-11 rounded-xl object-cover border border-cyan-500/50 shadow-md shadow-cyan-500/20 bg-slate-900">
@@ -145,10 +119,10 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- Banner HD Nítido -->
+            <!-- Banner Ajustado sin cortes (object-contain) -->
             <div class="space-y-2">
-                <div class="w-full h-44 sm:h-52 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 relative">
-                    <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-full object-cover object-center transform scale-100" style="image-rendering: -webkit-optimize-contrast;">
+                <div class="w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 flex items-center justify-center relative">
+                    <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-auto object-contain block mx-auto" style="image-rendering: -webkit-optimize-contrast;">
                 </div>
                 <div class="px-2 flex justify-between items-center">
                     <div>
@@ -222,14 +196,13 @@ def mostrar_interfaz():
 
         </main>
 
-        <!-- Modal Login -->
+        <!-- Modales -->
         <div id="modalLogin" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <h3 class="text-sm font-bold text-white">🔑 Iniciar Sesión en MaxShop</h3>
                     <button onclick="cerrarLogin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                
                 <div id="loginFormContainer" class="space-y-3">
                     <p class="text-[11px] text-slate-400">Ingrese su Correo Electrónico registrado para ver el estado de su crédito y su membresía.</p>
                     <div>
@@ -238,7 +211,6 @@ def mostrar_interfaz():
                     </div>
                     <button onclick="ejecutarLogin()" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs shadow-lg">Ingresar</button>
                 </div>
-
                 <div id="panelSesionContainer" class="space-y-4 hidden">
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex justify-between items-center">
                         <div>
@@ -247,7 +219,6 @@ def mostrar_interfaz():
                         </div>
                         <button onclick="cerrarSesion()" class="text-[10px] bg-rose-500/10 text-rose-400 px-2.5 py-1 rounded-lg border border-rose-500/30">Cerrar Sesión</button>
                     </div>
-
                     <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
                         <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Mi Membresía Actual</h4>
                         <p class="text-[11px] text-slate-300">Plan: <strong id="sesionPlan" class="text-white">Estándar</strong></p>
@@ -258,7 +229,6 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Modal QR -->
         <div id="modalQR" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl text-center">
                 <div class="flex justify-between items-center">
@@ -271,7 +241,6 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Modal Monto Venta -->
         <div id="modalMontoVenta" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
@@ -294,14 +263,12 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Modal Registro Comercio -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
                     <h3 class="text-base font-bold text-white">🏪 Sumar mi Comercio (Gratis)</h3>
                     <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                <p class="text-[11px] text-cyan-400 bg-cyan-950/40 p-2.5 rounded-xl border border-cyan-800/30">Inscripción gratuita con QR oficial y descuento base permanente del 5%.</p>
                 <form id="formComercio" onsubmit="enviarComercio(event)" class="space-y-3">
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Nombre Completo (Titular)</label>
@@ -335,7 +302,6 @@ def mostrar_interfaz():
                             <option value="Otro">Otro</option>
                         </select>
                     </div>
-
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="text-[10px] font-semibold text-cyan-400">Logo o Img. del Negocio (URL)</label>
@@ -346,7 +312,6 @@ def mostrar_interfaz():
                             <input type="text" id="c_fotos" placeholder="URLs separadas por coma" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="text-[10px] font-semibold text-cyan-400">Descuento Base (%)</label>
@@ -379,7 +344,6 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Modal Registro Usuario con Mercado Pago Real -->
         <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center">
@@ -407,7 +371,6 @@ def mostrar_interfaz():
                         <label class="text-slate-400">Correo Electrónico</label>
                         <input type="email" id="u_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
-
                     <div>
                         <label class="text-cyan-400 font-bold">Seleccionar Plan Mensual (Incluye $200.000 Extra si es Nuevo Registro):</label>
                         <select id="u_plan_monto" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-3 py-2.5 text-white font-bold outline-none mt-1">
@@ -417,15 +380,11 @@ def mostrar_interfaz():
                             <option value="20000">Plan VIP ($20.000) ➔ $500.000 Crédito + $200.000 Extra Nuevo</option>
                         </select>
                     </div>
-
-                    <p class="text-[10px] text-slate-400 italic bg-slate-950 p-2 rounded-xl border border-slate-800">ℹ️ Al confirmar, será redirigido de manera segura a la pasarela de pago oficial de Mercado Pago.</p>
-
                     <button type="submit" id="btnPagarIntegrado" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2 transition hover:opacity-90">💳 Confirmar Pago y Activar Membresía</button>
                 </form>
             </div>
         </div>
 
-        <!-- Modal Admin -->
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -437,7 +396,6 @@ def mostrar_interfaz():
                     <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 font-bold text-slate-400">👤 Usuarios & Créditos</button>
                     <button onclick="cambiarPestanaAdmin('config')" id="btnTabConfig" class="pb-2 font-bold text-slate-400">⚙️ Costos y Créditos</button>
                 </div>
-
                 <div id="seccionComerciosAdmin" class="space-y-3">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-bold text-cyan-400 uppercase">Comercios Adheridos Registrados</h4>
@@ -445,7 +403,6 @@ def mostrar_interfaz():
                     </div>
                     <div id="tablaComerciosAdminList" class="text-xs text-slate-400 max-h-60 overflow-y-auto space-y-2">Cargando...</div>
                 </div>
-
                 <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-bold text-blue-400 uppercase">Usuarios & Clientes Registrados</h4>
@@ -453,54 +410,26 @@ def mostrar_interfaz():
                     </div>
                     <div id="tablaUsuariosAdminList" class="text-xs text-slate-400 max-h-60 overflow-y-auto space-y-2">Cargando...</div>
                 </div>
-
                 <div id="seccionConfigAdmin" class="space-y-3 hidden">
                     <h4 class="text-xs font-bold text-amber-400 uppercase">Configuración de Costos y Créditos de Planes</h4>
                     <form id="formConfigAdmin" onsubmit="guardarConfigAdmin(event)" class="space-y-3 text-xs">
                         <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-slate-400">Costo Plan Básico ($)</label>
-                                <input type="number" id="cfg_basico_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
-                            </div>
-                            <div>
-                                <label class="text-slate-400">Crédito Plan Básico ($)</label>
-                                <input type="number" id="cfg_basico_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
-                            </div>
+                            <div><label class="text-slate-400">Costo Plan Básico ($)</label><input type="number" id="cfg_basico_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
+                            <div><label class="text-slate-400">Crédito Plan Básico ($)</label><input type="number" id="cfg_basico_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-slate-400">Costo Plan Estándar ($)</label>
-                                <input type="number" id="cfg_estandar_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
-                            </div>
-                            <div>
-                                <label class="text-slate-400">Crédito Plan Estándar ($)</label>
-                                <input type="number" id="cfg_estandar_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
-                            </div>
+                            <div><label class="text-slate-400">Costo Plan Estándar ($)</label><input type="number" id="cfg_estandar_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
+                            <div><label class="text-slate-400">Crédito Plan Estándar ($)</label><input type="number" id="cfg_estandar_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-slate-400">Costo Plan Pro ($)</label>
-                                <input type="number" id="cfg_pro_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
-                            </div>
-                            <div>
-                                <label class="text-slate-400">Crédito Plan Pro ($)</label>
-                                <input type="number" id="cfg_pro_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
-                            </div>
+                            <div><label class="text-slate-400">Costo Plan Pro ($)</label><input type="number" id="cfg_pro_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
+                            <div><label class="text-slate-400">Crédito Plan Pro ($)</label><input type="number" id="cfg_pro_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-slate-400">Costo Plan VIP ($)</label>
-                                <input type="number" id="cfg_vip_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
-                            </div>
-                            <div>
-                                <label class="text-slate-400">Crédito Plan VIP ($)</label>
-                                <input type="number" id="cfg_vip_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1">
-                            </div>
+                            <div><label class="text-slate-400">Costo Plan VIP ($)</label><input type="number" id="cfg_vip_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
+                            <div><label class="text-slate-400">Crédito Plan VIP ($)</label><input type="number" id="cfg_vip_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
                         </div>
-                        <div>
-                            <label class="text-cyan-400 font-bold">Premio Extra Nuevo Registro ($)</label>
-                            <input type="number" id="cfg_premio_nuevo" class="w-full bg-slate-950 border border-cyan-500/50 rounded-xl px-3 py-2 text-white mt-1 font-bold">
-                        </div>
+                        <div><label class="text-cyan-400 font-bold">Premio Extra Nuevo Registro ($)</label><input type="number" id="cfg_premio_nuevo" class="w-full bg-slate-950 border border-cyan-500/50 rounded-xl px-3 py-2 text-white mt-1 font-bold"></div>
                         <button type="submit" class="w-full py-2.5 bg-amber-500 text-slate-950 font-bold rounded-xl mt-2">Guardar Nueva Configuración</button>
                     </form>
                 </div>
@@ -528,9 +457,7 @@ def mostrar_interfaz():
             function inicializarApp() {
                 cargarComerciosPublicos();
                 let sesionGuardada = localStorage.getItem('maxshop_correo_usuario');
-                if(sesionGuardada) {
-                    verificarEstadoUsuario(sesionGuardada);
-                }
+                if(sesionGuardada) { verificarEstadoUsuario(sesionGuardada); }
             }
 
             async function cargarComerciosPublicos() {
@@ -586,7 +513,6 @@ def mostrar_interfaz():
                     if(json.success) {
                         usuarioLogueadoGlobal = json.data;
                         localStorage.setItem('maxshop_correo_usuario', correo);
-                        
                         if(usuarioLogueadoGlobal.suscripcion_activa) {
                             document.getElementById('lblEstadoSuscripcionBadge').innerText = "Membresía Activa ⚡";
                             document.getElementById('lblCreditoDisponible').innerText = "$" + (usuarioLogueadoGlobal.credito_descuento_disponible || 0).toLocaleString();
@@ -613,15 +539,11 @@ def mostrar_interfaz():
                         detenerEscaneoQR();
                         comercioEscaneadoActual = decodedText;
                         document.getElementById('lblComercioEscaneado').innerText = decodedText;
-                        
                         let comercioObj = listaComerciosGlobal.find(c => c.nombre_fantasias === decodedText || c.nombre_completo === decodedText);
                         let descAplicado = 5.0;
-                        if(comercioObj && comercioObj.porcentaje_descuento) {
-                            descAplicado = parseFloat(comercioObj.porcentaje_descuento);
-                        }
+                        if(comercioObj && comercioObj.porcentaje_descuento) { descAplicado = parseFloat(comercioObj.porcentaje_descuento); }
                         window.porcentajeDescActual = descAplicado;
                         document.getElementById('lblInfoDescuentoComercio').innerText = `Descuento aplicado: ${descAplicado}% (Base permanente 5% + Día especial)`;
-                        
                         document.getElementById('modalMontoVenta').classList.remove('hidden');
                     }, (err) => {}
                 ).catch(() => { modal.classList.add('hidden'); });
@@ -646,15 +568,10 @@ def mostrar_interfaz():
             async function confirmarConsumoCredito() {
                 let monto = parseFloat(document.getElementById('inputMontoCompra').value);
                 if(!monto || monto <= 0) { mostrarToast("Ingrese un monto válido", "error"); return; }
-                
                 let res = await fetch('/api/consumir-credito', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        correo_usuario: usuarioLogueadoGlobal.correo,
-                        nombre_comercio: comercioEscaneadoActual,
-                        monto_compra: monto
-                    })
+                    body: JSON.stringify({ correo_usuario: usuarioLogueadoGlobal.correo, nombre_comercio: comercioEscaneadoActual, monto_compra: monto })
                 });
                 let json = await res.json();
                 if(json.success) {
@@ -780,11 +697,7 @@ def mostrar_interfaz():
                 };
                 let res = await fetch('/api/admin/config', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                 let json = await res.json();
-                if(json.success) {
-                    mostrarToast("Configuración guardada correctamente", "success");
-                } else {
-                    mostrarToast("Error al guardar configuración", "error");
-                }
+                if(json.success) { mostrarToast("Configuración guardada correctamente", "success"); } else { mostrarToast("Error al guardar configuración", "error"); }
             }
 
             async function enviarComercio(e) {
@@ -831,7 +744,6 @@ def mostrar_interfaz():
                 try {
                     let res = await fetch('/api/registrar-y-pagar-usuario', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                     let json = await res.json();
-                    
                     if(json.success && json.link_pago) {
                         mostrarToast("Redirigiendo a Mercado Pago...", "success");
                         window.location.href = json.link_pago;
