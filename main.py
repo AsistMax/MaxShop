@@ -119,10 +119,10 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- Banner con Estilo Original Nítido (object-cover) -->
+            <!-- Banner con Altura Ampliada y Nitidez Optimizada -->
             <div class="space-y-2">
-                <div class="w-full h-52 sm:h-64 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 relative">
-                    <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-full object-cover object-center block" style="image-rendering: -webkit-optimize-contrast;">
+                <div class="w-full h-56 sm:h-72 lg:h-80 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 relative flex items-center justify-center">
+                    <img src="https://i.ibb.co/wFDXX9TK/banner.jpg" alt="MaxShop Banner" class="w-full h-full object-cover object-center block" style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;">
                 </div>
                 <div class="px-2 flex justify-between items-center">
                     <div>
