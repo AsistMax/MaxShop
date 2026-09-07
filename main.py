@@ -10,7 +10,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="8.4")
+app = FastAPI(title="MaxShop - AsistMax", version="8.6")
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,7 +37,7 @@ class ComercioModel(BaseModel):
     direccion: str
     localidad: str
     cuit_cuil: str
-    porcentaje_descuento: float = 5.0
+    porcentaje_descuento: float = 20.0
     dia_promocion: str = "Ninguno"
     logo_url: str = ""
     fotos_url: str = ""
@@ -63,7 +63,7 @@ def mostrar_interfaz():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>MaxShop & AsistMax - Red Híbrida Inteligente</title>
+        <title>MaxShop & AsistMax - Red de Comercios</title>
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </head>
@@ -86,7 +86,8 @@ def mostrar_interfaz():
                 <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-auto h-auto max-h-12 object-contain bg-slate-900">
                 <div class="flex flex-col">
                     <span class="text-xs font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></span>
-                    <span class="text-[10px] text-cyan-400 font-semibold tracking-widest uppercase">Red Híbrida & Ahorro</span>
+                    <!-- CORREGIDO: Eliminada la palabra "Híbrida" -->
+                    <span class="text-[10px] text-cyan-400 font-semibold tracking-widest uppercase">Red de Comercios & Ahorro</span>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
@@ -105,21 +106,23 @@ def mostrar_interfaz():
                 <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="MaxShop Banner" class="w-auto max-w-full h-auto object-contain block">
             </div>
 
+            <!-- Panel de Estado del Usuario -->
             <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-4">
                 <div class="flex justify-between items-center">
                     <span class="text-[10px] uppercase tracking-wider text-emerald-400 font-bold bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-800/50" id="lblEstadoPlan">Plan Gratuito Activo</span>
-                    <span class="text-[10px] text-slate-400" id="lblVencimientoPlan">Descuento al 50%</span>
+                    <span class="text-[10px] text-slate-400" id="lblVencimientoPlan">Descuento Base 50%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div>
                         <h3 class="text-xs font-bold text-slate-400 uppercase">Crédito de Ahorro</h3>
                         <p class="text-2xl font-black text-emerald-400 mt-0.5" id="lblCreditoDisponible">$0</p>
                     </div>
-                    <button onclick="abrirModalUsuario()" class="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3.5 py-2 rounded-xl font-extrabold shadow-lg shadow-cyan-500/20 transition">
-                        👤 Registrarse
+                    <button onclick="abrirModalPlanesDetallados()" class="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3.5 py-2 rounded-xl font-extrabold shadow-lg shadow-cyan-500/20 transition">
+                        📋 Ver Planes / Registrarse
                     </button>
                 </div>
 
+                <!-- Botones de Recarga / Planes -->
                 <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
                     <button onclick="ejecutarRecargaExpres()" class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 p-2.5 rounded-2xl border border-cyan-500/30 text-center transition">
                         <span class="block text-xs font-bold">⚡ Recarga Exprés</span>
@@ -147,12 +150,12 @@ def mostrar_interfaz():
                 <button onclick="abrirModalComercio()" class="bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-cyan-400 text-xl mb-1">🏪</div>
                     <h3 class="text-xs font-bold text-white group-hover:text-cyan-400 transition">Sumar mi Comercio</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Comisión 1.7% por venta</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Súmate a la red gratuita</p>
                 </button>
-                <button onclick="abrirModalUsuario()" class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 p-4 rounded-2xl text-left transition-all group">
-                    <div class="text-blue-400 text-xl mb-1">🎁</div>
-                    <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Obtener Créditos</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Regalo de bienvenida</p>
+                <button onclick="abrirModalPlanesDetallados()" class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 p-4 rounded-2xl text-left transition-all group">
+                    <div class="text-blue-400 text-xl mb-1">📋</div>
+                    <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Conocer Beneficios</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Información detallada</p>
                 </button>
             </div>
 
@@ -176,6 +179,7 @@ def mostrar_interfaz():
 
         </main>
 
+        <!-- Modales -->
         <div id="modalLogin" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -247,12 +251,13 @@ def mostrar_interfaz():
             </div>
         </div>
 
+        <!-- Modal Sumar Comercio (CORREGIDO: Sin mención pública de comisiones) -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
                         <button onclick="cerrarModalComercio()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
-                        <h3 class="text-sm font-bold text-white">🏪 Sumar mi Comercio</h3>
+                        <h3 class="text-sm font-bold text-white">🏪 Sumar mi Comercio a la Red</h3>
                     </div>
                     <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
@@ -333,26 +338,73 @@ def mostrar_interfaz():
                     <div class="text-[10px] text-slate-400 pt-1">
                         <label class="flex items-center space-x-2 cursor-pointer">
                             <input type="checkbox" id="c_terminos" required class="rounded bg-slate-950 border-slate-800 text-cyan-500">
-                            <span>Acepto las condiciones (Comisión 1.7% por venta real a través de QR).</span>
+                            <!-- CORREGIDO: Términos limpios sin porcentajes visibles al público -->
+                            <span>Acepto las condiciones de participación y publicación en la red MaxShop.</span>
                         </label>
                     </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Registrar Comercio Gratis</button>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Sumar mi Comercio</button>
                 </form>
             </div>
         </div>
 
-        <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <!-- Modal de Planes y Beneficios Detallados -->
+        <div id="modalPlanesDetallados" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="cerrarModalPlanesDetallados()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <h3 class="text-sm font-bold text-white">📋 Opciones de Membresía & Ahorro</h3>
+                    </div>
+                    <button onclick="cerrarModalPlanesDetallados()" class="text-slate-400 hover:text-white font-bold">✕</button>
+                </div>
+
+                <div class="space-y-4 text-xs text-slate-300">
+                    <p class="leading-relaxed">MaxShop te conecta con la red de comercios adheridos para que ahorres en cada compra diaria. Elige la modalidad que mejor se adapte a tu bolsillo:</p>
+
+                    <!-- Tarjeta Plan Gratuito -->
+                    <div class="bg-slate-950 border border-emerald-500/30 rounded-2xl p-4 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-emerald-400 font-black text-sm">⚡ Plan Gratuito (Prepago Base)</span>
+                            <span class="bg-emerald-950 text-emerald-300 text-[10px] px-2 py-0.5 rounded-full font-bold">100% Sin Costo</span>
+                        </div>
+                        <ul class="space-y-1 text-slate-400 text-[11px] list-disc list-inside">
+                            <li><strong>Saldo inicial de bienvenida:</strong> $50.000 para comenzar a ahorrar de inmediato.</li>
+                            <li><strong>Descuento activo:</strong> Accedes al 50% del beneficio real publicado por cada comercio (ej. si el comercio ofrece 20%, tú obtienes 10% de ahorro directo).</li>
+                            <li><strong>Recarga exprés opcional:</strong> Si te quedas sin saldo y no quieres pagar abonos fijos, puedes recargar $10.000 extra de crédito por sólo $500 en cualquier momento.</li>
+                        </ul>
+                        <button onclick="cerrarModalPlanesDetallados(); abrirModalUsuarioGratis();" class="w-full mt-2 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold rounded-xl text-xs transition">Registrarme en Plan Gratuito</button>
+                    </div>
+
+                    <!-- Tarjeta Plan Pro -->
+                    <div class="bg-slate-950 border border-cyan-500/40 rounded-2xl p-4 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-cyan-400 font-black text-sm">⭐ Plan Pro Mensual ($5.000 / mes)</span>
+                            <span class="bg-cyan-950 text-cyan-300 text-[10px] px-2 py-0.5 rounded-full font-bold">Beneficio Pleno</span>
+                        </div>
+                        <ul class="space-y-1 text-slate-400 text-[11px] list-disc list-inside">
+                            <li><strong>Abono tipo telefonía:</strong> Se renueva mensualmente para tener línea de ahorro abierta y sin interrupciones.</li>
+                            <li><strong>Descuento pleno (100%):</strong> Disfrutas del total del porcentaje de descuento que publica el comercio sin ningún tipo de recorte (ej. si el comercio ofrece 20%, te llevas el 20% entero).</li>
+                            <li><strong>Saldo mensual extra:</strong> Recibes $50.000 frescos todos los 1 de cada mes en tu billetera.</li>
+                        </ul>
+                        <button onclick="ejecutarSuscripcionProDESDEModal()" class="w-full mt-2 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs transition shadow-md">Activar Plan Pro ($5.000/mes)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Registro Usuario Plan Gratuito -->
+        <div id="modalUsuarioGratis" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
-                        <button onclick="cerrarModalUsuario()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
-                        <h3 class="text-sm font-bold text-white">🎁 Registro de Usuario Gratis</h3>
+                        <button onclick="cerrarModalUsuarioGratis()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <h3 class="text-sm font-bold text-white">🎁 Registro Plan Gratuito</h3>
                     </div>
-                    <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-white font-bold">✕</button>
+                    <button onclick="cerrarModalUsuarioGratis()" class="text-slate-400 hover:text-white font-bold">✕</button>
                 </div>
-                <form id="formUsuario" onsubmit="enviarUsuarioGratis(event)" class="space-y-3 text-xs">
-                    <div class="bg-cyan-950/40 border border-cyan-800/50 p-3 rounded-2xl text-[11px] text-cyan-300">
-                        ✨ <strong>Plan Gratuito:</strong> Obtén saldo inicial y accede al 50% del descuento de los comercios. Recarga exprés opcional por $500 o pásate a Pro por $5.000/mes para tener 100% de descuento ilimitado.
+                <form id="formUsuarioGratis" onsubmit="enviarUsuarioGratis(event)" class="space-y-3 text-xs">
+                    <div class="bg-emerald-950/40 border border-emerald-800/50 p-3 rounded-2xl text-[11px] text-emerald-300">
+                        ✨ Te estás registrando en el <strong>Plan Gratuito</strong> con $50.000 de saldo inicial de regalo.
                     </div>
                     <div>
                         <label class="text-slate-400">Nombre Completo</label>
@@ -374,7 +426,7 @@ def mostrar_interfaz():
                         <label class="text-slate-400">Correo Electrónico</label>
                         <input type="email" id="u_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-extrabold rounded-xl shadow-lg mt-2">🚀 Activar Mi Cuenta Gratis</button>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-extrabold rounded-xl shadow-lg mt-2">🚀 Finalizar Registro Gratuito</button>
                 </form>
             </div>
         </div>
@@ -497,7 +549,7 @@ def mostrar_interfaz():
             }
 
             async function ejecutarRecargaExpres() {
-                if(!usuarioLogueadoGlobal) { mostrarToast("Inicia sesión o regístrate primero.", "error"); abrirModalUsuario(); return; }
+                if(!usuarioLogueadoGlobal) { mostrarToast("Inicia sesión o regístrate primero.", "error"); abrirModalPlanesDetallados(); return; }
                 let ok = confirm("¿Deseas realizar la Recarga Exprés de $500 para obtener $10.000 extra de crédito?");
                 if(!ok) return;
                 mostrarLoader("Procesando recarga de $500...");
@@ -517,7 +569,30 @@ def mostrar_interfaz():
             }
 
             async function ejecutarSuscripcionPro() {
-                if(!usuarioLogueadoGlobal) { mostrarToast("Inicia sesión o regístrate primero.", "error"); abrirModalUsuario(); return; }
+                if(!usuarioLogueadoGlobal) { 
+                    mostrarToast("Inicia sesión o regístrate primero para activar Plan Pro.", "error"); 
+                    abrirModalPlanesDetallados(); 
+                    return; 
+                }
+                confirmarYActivarPro();
+            }
+
+            async function ejecutarSuscripcionProDESDEModal() {
+                cerrarModalPlanesDetallados();
+                if(!usuarioLogueadoGlobal) {
+                    let correoReg = prompt("Ingrese su Correo Electrónico registrado para activar Plan Pro:");
+                    if(!correoReg) return;
+                    await verificarEstadoUsuario(correoReg);
+                    if(!usuarioLogueadoGlobal) {
+                        mostrarToast("Debe registrarse primero en Plan Gratuito para luego pasar a Pro.", "error");
+                        abrirModalUsuarioGratis();
+                        return;
+                    }
+                }
+                confirmarYActivarPro();
+            }
+
+            async function confirmarYActivarPro() {
                 let ok = confirm("¿Deseas activar el Plan Pro Mensual por $5.000 (100% de descuento y saldo ilimitado)?");
                 if(!ok) return;
                 mostrarLoader("Activando Plan Pro...");
@@ -537,7 +612,7 @@ def mostrar_interfaz():
             }
 
             function iniciarEscaneoQR() {
-                if(!usuarioLogueadoGlobal) { mostrarToast("⚠️ Regístrate para usar tus créditos.", "error"); abrirModalUsuario(); return; }
+                if(!usuarioLogueadoGlobal) { mostrarToast("⚠️ Regístrate para usar tus créditos.", "error"); abrirModalPlanesDetallados(); return; }
                 const modal = document.getElementById('modalQR');
                 modal.classList.remove('hidden');
                 if (!html5QrCode) { html5QrCode = new Html5Qrcode("reader"); }
@@ -549,7 +624,6 @@ def mostrar_interfaz():
                         let comercioObj = listaComerciosGlobal.find(c => c.nombre_fantasias === decodedText || c.nombre_completo === decodedText);
                         let pctComercio = comercioObj && comercioObj.porcentaje_descuento ? parseFloat(comercioObj.porcentaje_descuento) : 20.0;
                         
-                        // Lógica híbrida: Plan Pro 100% del desc del comercio, Plan Gratuito 50%
                         let esPro = usuarioLogueadoGlobal.es_pro || false;
                         let pctFinal = esPro ? pctComercio : (pctComercio * 0.5);
                         window.porcentajeDescActual = pctFinal;
@@ -596,8 +670,10 @@ def mostrar_interfaz():
 
             function abrirModalComercio() { document.getElementById('modalComercio').classList.remove('hidden'); }
             function cerrarModalComercio() { document.getElementById('modalComercio').classList.add('hidden'); }
-            function abrirModalUsuario() { document.getElementById('modalUsuario').classList.remove('hidden'); }
-            function cerrarModalUsuario() { document.getElementById('modalUsuario').classList.add('hidden'); }
+            function abrirModalPlanesDetallados() { document.getElementById('modalPlanesDetallados').classList.remove('hidden'); }
+            function cerrarModalPlanesDetallados() { document.getElementById('modalPlanesDetallados').classList.add('hidden'); }
+            function abrirModalUsuarioGratis() { document.getElementById('modalUsuarioGratis').classList.remove('hidden'); }
+            function cerrarModalUsuarioGratis() { document.getElementById('modalUsuarioGratis').classList.add('hidden'); }
             function abrirLogin() { document.getElementById('modalLogin').classList.remove('hidden'); }
             function cerrarLogin() { document.getElementById('modalLogin').classList.add('hidden'); }
 
@@ -703,7 +779,7 @@ def mostrar_interfaz():
 
             async function enviarUsuarioGratis(e) {
                 e.preventDefault();
-                mostrarLoader("Activando cuenta...");
+                mostrarLoader("Activando cuenta gratuita...");
                 const data = {
                     nombre_completo: document.getElementById('u_nombre').value,
                     dni: document.getElementById('u_dni').value,
@@ -717,8 +793,8 @@ def mostrar_interfaz():
                     let json = await res.json();
                     ocultarLoader();
                     if(json.success) {
-                        mostrarToast("¡Cuenta activada con éxito!", "success");
-                        cerrarModalUsuario();
+                        mostrarToast("¡Cuenta activada con $50.000 de saldo!", "success");
+                        cerrarModalUsuarioGratis();
                         verificarEstadoUsuario(data.correo);
                     } else {
                         mostrarToast("Error al registrar usuario", "error");
