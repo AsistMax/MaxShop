@@ -9,9 +9,8 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 from pydantic import BaseModel
 import os
 from supabase import create_client, Client
-import mercadopago
 
-app = FastAPI(title="MaxShop - AsistMax", version="8.2")
+app = FastAPI(title="MaxShop - AsistMax", version="8.3")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,17 +22,11 @@ app.add_middleware(
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN")
 
 if SUPABASE_URL and SUPABASE_KEY:
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 else:
     supabase = None
-
-if MP_ACCESS_TOKEN:
-    sdk_mp = mercadopago.SDK(MP_ACCESS_TOKEN)
-else:
-    sdk_mp = None
 
 class ComercioModel(BaseModel):
     nombre_completo: str
@@ -56,7 +49,6 @@ class UsuarioModel(BaseModel):
     localidad: str
     whatsapp: str
     correo: str
-    plan_monto: int = 10000
 
 class ConsumoQRModel(BaseModel):
     correo_usuario: str
@@ -64,15 +56,7 @@ class ConsumoQRModel(BaseModel):
     monto_compra: float
 
 class ConfigModel(BaseModel):
-    plan_basico_costo: int = 5000
-    plan_basico_credito: int = 100000
-    plan_estandar_costo: int = 10000
-    plan_estandar_credito: int = 250000
-    plan_pro_costo: int = 15000
-    plan_pro_credito: int = 375000
-    plan_vip_costo: int = 20000
-    plan_vip_credito: int = 500000
-    premio_nuevo_registro: int = 200000
+    premio_nuevo_registro: int = 250000
 
 @app.get("/", response_class=HTMLResponse)
 def mostrar_interfaz():
@@ -127,7 +111,7 @@ def mostrar_interfaz():
             <div class="space-y-2">
                 <div class="px-2 flex justify-between items-center">
                     <div>
-                        <span class="text-[9px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Red Global de Beneficios</span>
+                        <span class="text-[9px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Red Global 100% Gratuita</span>
                         <h2 class="text-lg font-extrabold text-white mt-1">Ahorro Inteligente en Comercios</h2>
                     </div>
                 </div>
@@ -135,8 +119,8 @@ def mostrar_interfaz():
 
             <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
                 <div class="flex justify-between items-center">
-                    <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-800/50" id="lblEstadoSuscripcionBadge">Modo Explorador (Gratis)</span>
-                    <span class="text-[10px] text-slate-400" id="lblVencimientoSuscripcion">Sin membresía activa</span>
+                    <span class="text-[10px] uppercase tracking-wider text-emerald-400 font-bold bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-800/50" id="lblEstadoSuscripcionBadge">Beneficio Activo Gratis</span>
+                    <span class="text-[10px] text-slate-400" id="lblVencimientoSuscripcion">Sin costos ni abonos</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div>
@@ -144,7 +128,7 @@ def mostrar_interfaz():
                         <p class="text-2xl font-black text-emerald-400 mt-0.5" id="lblCreditoDisponible">$0</p>
                     </div>
                     <button onclick="abrirModalUsuario()" class="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-2 rounded-xl font-extrabold shadow-lg shadow-cyan-500/20 transition">
-                        ⚡ Activar Créditos
+                        👤 Registrarse Gratis
                     </button>
                 </div>
             </div>
@@ -152,7 +136,7 @@ def mostrar_interfaz():
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
                 <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-1 rounded-full border border-cyan-800/50">Billetera Inteligente</span>
                 <h2 class="text-xl font-bold text-white mt-2">Canjear Descuento en Comercio</h2>
-                <p class="text-xs text-slate-400 mt-1">Escanea el QR del comercio adherido para aplicar tu descuento obligatorio del 5% (o día promo).</p>
+                <p class="text-xs text-slate-400 mt-1">Escanea el QR del comercio adherido para aplicar tu descuento instantáneo.</p>
                 <div class="mt-4">
                     <button onclick="iniciarEscaneoQR()" class="w-full py-3.5 text-sm font-bold text-slate-950 transition-all bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20">
                         📷 Escanear QR del Comercio
@@ -167,9 +151,9 @@ def mostrar_interfaz():
                     <p class="text-[11px] text-slate-400 mt-0.5">Gratis con QR propio</p>
                 </button>
                 <button onclick="abrirModalUsuario()" class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 p-4 rounded-2xl text-left transition-all group">
-                    <div class="text-blue-400 text-xl mb-1">👤</div>
-                    <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Planes & Membresías</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Con $200.000 extra de regalo</p>
+                    <div class="text-blue-400 text-xl mb-1">🎁</div>
+                    <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Obtener Créditos</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Regalo de bienvenida</p>
                 </button>
             </div>
 
@@ -198,13 +182,13 @@ def mostrar_interfaz():
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
-                        <button onclick="cerrarLogin()" class="text-cyan-400 hover:text-cyan-300 text-sm font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <button onclick="cerrarLogin()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
                         <h3 class="text-sm font-bold text-white">🔑 Iniciar Sesión</h3>
                     </div>
                     <button onclick="cerrarLogin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
                 <div id="loginFormContainer" class="space-y-3">
-                    <p class="text-[11px] text-slate-400">Ingrese su Correo Electrónico registrado para ver el estado de su crédito y su membresía.</p>
+                    <p class="text-[11px] text-slate-400">Ingrese su Correo Electrónico registrado para ver su saldo de crédito gratuito.</p>
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Correo Electrónico</label>
                         <input type="email" id="inputLoginCorreo" placeholder="ej: tu@correo.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
@@ -214,16 +198,15 @@ def mostrar_interfaz():
                 <div id="panelSesionContainer" class="space-y-4 hidden">
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex justify-between items-center">
                         <div>
-                            <span class="text-[10px] text-cyan-400 font-bold uppercase" id="rolSesionBadge">Rol: Usuario</span>
+                            <span class="text-[10px] text-cyan-400 font-bold uppercase">Cuenta Gratuita Activa</span>
                             <h4 class="text-xs font-bold text-white" id="nombreSesionLabel">Usuario</h4>
                         </div>
                         <button onclick="cerrarSesion()" class="text-[10px] bg-rose-500/10 text-rose-400 px-2.5 py-1 rounded-lg border border-rose-500/30">Cerrar Sesión</button>
                     </div>
                     <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
-                        <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Mi Membresía Actual</h4>
-                        <p class="text-[11px] text-slate-300">Plan: <strong id="sesionPlan" class="text-white">Estándar</strong></p>
-                        <p class="text-[11px] text-slate-300">Crédito de Ahorro: <strong id="sesionCredito" class="text-emerald-400">$0</strong></p>
-                        <p class="text-[11px] text-slate-300">Vencimiento: <strong id="sesionVencimiento" class="text-amber-400">-</strong></p>
+                        <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Mi Saldo MaxShop</h4>
+                        <p class="text-[11px] text-slate-300">Crédito de Ahorro Disponible: <strong id="sesionCredito" class="text-emerald-400">$0</strong></p>
+                        <p class="text-[11px] text-slate-500">Sin vencimiento ni costos ocultos.</p>
                     </div>
                 </div>
             </div>
@@ -253,7 +236,7 @@ def mostrar_interfaz():
                 </div>
                 <div class="space-y-3 text-xs">
                     <p class="text-slate-400">Comercio: <strong id="lblComercioEscaneado" class="text-cyan-400">Comercio</strong></p>
-                    <p class="text-[11px] text-cyan-300 bg-cyan-950/50 p-2 rounded-xl border border-cyan-800/40" id="lblInfoDescuentoComercio">Descuento aplicado: 5% (Base obligatoria permanente)</p>
+                    <p class="text-[11px] text-cyan-300 bg-cyan-950/50 p-2 rounded-xl border border-cyan-800/40" id="lblInfoDescuentoComercio">Descuento aplicado: 5% (Base permanente)</p>
                     <div>
                         <label class="text-slate-400">Monto Total de la Compra ($)</label>
                         <input type="number" id="inputMontoCompra" placeholder="ej: 10000" onkeyup="calcularDescuentoQR()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
@@ -267,13 +250,13 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Modal Sumar Comercio Actualizado con Botón Volver y Limpiar Imágenes -->
+        <!-- Modal Sumar Comercio -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
-                        <button onclick="cerrarModalComercio()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 transition hover:bg-slate-800"><span>⬅️</span><span>Volver</span></button>
-                        <h3 class="text-sm font-bold text-white">🏪 Sumar mi Comercio</h3>
+                        <button onclick="cerrarModalComercio()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <h3 class="text-sm font-bold text-white">🏪 Sumar mi Comercio Gratis</h3>
                     </div>
                     <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
@@ -311,7 +294,6 @@ def mostrar_interfaz():
                         </select>
                     </div>
 
-                    <!-- Campos Multimedia Mejorados con Botón Eliminar -->
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-slate-950 border border-slate-800 rounded-2xl p-2.5 space-y-1.5">
                             <label class="text-[10px] font-semibold text-cyan-400 block">Logo del Negocio</label>
@@ -363,16 +345,20 @@ def mostrar_interfaz():
             </div>
         </div>
 
+        <!-- Modal Registro de Usuario 100% Gratis -->
         <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
                         <button onclick="cerrarModalUsuario()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
-                        <h3 class="text-sm font-bold text-white">👤 Membresía MaxShop</h3>
+                        <h3 class="text-sm font-bold text-white">🎁 Registro de Usuario 100% Gratuito</h3>
                     </div>
                     <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-white font-bold">✕</button>
                 </div>
-                <form id="formUsuario" onsubmit="enviarUsuario(event)" class="space-y-3 text-xs">
+                <form id="formUsuario" onsubmit="enviarUsuarioGratis(event)" class="space-y-3 text-xs">
+                    <div class="bg-cyan-950/40 border border-cyan-800/50 p-3 rounded-2xl text-[11px] text-cyan-300">
+                        ✨ <strong>Acceso libre y sin costo:</strong> Regístrate ahora y obtén <strong>$250.000 en créditos de descuento</strong> para usar en todos los comercios de la red de inmediato.
+                    </div>
                     <div>
                         <label class="text-slate-400">Nombre Completo</label>
                         <input type="text" id="u_nombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
@@ -393,16 +379,7 @@ def mostrar_interfaz():
                         <label class="text-slate-400">Correo Electrónico</label>
                         <input type="email" id="u_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
-                    <div>
-                        <label class="text-cyan-400 font-bold">Seleccionar Plan Mensual (Incluye $200.000 Extra si es Nuevo Registro):</label>
-                        <select id="u_plan_monto" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-3 py-2.5 text-white font-bold outline-none mt-1">
-                            <option value="5000">Plan Básico ($5.000) ➔ $100.000 Crédito + $200.000 Extra Nuevo</option>
-                            <option value="10000" selected>Plan Estándar ($10.000) ➔ $250.000 Crédito + $200.000 Extra Nuevo</option>
-                            <option value="15000">Plan Pro ($15.000) ➔ $375.000 Crédito + $200.000 Extra Nuevo</option>
-                            <option value="20000">Plan VIP ($20.000) ➔ $500.000 Crédito + $200.000 Extra Nuevo</option>
-                        </select>
-                    </div>
-                    <button type="submit" id="btnPagarIntegrado" class="w-full py-3 bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2 transition hover:opacity-90">💳 Confirmar Pago y Activar Membresía</button>
+                    <button type="submit" id="btnRegistrarGratis" class="w-full py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-extrabold rounded-xl shadow-lg mt-2 transition hover:opacity-90">🚀 Activar Mi Cuenta Gratis Ahora</button>
                 </form>
             </div>
         </div>
@@ -419,7 +396,6 @@ def mostrar_interfaz():
                 <div class="flex border-b border-slate-800 space-x-4 pt-2 overflow-x-auto text-xs">
                     <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400">🏪 Comercios</button>
                     <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 font-bold text-slate-400">👤 Usuarios & Créditos</button>
-                    <button onclick="cambiarPestanaAdmin('config')" id="btnTabConfig" class="pb-2 font-bold text-slate-400">⚙️ Costos y Créditos</button>
                 </div>
                 <div id="seccionComerciosAdmin" class="space-y-3">
                     <div class="flex justify-between items-center">
@@ -434,29 +410,6 @@ def mostrar_interfaz():
                         <a href="/api/admin/exportar/usuarios" target="_blank" class="text-[10px] bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded-xl border border-blue-500/40 font-bold">📥 Descargar Base Usuarios (CSV)</a>
                     </div>
                     <div id="tablaUsuariosAdminList" class="text-xs text-slate-400 max-h-60 overflow-y-auto space-y-2">Cargando...</div>
-                </div>
-                <div id="seccionConfigAdmin" class="space-y-3 hidden">
-                    <h4 class="text-xs font-bold text-amber-400 uppercase">Configuración de Costos y Créditos de Planes</h4>
-                    <form id="formConfigAdmin" onsubmit="guardarConfigAdmin(event)" class="space-y-3 text-xs">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><label class="text-slate-400">Costo Plan Básico ($)</label><input type="number" id="cfg_basico_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
-                            <div><label class="text-slate-400">Crédito Plan Básico ($)</label><input type="number" id="cfg_basico_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><label class="text-slate-400">Costo Plan Estándar ($)</label><input type="number" id="cfg_estandar_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
-                            <div><label class="text-slate-400">Crédito Plan Estándar ($)</label><input type="number" id="cfg_estandar_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><label class="text-slate-400">Costo Plan Pro ($)</label><input type="number" id="cfg_pro_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
-                            <div><label class="text-slate-400">Crédito Plan Pro ($)</label><input type="number" id="cfg_pro_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><label class="text-slate-400">Costo Plan VIP ($)</label><input type="number" id="cfg_vip_costo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
-                            <div><label class="text-slate-400">Crédito Plan VIP ($)</label><input type="number" id="cfg_vip_cred" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white mt-1"></div>
-                        </div>
-                        <div><label class="text-cyan-400 font-bold">Premio Extra Nuevo Registro ($)</label><input type="number" id="cfg_premio_nuevo" class="w-full bg-slate-950 border border-cyan-500/50 rounded-xl px-3 py-2 text-white mt-1 font-bold"></div>
-                        <button type="submit" class="w-full py-2.5 bg-amber-500 text-slate-950 font-bold rounded-xl mt-2">Guardar Nueva Configuración</button>
-                    </form>
                 </div>
             </div>
         </div>
@@ -556,21 +509,16 @@ def mostrar_interfaz():
                     if(json.success) {
                         usuarioLogueadoGlobal = json.data;
                         localStorage.setItem('maxshop_correo_usuario', correo);
-                        if(usuarioLogueadoGlobal.suscripcion_activa) {
-                            document.getElementById('lblEstadoSuscripcionBadge').innerText = "Membresía Activa ⚡";
-                            document.getElementById('lblCreditoDisponible').innerText = "$" + (usuarioLogueadoGlobal.credito_descuento_disponible || 0).toLocaleString();
-                            document.getElementById('lblVencimientoSuscripcion').innerText = "Vence: " + new Date(usuarioLogueadoGlobal.fecha_vencimiento).toLocaleDateString();
-                        } else {
-                            document.getElementById('lblEstadoSuscripcionBadge').innerText = "Membresía Inactiva (Requiere Pago)";
-                            document.getElementById('lblCreditoDisponible').innerText = "$0";
-                        }
+                        document.getElementById('lblEstadoSuscripcionBadge').innerText = "Beneficio 100% Gratis ⚡";
+                        document.getElementById('lblCreditoDisponible').innerText = "$" + (usuarioLogueadoGlobal.credito_descuento_disponible || 0).toLocaleString();
+                        document.getElementById('lblVencimientoSuscripcion').innerText = "Activo sin límites";
                     }
                 } catch(e) {}
             }
 
             function iniciarEscaneoQR() {
-                if(!usuarioLogueadoGlobal || !usuarioLogueadoGlobal.suscripcion_activa) {
-                    mostrarToast("⚠️ Necesitas tener una membresía activa para usar tus créditos de descuento.", "error");
+                if(!usuarioLogueadoGlobal) {
+                    mostrarToast("⚠️ Regístrate gratis para usar tus créditos de descuento.", "error");
                     abrirModalUsuario();
                     return;
                 }
@@ -641,10 +589,8 @@ def mostrar_interfaz():
                     document.getElementById('loginFormContainer').classList.add('hidden');
                     document.getElementById('panelSesionContainer').classList.remove('hidden');
                     document.getElementById('nombreSesionLabel').innerText = usuarioLogueadoGlobal.nombre_completo;
-                    document.getElementById('sesionPlan').innerText = usuarioLogueadoGlobal.plan_seleccionado || "Estándar";
                     document.getElementById('sesionCredito').innerText = "$" + (usuarioLogueadoGlobal.credito_descuento_disponible || 0).toLocaleString();
-                    document.getElementById('sesionVencimiento').innerText = usuarioLogueadoGlobal.fecha_vencimiento ? new Date(usuarioLogueadoGlobal.fecha_vencimiento).toLocaleDateString() : "Sin activar";
-                    mostrarToast("Sesión iniciada", "success");
+                    mostrarToast("¡Sesión iniciada con éxito!", "success");
                 } else {
                     mostrarToast("No se encontró usuario con ese correo.", "error");
                 }
@@ -673,25 +619,13 @@ def mostrar_interfaz():
                 if(pestana === 'comercios') {
                     document.getElementById('btnTabComercios').className = "pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400";
                     document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-slate-400";
-                    document.getElementById('btnTabConfig').className = "pb-2 font-bold text-slate-400";
                     document.getElementById('seccionComerciosAdmin').classList.remove('hidden');
                     document.getElementById('seccionUsuariosAdmin').classList.add('hidden');
-                    document.getElementById('seccionConfigAdmin').classList.add('hidden');
-                } else if(pestana === 'usuarios') {
+                } else {
                     document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-blue-400 border-b-2 border-blue-400";
                     document.getElementById('btnTabComercios').className = "pb-2 font-bold text-slate-400";
-                    document.getElementById('btnTabConfig').className = "pb-2 font-bold text-slate-400";
                     document.getElementById('seccionUsuariosAdmin').classList.remove('hidden');
                     document.getElementById('seccionComerciosAdmin').classList.add('hidden');
-                    document.getElementById('seccionConfigAdmin').classList.add('hidden');
-                } else {
-                    document.getElementById('btnTabConfig').className = "pb-2 font-bold text-amber-400 border-b-2 border-amber-400";
-                    document.getElementById('btnTabComercios').className = "pb-2 font-bold text-slate-400";
-                    document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-slate-400";
-                    document.getElementById('seccionConfigAdmin').classList.remove('hidden');
-                    document.getElementById('seccionComerciosAdmin').classList.add('hidden');
-                    document.getElementById('seccionUsuariosAdmin').classList.add('hidden');
-                    cargarConfigAdminForm();
                 }
             }
 
@@ -701,46 +635,9 @@ def mostrar_interfaz():
                     let json = await res.json();
                     if(json.success) {
                         document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1 flex justify-between items-center"><div><b>${c.nombre_fantasias}</b> - ${c.rubro} (${c.localidad})<br><span class="text-[10px] text-slate-400">Titular: ${c.nombre_completo} | CUIT: ${c.cuit_cuil}</span></div></div>`).join('') || 'Sin comercios';
-                        document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1 flex justify-between items-center"><div><b>${u.nombre_completo}</b> (${u.correo})<br><span class="text-[10px] text-slate-400">DNI: ${u.dni} | Wpp: ${u.whatsapp || '-'} | Plan: ${u.plan_seleccionado || '-'} | Crédito: $${u.credito_descuento_disponible || 0}</span></div></div>`).join('') || 'Sin usuarios';
+                        document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1 flex justify-between items-center"><div><b>${u.nombre_completo}</b> (${u.correo})<br><span class="text-[10px] text-slate-400">DNI: ${u.dni} | Wpp: ${u.whatsapp || '-'} | Crédito: $${u.credito_descuento_disponible || 0}</span></div></div>`).join('') || 'Sin usuarios';
                     }
                 } catch(e) {}
-            }
-
-            async function cargarConfigAdminForm() {
-                try {
-                    let res = await fetch('/api/admin/config');
-                    let json = await res.json();
-                    if(json.success) {
-                        let c = json.data;
-                        document.getElementById('cfg_basico_costo').value = c.plan_basico_costo;
-                        document.getElementById('cfg_basico_cred').value = c.plan_basico_credito;
-                        document.getElementById('cfg_estandar_costo').value = c.plan_estandar_costo;
-                        document.getElementById('cfg_estandar_cred').value = c.plan_estandar_credito;
-                        document.getElementById('cfg_pro_costo').value = c.plan_pro_costo;
-                        document.getElementById('cfg_pro_cred').value = c.plan_pro_credito;
-                        document.getElementById('cfg_vip_costo').value = c.plan_vip_costo;
-                        document.getElementById('cfg_vip_cred').value = c.plan_vip_credito;
-                        document.getElementById('cfg_premio_nuevo').value = c.premio_nuevo_registro;
-                    }
-                } catch(e) {}
-            }
-
-            async function guardarConfigAdmin(e) {
-                e.preventDefault();
-                let data = {
-                    plan_basico_costo: parseInt(document.getElementById('cfg_basico_costo').value),
-                    plan_basico_credito: parseInt(document.getElementById('cfg_basico_cred').value),
-                    plan_estandar_costo: parseInt(document.getElementById('cfg_estandar_costo').value),
-                    plan_estandar_credito: parseInt(document.getElementById('cfg_estandar_cred').value),
-                    plan_pro_costo: parseInt(document.getElementById('cfg_pro_costo').value),
-                    plan_pro_credito: parseInt(document.getElementById('cfg_pro_cred').value),
-                    plan_vip_costo: parseInt(document.getElementById('cfg_vip_costo').value),
-                    plan_vip_credito: parseInt(document.getElementById('cfg_vip_cred').value),
-                    premio_nuevo_registro: parseInt(document.getElementById('cfg_premio_nuevo').value)
-                };
-                let res = await fetch('/api/admin/config', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-                let json = await res.json();
-                if(json.success) { mostrarToast("Configuración guardada correctamente", "success"); } else { mostrarToast("Error al guardar configuración", "error"); }
             }
 
             async function enviarComercio(e) {
@@ -800,11 +697,9 @@ def mostrar_interfaz():
                 }
             }
 
-            async function enviarUsuario(e) {
+            async function enviarUsuarioGratis(e) {
                 e.preventDefault();
-                const btn = document.getElementById('btnPagarIntegrado');
-                btn.innerText = "Conectando con Mercado Pago...";
-                btn.disabled = true;
+                mostrarLoader("Activando cuenta gratuita...");
 
                 const data = {
                     nombre_completo: document.getElementById('u_nombre').value,
@@ -812,25 +707,23 @@ def mostrar_interfaz():
                     direccion: document.getElementById('u_dir').value,
                     localidad: document.getElementById('u_loc').value,
                     whatsapp: document.getElementById('u_wpp').value,
-                    correo: document.getElementById('u_correo').value,
-                    plan_monto: parseInt(document.getElementById('u_plan_monto').value)
+                    correo: document.getElementById('u_correo').value
                 };
                 
                 try {
-                    let res = await fetch('/api/registrar-y-pagar-usuario', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+                    let res = await fetch('/api/registrar-usuario-gratis', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                     let json = await res.json();
-                    if(json.success && json.link_pago) {
-                        mostrarToast("Redirigiendo a Mercado Pago...", "success");
-                        window.location.href = json.link_pago;
+                    ocultarLoader();
+                    if(json.success) {
+                        mostrarToast("¡Cuenta activada con $250.000 de regalo!", "success");
+                        cerrarModalUsuario();
+                        verificarEstadoUsuario(data.correo);
                     } else {
-                        alert("Error del Servidor: " + (json.detail || JSON.stringify(json)));
-                        btn.innerText = "💳 Confirmar Pago y Activar Membresía";
-                        btn.disabled = false;
+                        mostrarToast("Error: " + (json.detail || "desconocido"), "error");
                     }
                 } catch(err) {
-                    alert("Error de red o conexión: " + err);
-                    btn.innerText = "💳 Confirmar Pago y Activar Membresía";
-                    btn.disabled = false;
+                    ocultarLoader();
+                    mostrarToast("Error de conexión con el servidor", "error");
                 }
             }
         </script>
@@ -920,46 +813,6 @@ def exportar_usuarios():
     except Exception as e:
         return f"Error: {e}"
 
-@app.get("/api/admin/config")
-def obtener_config():
-    if not supabase:
-        return {"success": True, "data": {
-            "plan_basico_costo": 5000, "plan_basico_credito": 100000,
-            "plan_estandar_costo": 10000, "plan_estandar_credito": 250000,
-            "plan_pro_costo": 15000, "plan_pro_credito": 375000,
-            "plan_vip_costo": 20000, "plan_vip_credito": 500000,
-            "premio_nuevo_registro": 200000
-        }}
-    try:
-        res = supabase.table("configuracion").select("*").eq("id", 1).execute()
-        if res.data:
-            return {"success": True, "data": res.data[0]}
-        else:
-            default_cfg = {
-                "id": 1,
-                "plan_basico_costo": 5000, "plan_basico_credito": 100000,
-                "plan_estandar_costo": 10000, "plan_estandar_credito": 250000,
-                "plan_pro_costo": 15000, "plan_pro_credito": 375000,
-                "plan_vip_costo": 20000, "plan_vip_credito": 500000,
-                "premio_nuevo_registro": 200000
-            }
-            supabase.table("configuracion").upsert(default_cfg).execute()
-            return {"success": True, "data": default_cfg}
-    except Exception as e:
-        return {"success": False, "detail": str(e)}
-
-@app.post("/api/admin/config")
-def guardar_config(cfg: ConfigModel):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Sin conexión a BD")
-    try:
-        data = cfg.dict()
-        data["id"] = 1
-        supabase.table("configuracion").upsert(data).execute()
-        return {"success": True}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 @app.post("/api/registrar-comercio")
 def registrar_comercio(comercio: ComercioModel):
     if not supabase:
@@ -971,88 +824,25 @@ def registrar_comercio(comercio: ComercioModel):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/registrar-y-pagar-usuario")
-def registrar_y_pagar_usuario(usuario: UsuarioModel):
+@app.post("/api/registrar-usuario-gratis")
+def registrar_usuario_gratis(usuario: UsuarioModel):
     if not supabase:
-        return {"success": False, "detail": "Sin conexión a Base de Datos (Supabase no inicializado)."}, 500
-    if not sdk_mp:
-        return {"success": False, "detail": "Falta configurar el MP_ACCESS_TOKEN en las variables de entorno de Render."}, 500
-
+        raise HTTPException(status_code=500, detail="Sin conexión a Base de Datos.")
     try:
-        cfg_res = supabase.table("configuracion").select("*").eq("id", 1).execute()
-        cfg = cfg_res.data[0] if cfg_res.data else {
-            "plan_basico_costo": 5000, "plan_basico_credito": 100000,
-            "plan_estandar_costo": 10000, "plan_estandar_credito": 250000,
-            "plan_pro_costo": 15000, "plan_pro_credito": 375000,
-            "plan_vip_costo": 20000, "plan_vip_credito": 500000,
-            "premio_nuevo_registro": 200000
-        }
-
-        plan_monto = usuario.plan_monto
-        credito_otorgado = cfg["plan_estandar_credito"]
-        plan_nombre = "Estándar"
-
-        if plan_monto == cfg["plan_basico_costo"]:
-            credito_otorgado = cfg["plan_basico_credito"]
-            plan_nombre = "Básico"
-        elif plan_monto == cfg["plan_pro_costo"]:
-            credito_otorgado = cfg["plan_pro_credito"]
-            plan_nombre = "Pro"
-        elif plan_monto >= cfg["plan_vip_costo"]:
-            credito_otorgado = cfg["plan_vip_credito"]
-            plan_nombre = "VIP"
-
-        existente = supabase.table("usuarios").select("*").eq("correo", usuario.correo).execute()
-        if not (existente.data and len(existente.data) > 0):
-            credito_otorgado += cfg["premio_nuevo_registro"]
-
+        credito_inicial = 250000 # Crédito de bienvenida 100% gratuito
         ahora = datetime.now()
-        vencimiento = ahora + timedelta(days=30)
 
         datos = usuario.dict()
         datos["suscripcion_activa"] = True
-        datos["plan_seleccionado"] = plan_nombre
-        datos["credito_descuento_disponible"] = credito_otorgado
-        datos["credito_descuento_total"] = credito_otorgado
+        datos["plan_seleccionado"] = "Gratuito Red Global"
+        datos["credito_descuento_disponible"] = credito_inicial
+        datos["credito_descuento_total"] = credito_inicial
         datos["fecha_inicio_suscripcion"] = ahora.isoformat()
-        datos["fecha_vencimiento"] = vencimiento.isoformat()
 
         supabase.table("usuarios").upsert(datos, on_conflict="correo").execute()
-
-        preference_data = {
-            "items": [
-                {
-                    "title": f"Membresía MaxShop - Plan {plan_nombre}",
-                    "quantity": 1,
-                    "currency_id": "ARS",
-                    "unit_price": float(plan_monto)
-                }
-            ],
-            "payer": {
-                "name": usuario.nombre_completo,
-                "email": usuario.correo
-            },
-            "back_urls": {
-                "success": "https://asistmax.onrender.com/",
-                "failure": "https://asistmax.onrender.com/",
-                "pending": "https://asistmax.onrender.com/"
-            },
-            "auto_return": "approved"
-        }
-
-        preference_response = sdk_mp.preference().create(preference_data)
-        
-        if not preference_response or "response" not in preference_response or "init_point" not in preference_response["response"]:
-            error_mp = str(preference_response)
-            return {"success": False, "detail": f"Error devuelto por Mercado Pago: {error_mp}"}, 500
-
-        init_point = preference_response["response"]["init_point"]
-        return {"success": True, "link_pago": init_point}
-
+        return {"success": True, "credito": credito_inicial}
     except Exception as e:
-        error_completo = traceback.format_exc()
-        print("ERROR EN REGISTRO/PAGO:", error_completo)
-        return {"success": False, "detail": f"{str(e)} | Trace: {error_completo}"}, 500
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/consumir-credito")
 def consumir_credito(consumo: ConsumoQRModel):
@@ -1069,14 +859,11 @@ def consumir_credito(consumo: ConsumoQRModel):
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         
         usuario = res.data[0]
-        if not usuario.get("suscripcion_activa"):
-            raise HTTPException(status_code=400, detail="Membresía inactiva.")
-        
         credito_disponible = float(usuario.get("credito_descuento_disponible", 0))
         ahorro = consumo.monto_compra * (pct_descuento / 100.0)
         
         if credito_disponible < ahorro:
-            raise HTTPException(status_code=400, detail="Crédito de descuento insuficiente en su plan.")
+            raise HTTPException(status_code=400, detail="Crédito de descuento insuficiente.")
         
         nuevo_credito = credito_disponible - ahorro
         supabase.table("usuarios").update({"credito_descuento_disponible": nuevo_credito}).eq("correo", consumo.correo_usuario).execute()
