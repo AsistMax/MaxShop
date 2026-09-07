@@ -1,19 +1,17 @@
 import csv
-from fastapi import FastAPI, HTTPException, Request
+import io
+import traceback
+from datetime import datetime, timedelta
+from typing import List, Optional
+from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from pydantic import BaseModel
 import os
-import smtplib
-import io
-import traceback
-from datetime import datetime, timedelta
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
 import mercadopago
 
-app = FastAPI(title="MaxShop - AsistMax", version="8.0")
+app = FastAPI(title="MaxShop - AsistMax", version="8.1")
 
 app.add_middleware(
     CORSMiddleware,
@@ -91,13 +89,17 @@ def mostrar_interfaz():
     <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950" onload="inicializarApp()">
 
         <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+        <div id="modalLoader" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl text-center shadow-xl space-y-3">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
+                <p class="text-sm text-slate-300" id="loaderText">Procesando...</p>
+            </div>
+        </div>
 
-        <!-- Botón flotante de WhatsApp / IA -->
         <a href="https://wa.me/5493834000000?text=Hola,%20necesito%20asistencia%20con%20el%20sistema%20MaxShop." target="_blank" class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-4 rounded-full shadow-2xl flex items-center justify-center transition transform hover:scale-105 border border-emerald-300/50" title="Asistencia IA & Atención al Cliente">
             <span class="text-2xl">💬</span>
         </a>
 
-        <!-- Navbar -->
         <header class="w-full px-4 py-3 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 shadow-lg">
             <div class="flex items-center space-x-3">
                 <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-auto h-auto max-h-12 object-contain bg-slate-900">
@@ -116,15 +118,12 @@ def mostrar_interfaz():
             </div>
         </header>
 
-        <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- Banner Principal con enlace directo de Google Drive -->
             <div class="w-full flex justify-center items-center">
                 <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="MaxShop Banner Red Global de Beneficios" class="w-auto max-w-full h-auto object-contain block">
             </div>
 
-            <!-- Título y Categoría -->
             <div class="space-y-2">
                 <div class="px-2 flex justify-between items-center">
                     <div>
@@ -134,7 +133,6 @@ def mostrar_interfaz():
                 </div>
             </div>
 
-            <!-- Estado del Crédito -->
             <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
                 <div class="flex justify-between items-center">
                     <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-800/50" id="lblEstadoSuscripcionBadge">Modo Explorador (Gratis)</span>
@@ -151,7 +149,6 @@ def mostrar_interfaz():
                 </div>
             </div>
 
-            <!-- Escáner QR -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
                 <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-1 rounded-full border border-cyan-800/50">Billetera Inteligente</span>
                 <h2 class="text-xl font-bold text-white mt-2">Canjear Descuento en Comercio</h2>
@@ -163,7 +160,6 @@ def mostrar_interfaz():
                 </div>
             </div>
 
-            <!-- Accesos Rápidos -->
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="abrirModalComercio()" class="bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-cyan-400 text-xl mb-1">🏪</div>
@@ -177,7 +173,6 @@ def mostrar_interfaz():
                 </button>
             </div>
 
-            <!-- Directorio -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
                 <div class="flex justify-between items-center">
                     <div>
@@ -306,12 +301,12 @@ def mostrar_interfaz():
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="text-[10px] font-semibold text-cyan-400">Logo o Img. del Negocio (URL)</label>
-                            <input type="url" id="c_logo" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
+                            <label class="text-[10px] font-semibold text-cyan-400">Logo del Negocio (Galería)</label>
+                            <input type="file" id="c_logo_file" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-[10px] text-slate-300 outline-none mt-1 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400 cursor-pointer">
                         </div>
                         <div>
-                            <label class="text-[10px] font-semibold text-cyan-400">Fotos del Negocio (Opcional)</label>
-                            <input type="text" id="c_fotos" placeholder="URLs separadas por coma" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
+                            <label class="text-[10px] font-semibold text-cyan-400">Foto del Negocio (Galería)</label>
+                            <input type="file" id="c_foto_file" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-[10px] text-slate-300 outline-none mt-1 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400 cursor-pointer">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
@@ -340,6 +335,12 @@ def mostrar_interfaz():
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">CUIT / CUIL</label>
                         <input type="text" id="c_cuit" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
+                    </div>
+                    <div class="text-[10px] text-slate-400 pt-1">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="c_terminos" required class="rounded bg-slate-950 border-slate-800 text-cyan-500 focus:ring-0">
+                            <span>Acepto las condiciones de uso y permisos de publicación de imágenes en MaxShop.</span>
+                        </label>
                     </div>
                     <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Registrar Comercio Gratis</button>
                 </form>
@@ -456,6 +457,15 @@ def mostrar_interfaz():
                 setTimeout(() => toast.remove(), 3500);
             }
 
+            function mostrarLoader(texto) {
+                document.getElementById('loaderText').innerText = texto;
+                document.getElementById('modalLoader').classList.remove('hidden');
+            }
+
+            function ocultarLoader() {
+                document.getElementById('modalLoader').classList.add('hidden');
+            }
+
             function inicializarApp() {
                 cargarComerciosPublicos();
                 let sesionGuardada = localStorage.getItem('maxshop_correo_usuario');
@@ -492,9 +502,12 @@ def mostrar_interfaz():
                 comercios.forEach(c => {
                     html += `
                     <div class="bg-slate-950 border border-slate-800/80 rounded-2xl p-3 flex justify-between items-center">
-                        <div class="space-y-0.5">
-                            <h4 class="text-xs font-bold text-white">🏪 ${c.nombre_fantasias} <span class="ml-2 text-[9px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded-full">${c.porcentaje_descuento || 5}% Off</span></h4>
-                            <p class="text-[10px] text-slate-400">${c.rubro} • ${c.localidad || 'General'}</p>
+                        <div class="flex items-center space-x-2.5">
+                            ${c.logo_url ? `<img src="${c.logo_url}" class="w-10 h-10 rounded-xl object-cover border border-slate-800">` : '<div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-xs">🏪</div>'}
+                            <div class="space-y-0.5">
+                                <h4 class="text-xs font-bold text-white">${c.nombre_fantasias} <span class="ml-2 text-[9px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded-full">${c.porcentaje_descuento || 5}% Off</span></h4>
+                                <p class="text-[10px] text-slate-400">${c.rubro} • ${c.localidad || 'General'}</p>
+                            </div>
                         </div>
                         <a href="https://wa.me/${c.whatsapp}?text=Hola,%20vengo%20de%20MaxShop." target="_blank" class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1.5 rounded-xl border border-emerald-500/30 font-semibold">💬 Contacto</a>
                     </div>`;
@@ -704,26 +717,58 @@ def mostrar_interfaz():
 
             async function enviarComercio(e) {
                 e.preventDefault();
-                const data = {
-                    nombre_completo: document.getElementById('c_nombre').value,
-                    correo: document.getElementById('c_correo').value,
-                    whatsapp: document.getElementById('c_wpp').value,
-                    nombre_fantasias: document.getElementById('c_fantasia').value,
-                    rubro: document.getElementById('c_rubro').value,
-                    direccion: document.getElementById('c_dir').value,
-                    localidad: document.getElementById('c_loc').value,
-                    cuit_cuil: document.getElementById('c_cuit').value,
-                    porcentaje_descuento: 5.0,
-                    dia_promocion: document.getElementById('c_dia_promo').value,
-                    logo_url: document.getElementById('c_logo').value || "",
-                    fotos_url: document.getElementById('c_fotos').value || ""
-                };
-                let res = await fetch('/api/registrar-comercio', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-                let json = await res.json();
-                if(json.success) {
-                    mostrarToast("¡Comercio registrado con éxito!", "success");
-                    cerrarModalComercio();
-                    cargarComerciosPublicos();
+                mostrarLoader("Subiendo imágenes y registrando comercio...");
+
+                let logoUrl = "";
+                let fotoUrl = "";
+
+                try {
+                    const logoFile = document.getElementById('c_logo_file').files[0];
+                    if (logoFile) {
+                        const formDataLogo = new FormData();
+                        formDataLogo.append("file", logoFile);
+                        let resLogo = await fetch('/api/subir-imagen', { method: 'POST', body: formDataLogo });
+                        let jsonLogo = await resLogo.json();
+                        if (jsonLogo.success) logoUrl = jsonLogo.url;
+                    }
+
+                    const fotoFile = document.getElementById('c_foto_file').files[0];
+                    if (fotoFile) {
+                        const formDataFoto = new FormData();
+                        formDataFoto.append("file", fotoFile);
+                        let resFoto = await fetch('/api/subir-imagen', { method: 'POST', body: formDataFoto });
+                        let jsonFoto = await resFoto.json();
+                        if (jsonFoto.success) fotoUrl = jsonFoto.url;
+                    }
+
+                    const data = {
+                        nombre_completo: document.getElementById('c_nombre').value,
+                        correo: document.getElementById('c_correo').value,
+                        whatsapp: document.getElementById('c_wpp').value,
+                        nombre_fantasias: document.getElementById('c_fantasia').value,
+                        rubro: document.getElementById('c_rubro').value,
+                        direccion: document.getElementById('c_dir').value,
+                        localidad: document.getElementById('c_loc').value,
+                        cuit_cuil: document.getElementById('c_cuit').value,
+                        porcentaje_descuento: 5.0,
+                        dia_promocion: document.getElementById('c_dia_promo').value,
+                        logo_url: logoUrl,
+                        fotos_url: fotoUrl
+                    };
+
+                    let res = await fetch('/api/registrar-comercio', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+                    let json = await res.json();
+                    ocultarLoader();
+                    if(json.success) {
+                        mostrarToast("¡Comercio registrado con éxito!", "success");
+                        cerrarModalComercio();
+                        cargarComerciosPublicos();
+                    } else {
+                        mostrarToast("Error al registrar: " + (json.detail || "desconocido"), "error");
+                    }
+                } catch(err) {
+                    ocultarLoader();
+                    mostrarToast("Error de conexión al subir archivos", "error");
                 }
             }
 
@@ -764,6 +809,24 @@ def mostrar_interfaz():
     </body>
     </html>
     """
+
+@app.post("/api/subir-imagen")
+async def subir_imagen(file: UploadFile = File(...)):
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Supabase no inicializado")
+    try:
+        file_bytes = await file.read()
+        file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+        file_name = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{os.urandom(4).hex()}.{file_ext}"
+        
+        # Sube al bucket 'comercios-multimedia'
+        res = supabase.storage.from_("comercios-multimedia").upload(file_name, file_bytes, {"content-type": file.content_type or "image/jpeg"})
+        
+        # Obtener URL pública
+        public_url_res = supabase.storage.from_("comercios-multimedia").get_public_url(file_name)
+        return {"success": True, "url": public_url_res}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/comercios")
 def obtener_comercios():
