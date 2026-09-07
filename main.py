@@ -10,7 +10,7 @@ from pydantic import BaseModel
 import os
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="8.3")
+app = FastAPI(title="MaxShop - AsistMax", version="8.4")
 
 app.add_middleware(
     CORSMiddleware,
@@ -55,9 +55,6 @@ class ConsumoQRModel(BaseModel):
     nombre_comercio: str
     monto_compra: float
 
-class ConfigModel(BaseModel):
-    premio_nuevo_registro: int = 250000
-
 @app.get("/", response_class=HTMLResponse)
 def mostrar_interfaz():
     return """
@@ -66,7 +63,7 @@ def mostrar_interfaz():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>MaxShop & AsistMax - Red Fintech B2B</title>
+        <title>MaxShop & AsistMax - Red Híbrida Inteligente</title>
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </head>
@@ -80,7 +77,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <a href="https://wa.me/5493834000000?text=Hola,%20necesito%20asistencia%20con%20el%20sistema%20MaxShop." target="_blank" class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-4 rounded-full shadow-2xl flex items-center justify-center transition transform hover:scale-105 border border-emerald-300/50" title="Asistencia IA & Atención al Cliente">
+        <a href="https://wa.me/5493834000000?text=Hola,%20necesito%20asistencia%20con%20el%20sistema%20MaxShop." target="_blank" class="fixed bottom-6 right-6 z-50 bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-4 rounded-full shadow-2xl flex items-center justify-center transition transform hover:scale-105 border border-emerald-300/50" title="Asistencia IA">
             <span class="text-2xl">💬</span>
         </a>
 
@@ -89,7 +86,7 @@ def mostrar_interfaz():
                 <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-auto h-auto max-h-12 object-contain bg-slate-900">
                 <div class="flex flex-col">
                     <span class="text-xs font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></span>
-                    <span class="text-[10px] sm:text-[9px] text-cyan-400 font-semibold tracking-widest uppercase truncate max-w-[150px] sm:max-w-none">Red B2B & Consumidores</span>
+                    <span class="text-[10px] text-cyan-400 font-semibold tracking-widest uppercase">Red Híbrida & Ahorro</span>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
@@ -105,30 +102,32 @@ def mostrar_interfaz():
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
             <div class="w-full flex justify-center items-center">
-                <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="MaxShop Banner Red Global de Beneficios" class="w-auto max-w-full h-auto object-contain block">
+                <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="MaxShop Banner" class="w-auto max-w-full h-auto object-contain block">
             </div>
 
-            <div class="space-y-2">
-                <div class="px-2 flex justify-between items-center">
-                    <div>
-                        <span class="text-[9px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Red Global 100% Gratuita</span>
-                        <h2 class="text-lg font-extrabold text-white mt-1">Ahorro Inteligente en Comercios</h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-4">
                 <div class="flex justify-between items-center">
-                    <span class="text-[10px] uppercase tracking-wider text-emerald-400 font-bold bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-800/50" id="lblEstadoSuscripcionBadge">Beneficio Activo Gratis</span>
-                    <span class="text-[10px] text-slate-400" id="lblVencimientoSuscripcion">Sin costos ni abonos</span>
+                    <span class="text-[10px] uppercase tracking-wider text-emerald-400 font-bold bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-800/50" id="lblEstadoPlan">Plan Gratuito Activo</span>
+                    <span class="text-[10px] text-slate-400" id="lblVencimientoPlan">Descuento al 50%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div>
-                        <h3 class="text-xs font-bold text-slate-400 uppercase">Crédito de Descuento Disponible</h3>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase">Crédito de Ahorro</h3>
                         <p class="text-2xl font-black text-emerald-400 mt-0.5" id="lblCreditoDisponible">$0</p>
                     </div>
-                    <button onclick="abrirModalUsuario()" class="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-2 rounded-xl font-extrabold shadow-lg shadow-cyan-500/20 transition">
-                        👤 Registrarse Gratis
+                    <button onclick="abrirModalUsuario()" class="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3.5 py-2 rounded-xl font-extrabold shadow-lg shadow-cyan-500/20 transition">
+                        👤 Registrarse
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
+                    <button onclick="ejecutarRecargaExpres()" class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 p-2.5 rounded-2xl border border-cyan-500/30 text-center transition">
+                        <span class="block text-xs font-bold">⚡ Recarga Exprés</span>
+                        <span class="block text-[10px] text-slate-400">+$10.000 crédito por $500</span>
+                    </button>
+                    <button onclick="ejecutarSuscripcionPro()" class="bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 p-2.5 rounded-2xl text-center shadow-md font-bold transition hover:opacity-90">
+                        <span class="block text-xs font-black">⭐ Plan Pro Mensual</span>
+                        <span class="block text-[9px] text-slate-950/80">100% Descuento + $50k ($5.000/mes)</span>
                     </button>
                 </div>
             </div>
@@ -148,7 +147,7 @@ def mostrar_interfaz():
                 <button onclick="abrirModalComercio()" class="bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-cyan-400 text-xl mb-1">🏪</div>
                     <h3 class="text-xs font-bold text-white group-hover:text-cyan-400 transition">Sumar mi Comercio</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Gratis con QR propio</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Comisión 1.7% por venta</p>
                 </button>
                 <button onclick="abrirModalUsuario()" class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 p-4 rounded-2xl text-left transition-all group">
                     <div class="text-blue-400 text-xl mb-1">🎁</div>
@@ -161,7 +160,7 @@ def mostrar_interfaz():
                 <div class="flex justify-between items-center">
                     <div>
                         <span class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-800/50">Vidriera Abierta</span>
-                        <h3 class="text-sm font-extrabold text-white mt-1">🏪 Comercios Adheridos & Beneficios</h3>
+                        <h3 class="text-sm font-extrabold text-white mt-1">🏪 Comercios Adheridos</h3>
                     </div>
                 </div>
 
@@ -177,7 +176,6 @@ def mostrar_interfaz():
 
         </main>
 
-        <!-- Modales -->
         <div id="modalLogin" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -188,7 +186,7 @@ def mostrar_interfaz():
                     <button onclick="cerrarLogin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
                 <div id="loginFormContainer" class="space-y-3">
-                    <p class="text-[11px] text-slate-400">Ingrese su Correo Electrónico registrado para ver su saldo de crédito gratuito.</p>
+                    <p class="text-[11px] text-slate-400">Ingrese su Correo Electrónico para ver su estado y saldo actual.</p>
                     <div>
                         <label class="text-[11px] font-semibold text-slate-400">Correo Electrónico</label>
                         <input type="email" id="inputLoginCorreo" placeholder="ej: tu@correo.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
@@ -198,15 +196,14 @@ def mostrar_interfaz():
                 <div id="panelSesionContainer" class="space-y-4 hidden">
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex justify-between items-center">
                         <div>
-                            <span class="text-[10px] text-cyan-400 font-bold uppercase">Cuenta Gratuita Activa</span>
+                            <span class="text-[10px] text-cyan-400 font-bold uppercase" id="sesionTipoPlanLabel">Plan Gratuito</span>
                             <h4 class="text-xs font-bold text-white" id="nombreSesionLabel">Usuario</h4>
                         </div>
                         <button onclick="cerrarSesion()" class="text-[10px] bg-rose-500/10 text-rose-400 px-2.5 py-1 rounded-lg border border-rose-500/30">Cerrar Sesión</button>
                     </div>
                     <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
                         <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Mi Saldo MaxShop</h4>
-                        <p class="text-[11px] text-slate-300">Crédito de Ahorro Disponible: <strong id="sesionCredito" class="text-emerald-400">$0</strong></p>
-                        <p class="text-[11px] text-slate-500">Sin vencimiento ni costos ocultos.</p>
+                        <p class="text-[11px] text-slate-300">Crédito Disponible: <strong id="sesionCredito" class="text-emerald-400">$0</strong></p>
                     </div>
                 </div>
             </div>
@@ -236,7 +233,7 @@ def mostrar_interfaz():
                 </div>
                 <div class="space-y-3 text-xs">
                     <p class="text-slate-400">Comercio: <strong id="lblComercioEscaneado" class="text-cyan-400">Comercio</strong></p>
-                    <p class="text-[11px] text-cyan-300 bg-cyan-950/50 p-2 rounded-xl border border-cyan-800/40" id="lblInfoDescuentoComercio">Descuento aplicado: 5% (Base permanente)</p>
+                    <p class="text-[11px] text-cyan-300 bg-cyan-950/50 p-2 rounded-xl border border-cyan-800/40" id="lblInfoDescuentoComercio">Descuento aplicado según tu plan</p>
                     <div>
                         <label class="text-slate-400">Monto Total de la Compra ($)</label>
                         <input type="number" id="inputMontoCompra" placeholder="ej: 10000" onkeyup="calcularDescuentoQR()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
@@ -250,13 +247,12 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Modal Sumar Comercio -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
                         <button onclick="cerrarModalComercio()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
-                        <h3 class="text-sm font-bold text-white">🏪 Sumar mi Comercio Gratis</h3>
+                        <h3 class="text-sm font-bold text-white">🏪 Sumar mi Comercio</h3>
                     </div>
                     <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
@@ -297,25 +293,25 @@ def mostrar_interfaz():
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-slate-950 border border-slate-800 rounded-2xl p-2.5 space-y-1.5">
                             <label class="text-[10px] font-semibold text-cyan-400 block">Logo del Negocio</label>
-                            <input type="file" id="c_logo_file" accept="image/*" class="w-full text-[9px] text-slate-300 file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400 cursor-pointer">
-                            <button type="button" onclick="limpiarArchivo('c_logo_file')" class="w-full text-[9px] bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 py-1 rounded-lg border border-rose-500/20 font-semibold transition">🗑️ Quitar Logo</button>
+                            <input type="file" id="c_logo_file" accept="image/*" class="w-full text-[9px] text-slate-300 file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 cursor-pointer">
+                            <button type="button" onclick="limpiarArchivo('c_logo_file')" class="w-full text-[9px] bg-rose-500/10 text-rose-400 py-1 rounded-lg border border-rose-500/20 font-semibold transition">🗑️ Quitar</button>
                         </div>
                         <div class="bg-slate-950 border border-slate-800 rounded-2xl p-2.5 space-y-1.5">
                             <label class="text-[10px] font-semibold text-cyan-400 block">Foto del Negocio</label>
-                            <input type="file" id="c_foto_file" accept="image/*" class="w-full text-[9px] text-slate-300 file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400 cursor-pointer">
-                            <button type="button" onclick="limpiarArchivo('c_foto_file')" class="w-full text-[9px] bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 py-1 rounded-lg border border-rose-500/20 font-semibold transition">🗑️ Quitar Foto</button>
+                            <input type="file" id="c_foto_file" accept="image/*" class="w-full text-[9px] text-slate-300 file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 cursor-pointer">
+                            <button type="button" onclick="limpiarArchivo('c_foto_file')" class="w-full text-[9px] bg-rose-500/10 text-rose-400 py-1 rounded-lg border border-rose-500/20 font-semibold transition">🗑️ Quitar</button>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="text-[10px] font-semibold text-cyan-400">Descuento Base (%)</label>
-                            <input type="number" id="c_porcentaje" value="5" readonly class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 outline-none mt-1 cursor-not-allowed">
+                            <label class="text-[10px] font-semibold text-cyan-400">Descuento Ofrecido (%)</label>
+                            <input type="number" id="c_porcentaje" value="20" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
                         </div>
                         <div>
-                            <label class="text-[10px] font-semibold text-cyan-400">Día de Promoción Especial</label>
+                            <label class="text-[10px] font-semibold text-cyan-400">Día de Promoción</label>
                             <select id="c_dia_promo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1">
-                                <option value="Ninguno">Ninguno (Rige 5%)</option>
+                                <option value="Ninguno">Todos los días</option>
                                 <option value="Lunes">Lunes</option>
                                 <option value="Martes">Martes</option>
                                 <option value="Miércoles">Miércoles</option>
@@ -336,8 +332,8 @@ def mostrar_interfaz():
                     </div>
                     <div class="text-[10px] text-slate-400 pt-1">
                         <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" id="c_terminos" required class="rounded bg-slate-950 border-slate-800 text-cyan-500 focus:ring-0">
-                            <span>Acepto las condiciones de uso y permisos de publicación de imágenes en MaxShop.</span>
+                            <input type="checkbox" id="c_terminos" required class="rounded bg-slate-950 border-slate-800 text-cyan-500">
+                            <span>Acepto las condiciones (Comisión 1.7% por venta real a través de QR).</span>
                         </label>
                     </div>
                     <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Registrar Comercio Gratis</button>
@@ -345,19 +341,18 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Modal Registro de Usuario 100% Gratis -->
         <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
                         <button onclick="cerrarModalUsuario()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
-                        <h3 class="text-sm font-bold text-white">🎁 Registro de Usuario 100% Gratuito</h3>
+                        <h3 class="text-sm font-bold text-white">🎁 Registro de Usuario Gratis</h3>
                     </div>
                     <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-white font-bold">✕</button>
                 </div>
                 <form id="formUsuario" onsubmit="enviarUsuarioGratis(event)" class="space-y-3 text-xs">
                     <div class="bg-cyan-950/40 border border-cyan-800/50 p-3 rounded-2xl text-[11px] text-cyan-300">
-                        ✨ <strong>Acceso libre y sin costo:</strong> Regístrate ahora y obtén <strong>$250.000 en créditos de descuento</strong> para usar en todos los comercios de la red de inmediato.
+                        ✨ <strong>Plan Gratuito:</strong> Obtén saldo inicial y accede al 50% del descuento de los comercios. Recarga exprés opcional por $500 o pásate a Pro por $5.000/mes para tener 100% de descuento ilimitado.
                     </div>
                     <div>
                         <label class="text-slate-400">Nombre Completo</label>
@@ -379,7 +374,7 @@ def mostrar_interfaz():
                         <label class="text-slate-400">Correo Electrónico</label>
                         <input type="email" id="u_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
-                    <button type="submit" id="btnRegistrarGratis" class="w-full py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-extrabold rounded-xl shadow-lg mt-2 transition hover:opacity-90">🚀 Activar Mi Cuenta Gratis Ahora</button>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-extrabold rounded-xl shadow-lg mt-2">🚀 Activar Mi Cuenta Gratis</button>
                 </form>
             </div>
         </div>
@@ -395,19 +390,19 @@ def mostrar_interfaz():
                 </div>
                 <div class="flex border-b border-slate-800 space-x-4 pt-2 overflow-x-auto text-xs">
                     <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400">🏪 Comercios</button>
-                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 font-bold text-slate-400">👤 Usuarios & Créditos</button>
+                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 font-bold text-slate-400">👤 Usuarios & Planes</button>
                 </div>
                 <div id="seccionComerciosAdmin" class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-bold text-cyan-400 uppercase">Comercios Adheridos Registrados</h4>
-                        <a href="/api/admin/exportar/comercios" target="_blank" class="text-[10px] bg-cyan-500/20 text-cyan-300 px-3 py-1.5 rounded-xl border border-cyan-500/40 font-bold">📥 Descargar Base Comercios (CSV)</a>
+                        <h4 class="text-xs font-bold text-cyan-400 uppercase">Comercios Adheridos</h4>
+                        <a href="/api/admin/exportar/comercios" target="_blank" class="text-[10px] bg-cyan-500/25 text-cyan-300 px-3 py-1.5 rounded-xl border border-cyan-500/40 font-bold">📥 Exportar Comercios (CSV)</a>
                     </div>
                     <div id="tablaComerciosAdminList" class="text-xs text-slate-400 max-h-60 overflow-y-auto space-y-2">Cargando...</div>
                 </div>
                 <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-bold text-blue-400 uppercase">Usuarios & Clientes Registrados</h4>
-                        <a href="/api/admin/exportar/usuarios" target="_blank" class="text-[10px] bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded-xl border border-blue-500/40 font-bold">📥 Descargar Base Usuarios (CSV)</a>
+                        <h4 class="text-xs font-bold text-blue-400 uppercase">Usuarios Registrados</h4>
+                        <a href="/api/admin/exportar/usuarios" target="_blank" class="text-[10px] bg-blue-500/25 text-blue-300 px-3 py-1.5 rounded-xl border border-blue-500/40 font-bold">📥 Exportar Usuarios (CSV)</a>
                     </div>
                     <div id="tablaUsuariosAdminList" class="text-xs text-slate-400 max-h-60 overflow-y-auto space-y-2">Cargando...</div>
                 </div>
@@ -437,15 +432,8 @@ def mostrar_interfaz():
                 document.getElementById('modalLoader').classList.remove('hidden');
             }
 
-            function ocultarLoader() {
-                document.getElementById('modalLoader').classList.add('hidden');
-            }
-
-            function limpiarArchivo(idInput) {
-                const input = document.getElementById(idInput);
-                input.value = "";
-                mostrarToast("Imagen descartada.", "success");
-            }
+            function ocultarLoader() { document.getElementById('modalLoader').classList.add('hidden'); }
+            function limpiarArchivo(idInput) { document.getElementById(idInput).value = ""; mostrarToast("Imagen descartada."); }
 
             function inicializarApp() {
                 cargarComerciosPublicos();
@@ -461,22 +449,13 @@ def mostrar_interfaz():
                         listaComerciosGlobal = json.data;
                         renderizarComercios(listaComerciosGlobal);
                     }
-                } catch(e) {
-                    listaComerciosGlobal = [];
-                    renderizarComercios(listaComerciosGlobal);
-                }
+                } catch(e) { listaComerciosGlobal = []; renderizarComercios([]); }
             }
 
             function renderizarComercios(comercios) {
                 const contenedor = document.getElementById('listaComerciosPublicos');
                 if(!comercios || comercios.length === 0) {
-                    contenedor.innerHTML = `
-                        <div class="text-center py-6 space-y-3">
-                            <p class="text-xs text-slate-500">No hay comercios registrados aún.</p>
-                            <button onclick="abrirModalComercio()" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-4 py-2 rounded-xl border border-cyan-500/30 font-bold transition">
-                                ➕ Sumar mi Comercio Ahora
-                            </button>
-                        </div>`;
+                    contenedor.innerHTML = `<div class="text-center py-6 text-xs text-slate-500">No hay comercios registrados aún.</div>`;
                     return;
                 }
                 let html = '';
@@ -486,7 +465,7 @@ def mostrar_interfaz():
                         <div class="flex items-center space-x-2.5">
                             ${c.logo_url ? `<img src="${c.logo_url}" class="w-10 h-10 rounded-xl object-cover border border-slate-800">` : '<div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-xs">🏪</div>'}
                             <div class="space-y-0.5">
-                                <h4 class="text-xs font-bold text-white">${c.nombre_fantasias} <span class="ml-2 text-[9px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded-full">${c.porcentaje_descuento || 5}% Off</span></h4>
+                                <h4 class="text-xs font-bold text-white">${c.nombre_fantasias} <span class="ml-2 text-[9px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded-full">${c.porcentaje_descuento || 20}% Off</span></h4>
                                 <p class="text-[10px] text-slate-400">${c.rubro} • ${c.localidad || 'General'}</p>
                             </div>
                         </div>
@@ -509,19 +488,56 @@ def mostrar_interfaz():
                     if(json.success) {
                         usuarioLogueadoGlobal = json.data;
                         localStorage.setItem('maxshop_correo_usuario', correo);
-                        document.getElementById('lblEstadoSuscripcionBadge').innerText = "Beneficio 100% Gratis ⚡";
+                        let esPro = usuarioLogueadoGlobal.es_pro || false;
+                        document.getElementById('lblEstadoPlan').innerText = esPro ? "⭐ Plan Pro Mensual Activo" : "⚡ Plan Gratuito Activo";
+                        document.getElementById('lblVencimientoPlan').innerText = esPro ? "100% Descuento Ilimitado" : "Descuento Base 50%";
                         document.getElementById('lblCreditoDisponible').innerText = "$" + (usuarioLogueadoGlobal.credito_descuento_disponible || 0).toLocaleString();
-                        document.getElementById('lblVencimientoSuscripcion').innerText = "Activo sin límites";
                     }
                 } catch(e) {}
             }
 
-            function iniciarEscaneoQR() {
-                if(!usuarioLogueadoGlobal) {
-                    mostrarToast("⚠️ Regístrate gratis para usar tus créditos de descuento.", "error");
-                    abrirModalUsuario();
-                    return;
+            async function ejecutarRecargaExpres() {
+                if(!usuarioLogueadoGlobal) { mostrarToast("Inicia sesión o regístrate primero.", "error"); abrirModalUsuario(); return; }
+                let ok = confirm("¿Deseas realizar la Recarga Exprés de $500 para obtener $10.000 extra de crédito?");
+                if(!ok) return;
+                mostrarLoader("Procesando recarga de $500...");
+                let res = await fetch('/api/recarga-expres', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ correo: usuarioLogueadoGlobal.correo })
+                });
+                let json = await res.json();
+                ocultarLoader();
+                if(json.success) {
+                    mostrarToast("¡Recarga exitosa! Se sumaron $10.000 a tu crédito.", "success");
+                    verificarEstadoUsuario(usuarioLogueadoGlobal.correo);
+                } else {
+                    mostrarToast("Error en recarga", "error");
                 }
+            }
+
+            async function ejecutarSuscripcionPro() {
+                if(!usuarioLogueadoGlobal) { mostrarToast("Inicia sesión o regístrate primero.", "error"); abrirModalUsuario(); return; }
+                let ok = confirm("¿Deseas activar el Plan Pro Mensual por $5.000 (100% de descuento y saldo ilimitado)?");
+                if(!ok) return;
+                mostrarLoader("Activando Plan Pro...");
+                let res = await fetch('/api/suscripcion-pro', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ correo: usuarioLogueadoGlobal.correo })
+                });
+                let json = await res.json();
+                ocultarLoader();
+                if(json.success) {
+                    mostrarToast("¡Bienvenido al Plan Pro Mensual!", "success");
+                    verificarEstadoUsuario(usuarioLogueadoGlobal.correo);
+                } else {
+                    mostrarToast("Error al activar Plan Pro", "error");
+                }
+            }
+
+            function iniciarEscaneoQR() {
+                if(!usuarioLogueadoGlobal) { mostrarToast("⚠️ Regístrate para usar tus créditos.", "error"); abrirModalUsuario(); return; }
                 const modal = document.getElementById('modalQR');
                 modal.classList.remove('hidden');
                 if (!html5QrCode) { html5QrCode = new Html5Qrcode("reader"); }
@@ -531,10 +547,14 @@ def mostrar_interfaz():
                         comercioEscaneadoActual = decodedText;
                         document.getElementById('lblComercioEscaneado').innerText = decodedText;
                         let comercioObj = listaComerciosGlobal.find(c => c.nombre_fantasias === decodedText || c.nombre_completo === decodedText);
-                        let descAplicado = 5.0;
-                        if(comercioObj && comercioObj.porcentaje_descuento) { descAplicado = parseFloat(comercioObj.porcentaje_descuento); }
-                        window.porcentajeDescActual = descAplicado;
-                        document.getElementById('lblInfoDescuentoComercio').innerText = `Descuento aplicado: ${descAplicado}% (Base permanente 5% + Día especial)`;
+                        let pctComercio = comercioObj && comercioObj.porcentaje_descuento ? parseFloat(comercioObj.porcentaje_descuento) : 20.0;
+                        
+                        // Lógica híbrida: Plan Pro 100% del desc del comercio, Plan Gratuito 50%
+                        let esPro = usuarioLogueadoGlobal.es_pro || false;
+                        let pctFinal = esPro ? pctComercio : (pctComercio * 0.5);
+                        window.porcentajeDescActual = pctFinal;
+                        
+                        document.getElementById('lblInfoDescuentoComercio').innerText = `Descuento aplicado: ${pctFinal}% (${esPro ? 'Plan Pro 100%' : 'Plan Gratuito 50% del total'})`;
                         document.getElementById('modalMontoVenta').classList.remove('hidden');
                     }, (err) => {}
                 ).catch(() => { modal.classList.add('hidden'); });
@@ -550,7 +570,7 @@ def mostrar_interfaz():
 
             function calcularDescuentoQR() {
                 let monto = parseFloat(document.getElementById('inputMontoCompra').value) || 0;
-                let pct = window.porcentajeDescActual || 5.0;
+                let pct = window.porcentajeDescActual || 10.0;
                 let ahorro = monto * (pct / 100);
                 document.getElementById('lblAhorroCalculado').innerText = "$" + ahorro.toLocaleString();
                 document.getElementById('lblTotalFinal').innerText = "$" + (monto - ahorro).toLocaleString();
@@ -566,7 +586,7 @@ def mostrar_interfaz():
                 });
                 let json = await res.json();
                 if(json.success) {
-                    mostrarToast(`¡Descuento aplicado con éxito! Ahorro: $${json.ahorro_aplicado}`, "success");
+                    mostrarToast(`¡Descuento aplicado! Ahorro: $${json.ahorro_aplicado}`, "success");
                     cerrarModalVenta();
                     verificarEstadoUsuario(usuarioLogueadoGlobal.correo);
                 } else {
@@ -589,29 +609,24 @@ def mostrar_interfaz():
                     document.getElementById('loginFormContainer').classList.add('hidden');
                     document.getElementById('panelSesionContainer').classList.remove('hidden');
                     document.getElementById('nombreSesionLabel').innerText = usuarioLogueadoGlobal.nombre_completo;
+                    document.getElementById('sesionTipoPlanLabel').innerText = usuarioLogueadoGlobal.es_pro ? "Plan Pro Mensual" : "Plan Gratuito";
                     document.getElementById('sesionCredito').innerText = "$" + (usuarioLogueadoGlobal.credito_descuento_disponible || 0).toLocaleString();
                     mostrarToast("¡Sesión iniciada con éxito!", "success");
                 } else {
-                    mostrarToast("No se encontró usuario con ese correo.", "error");
+                    mostrarToast("Usuario no encontrado", "error");
                 }
             }
 
             function cerrarSesion() {
                 localStorage.removeItem('maxshop_correo_usuario');
                 usuarioLogueadoGlobal = null;
-                document.getElementById('panelSesionContainer').classList.add('hidden');
-                document.getElementById('loginFormContainer').classList.remove('hidden');
                 location.reload();
             }
 
             function abrirAdmin() {
                 let c = prompt("Clave Admin:");
-                if(c === "AsistMaxAdmin2026Secure") { 
-                    document.getElementById('modalAdmin').classList.remove('hidden'); 
-                    cargarDatosAdmin(); 
-                } else if(c !== null) { 
-                    mostrarToast("Clave incorrecta", "error"); 
-                }
+                if(c === "AsistMaxAdmin2026Secure") { document.getElementById('modalAdmin').classList.remove('hidden'); cargarDatosAdmin(); }
+                else if(c !== null) { mostrarToast("Clave incorrecta", "error"); }
             }
             function cerrarAdmin() { document.getElementById('modalAdmin').classList.add('hidden'); }
 
@@ -634,36 +649,28 @@ def mostrar_interfaz():
                     let res = await fetch('/api/admin/datos');
                     let json = await res.json();
                     if(json.success) {
-                        document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1 flex justify-between items-center"><div><b>${c.nombre_fantasias}</b> - ${c.rubro} (${c.localidad})<br><span class="text-[10px] text-slate-400">Titular: ${c.nombre_completo} | CUIT: ${c.cuit_cuil}</span></div></div>`).join('') || 'Sin comercios';
-                        document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1 flex justify-between items-center"><div><b>${u.nombre_completo}</b> (${u.correo})<br><span class="text-[10px] text-slate-400">DNI: ${u.dni} | Wpp: ${u.whatsapp || '-'} | Crédito: $${u.credito_descuento_disponible || 0}</span></div></div>`).join('') || 'Sin usuarios';
+                        document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1"><b>${c.nombre_fantasias}</b> - ${c.rubro} (${c.localidad})<br><span class="text-[10px] text-slate-400">Titular: ${c.nombre_completo} | CUIT: ${c.cuit_cuil}</span></div>`).join('') || 'Sin comercios';
+                        document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1"><b>${u.nombre_completo}</b> (${u.correo}) - Plan: <b>${u.es_pro ? 'PRO' : 'GRATIS'}</b><br><span class="text-[10px] text-slate-400">DNI: ${u.dni} | Crédito: $${u.credito_descuento_disponible || 0}</span></div>`).join('') || 'Sin usuarios';
                     }
                 } catch(e) {}
             }
 
             async function enviarComercio(e) {
                 e.preventDefault();
-                mostrarLoader("Subiendo imágenes y registrando comercio...");
-
-                let logoUrl = "";
-                let fotoUrl = "";
-
+                mostrarLoader("Registrando comercio...");
+                let logoUrl = "", fotoUrl = "";
                 try {
                     const logoFile = document.getElementById('c_logo_file').files[0];
                     if (logoFile) {
-                        const formDataLogo = new FormData();
-                        formDataLogo.append("file", logoFile);
-                        let resLogo = await fetch('/api/subir-imagen', { method: 'POST', body: formDataLogo });
-                        let jsonLogo = await resLogo.json();
-                        if (jsonLogo.success) logoUrl = jsonLogo.url;
+                        let fd = new FormData(); fd.append("file", logoFile);
+                        let r = await fetch('/api/subir-imagen', { method: 'POST', body: fd });
+                        let j = await r.json(); if(j.success) logoUrl = j.url;
                     }
-
                     const fotoFile = document.getElementById('c_foto_file').files[0];
                     if (fotoFile) {
-                        const formDataFoto = new FormData();
-                        formDataFoto.append("file", fotoFile);
-                        let resFoto = await fetch('/api/subir-imagen', { method: 'POST', body: formDataFoto });
-                        let jsonFoto = await resFoto.json();
-                        if (jsonFoto.success) fotoUrl = jsonFoto.url;
+                        let fd = new FormData(); fd.append("file", fotoFile);
+                        let r = await fetch('/api/subir-imagen', { method: 'POST', body: fd });
+                        let j = await r.json(); if(j.success) fotoUrl = j.url;
                     }
 
                     const data = {
@@ -675,7 +682,7 @@ def mostrar_interfaz():
                         direccion: document.getElementById('c_dir').value,
                         localidad: document.getElementById('c_loc').value,
                         cuit_cuil: document.getElementById('c_cuit').value,
-                        porcentaje_descuento: 5.0,
+                        porcentaje_descuento: parseFloat(document.getElementById('c_porcentaje').value) || 20.0,
                         dia_promocion: document.getElementById('c_dia_promo').value,
                         logo_url: logoUrl,
                         fotos_url: fotoUrl
@@ -689,18 +696,14 @@ def mostrar_interfaz():
                         cerrarModalComercio();
                         cargarComerciosPublicos();
                     } else {
-                        mostrarToast("Error al registrar: " + (json.detail || "desconocido"), "error");
+                        mostrarToast("Error al registrar", "error");
                     }
-                } catch(err) {
-                    ocultarLoader();
-                    mostrarToast("Error de conexión al subir archivos", "error");
-                }
+                } catch(err) { ocultarLoader(); mostrarToast("Error de conexión", "error"); }
             }
 
             async function enviarUsuarioGratis(e) {
                 e.preventDefault();
-                mostrarLoader("Activando cuenta gratuita...");
-
+                mostrarLoader("Activando cuenta...");
                 const data = {
                     nombre_completo: document.getElementById('u_nombre').value,
                     dni: document.getElementById('u_dni').value,
@@ -709,22 +712,18 @@ def mostrar_interfaz():
                     whatsapp: document.getElementById('u_wpp').value,
                     correo: document.getElementById('u_correo').value
                 };
-                
                 try {
                     let res = await fetch('/api/registrar-usuario-gratis', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                     let json = await res.json();
                     ocultarLoader();
                     if(json.success) {
-                        mostrarToast("¡Cuenta activada con $250.000 de regalo!", "success");
+                        mostrarToast("¡Cuenta activada con éxito!", "success");
                         cerrarModalUsuario();
                         verificarEstadoUsuario(data.correo);
                     } else {
-                        mostrarToast("Error: " + (json.detail || "desconocido"), "error");
+                        mostrarToast("Error al registrar usuario", "error");
                     }
-                } catch(err) {
-                    ocultarLoader();
-                    mostrarToast("Error de conexión con el servidor", "error");
-                }
+                } catch(err) { ocultarLoader(); mostrarToast("Error de conexión", "error"); }
             }
         </script>
     </body>
@@ -734,140 +733,136 @@ def mostrar_interfaz():
 @app.post("/api/subir-imagen")
 async def subir_imagen(file: UploadFile = File(...)):
     if not supabase:
-        raise HTTPException(status_code=500, detail="Supabase no inicializado")
+        raise HTTPException(status_code=500, detail="Sin Supabase")
     try:
         file_bytes = await file.read()
-        file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
-        file_name = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{os.urandom(4).hex()}.{file_ext}"
-        
+        file_name = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{os.urandom(4).hex()}.jpg"
         supabase.storage.from_("comercios-multimedia").upload(file_name, file_bytes, {"content-type": file.content_type or "image/jpeg"})
-        public_url_res = supabase.storage.from_("comercios-multimedia").get_public_url(file_name)
-        return {"success": True, "url": public_url_res}
+        return {"success": True, "url": supabase.storage.from_("comercios-multimedia").get_public_url(file_name)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/comercios")
 def obtener_comercios():
-    if not supabase:
-        return {"success": False, "data": []}
+    if not supabase: return {"success": False, "data": []}
     try:
-        response = supabase.table("comercios").select("*").execute()
-        return {"success": True, "data": response.data}
-    except Exception as e:
-        return {"success": False, "data": []}
+        res = supabase.table("comercios").select("*").execute()
+        return {"success": True, "data": res.data}
+    except: return {"success": False, "data": []}
 
 @app.get("/api/usuario/{correo}")
 def obtener_usuario(correo: str):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Sin conexión a BD")
+    if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
     try:
         res = supabase.table("usuarios").select("*").eq("correo", correo).execute()
         if res.data and len(res.data) > 0:
             return {"success": True, "data": res.data[0]}
-        return {"success": False, "detail": "Usuario no encontrado"}
+        return {"success": False, "detail": "No encontrado"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/admin/datos")
 def admin_datos():
-    if not supabase:
-        return {"success": False, "comercios": [], "usuarios": []}
+    if not supabase: return {"success": False, "comercios": [], "usuarios": []}
     try:
-        res_c = supabase.table("comercios").select("*").execute()
-        res_u = supabase.table("usuarios").select("*").execute()
-        return {"success": True, "comercios": res_c.data, "usuarios": res_u.data}
-    except Exception as e:
-        return {"success": False, "comercios": [], "usuarios": []}
+        rc = supabase.table("comercios").select("*").execute()
+        ru = supabase.table("usuarios").select("*").execute()
+        return {"success": True, "comercios": rc.data, "usuarios": ru.data}
+    except: return {"success": False, "comercios": [], "usuarios": []}
 
 @app.get("/api/admin/exportar/comercios", response_class=PlainTextResponse)
 def exportar_comercios():
-    if not supabase:
-        return "Sin conexión a BD"
+    if not supabase: return "Sin BD"
     try:
         res = supabase.table("comercios").select("*").execute()
-        output = io.StringIO()
-        writer = csv.writer(output)
-        if res.data:
-            keys = res.data[0].keys()
-            writer.writerow(keys)
-            for row in res.data:
-                writer.writerow(row.values())
-        return output.getvalue()
-    except Exception as e:
-        return f"Error: {e}"
+        out = io.StringIO(); w = csv.writer(out)
+        if res.data: w.writerow(res.data[0].keys()); [w.writerow(r.values()) for r in res.data]
+        return out.getvalue()
+    except: return "Error"
 
 @app.get("/api/admin/exportar/usuarios", response_class=PlainTextResponse)
 def exportar_usuarios():
-    if not supabase:
-        return "Sin conexión a BD"
+    if not supabase: return "Sin BD"
     try:
         res = supabase.table("usuarios").select("*").execute()
-        output = io.StringIO()
-        writer = csv.writer(output)
-        if res.data:
-            keys = res.data[0].keys()
-            writer.writerow(keys)
-            for row in res.data:
-                writer.writerow(row.values())
-        return output.getvalue()
-    except Exception as e:
-        return f"Error: {e}"
+        out = io.StringIO(); w = csv.writer(out)
+        if res.data: w.writerow(res.data[0].keys()); [w.writerow(r.values()) for r in res.data]
+        return out.getvalue()
+    except: return "Error"
 
 @app.post("/api/registrar-comercio")
-def registrar_comercio(comercio: ComercioModel):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Sin conexión a BD")
+def registrar_comercio(c: ComercioModel):
+    if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
     try:
-        comercio.porcentaje_descuento = 5.0
-        res = supabase.table("comercios").insert(comercio.dict()).execute()
+        res = supabase.table("comercios").insert(c.dict()).execute()
         return {"success": True, "data": res.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/registrar-usuario-gratis")
-def registrar_usuario_gratis(usuario: UsuarioModel):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Sin conexión a Base de Datos.")
+def registrar_usuario_gratis(u: UsuarioModel):
+    if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
     try:
-        credito_inicial = 250000 # Crédito de bienvenida 100% gratuito
-        ahora = datetime.now()
-
-        datos = usuario.dict()
-        datos["suscripcion_activa"] = True
-        datos["plan_seleccionado"] = "Gratuito Red Global"
-        datos["credito_descuento_disponible"] = credito_inicial
-        datos["credito_descuento_total"] = credito_inicial
-        datos["fecha_inicio_suscripcion"] = ahora.isoformat()
-
-        supabase.table("usuarios").upsert(datos, on_conflict="correo").execute()
-        return {"success": True, "credito": credito_inicial}
+        data = u.dict()
+        data["es_pro"] = False
+        data["credito_descuento_disponible"] = 50000 # Saldo inicial
+        supabase.table("usuarios").upsert(data, on_conflict="correo").execute()
+        return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/recarga-expres")
+def recarga_expres(payload: dict):
+    correo = payload.get("correo")
+    if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
+    try:
+        res = supabase.table("usuarios").select("credito_descuento_disponible").eq("correo", correo).execute()
+        if not res.data: raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        actual = float(res.data[0].get("credito_descuento_disponible", 0))
+        nuevo = actual + 10000
+        supabase.table("usuarios").update({"credito_descuento_disponible": nuevo}).eq("correo", correo).execute()
+        return {"success": True, "nuevo_credito": nuevo}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/suscripcion-pro")
+def suscripcion_pro(payload: dict):
+    correo = payload.get("correo")
+    if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
+    try:
+        res = supabase.table("usuarios").select("credito_descuento_disponible").eq("correo", correo).execute()
+        if not res.data: raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        actual = float(res.data[0].get("credito_descuento_disponible", 0))
+        nuevo = actual + 50000
+        supabase.table("usuarios").update({"es_pro": True, "credito_descuento_disponible": nuevo}).eq("correo", correo).execute()
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @app.post("/api/consumir-credito")
 def consumir_credito(consumo: ConsumoQRModel):
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Sin conexión a BD")
+    if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
     try:
-        comercio_res = supabase.table("comercios").select("*").eq("nombre_fantasias", consumo.nombre_comercio).execute()
-        pct_descuento = 5.0 
-        if comercio_res.data and len(comercio_res.data) > 0:
-            pct_descuento = float(comercio_res.data[0].get("porcentaje_descuento", 5.0))
+        c_res = supabase.table("comercios").select("porcentaje_descuento").eq("nombre_fantasias", consumo.nombre_comercio).execute()
+        pct_base = 20.0
+        if c_res.data: pct_base = float(c_res.data[0].get("porcentaje_descuento", 20.0))
 
-        res = supabase.table("usuarios").select("*").eq("correo", consumo.correo_usuario).execute()
-        if not res.data:
-            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        u_res = supabase.table("usuarios").select("*").eq("correo", consumo.correo_usuario).execute()
+        if not u_res.data: raise HTTPException(status_code=404, detail="Usuario no encontrado")
         
-        usuario = res.data[0]
-        credito_disponible = float(usuario.get("credito_descuento_disponible", 0))
-        ahorro = consumo.monto_compra * (pct_descuento / 100.0)
-        
+        user = u_res.data[0]
+        es_pro = user.get("es_pro", False)
+        pct_aplicado = pct_base if es_pro else (pct_base * 0.5)
+
+        credito_disponible = float(user.get("credito_descuento_disponible", 0))
+        ahorro = consumo.monto_compra * (pct_aplicado / 100.0)
+
         if credito_disponible < ahorro:
-            raise HTTPException(status_code=400, detail="Crédito de descuento insuficiente.")
-        
+            raise HTTPException(status_code=400, detail="Crédito de descuento insuficiente. Realiza una Recarga Exprés o pásate a Pro.")
+
         nuevo_credito = credito_disponible - ahorro
         supabase.table("usuarios").update({"credito_descuento_disponible": nuevo_credito}).eq("correo", consumo.correo_usuario).execute()
-        
+
         return {"success": True, "ahorro_aplicado": ahorro, "credito_restante": nuevo_credito}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
