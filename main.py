@@ -3,14 +3,15 @@ import io
 import traceback
 from datetime import datetime, timedelta
 from typing import List, Optional
-from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form
+from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 import os
+import hashlib
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - AsistMax", version="8.6")
+app = FastAPI(title="MaxShop - Red de Comercios & Ahorro", version="8.7")
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,6 +29,10 @@ if SUPABASE_URL and SUPABASE_KEY:
 else:
     supabase = None
 
+# ==========================================
+# MODELOS PYDANTIC ACTUALIZADOS
+# ==========================================
+
 class ComercioModel(BaseModel):
     nombre_completo: str
     correo: str
@@ -42,18 +47,33 @@ class ComercioModel(BaseModel):
     logo_url: str = ""
     fotos_url: str = ""
 
-class UsuarioModel(BaseModel):
+class UsuarioRegistroModel(BaseModel):
     nombre_completo: str
     dni: str
     direccion: str
     localidad: str
     whatsapp: str
-    correo: str
+    correo: EmailStr
+    password: str
+
+class UsuarioLoginModel(BaseModel):
+    correo: EmailStr
+    password: str
 
 class ConsumoQRModel(BaseModel):
     correo_usuario: str
     nombre_comercio: str
     monto_compra: float
+
+class CambioPlanModel(BaseModel):
+    nuevo_plan: str # 'FREE' o 'PRO'
+
+def encriptar_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# ==========================================
+# INTERFAZ WEB PRINCIPAL (HTML / TAILWIND)
+# ==========================================
 
 @app.get("/", response_class=HTMLResponse)
 def mostrar_interfaz():
@@ -86,12 +106,11 @@ def mostrar_interfaz():
                 <img src="https://i.ibb.co/rRGzqgnx/logo.jpg" alt="MaxShop Logo" class="w-auto h-auto max-h-12 object-contain bg-slate-900">
                 <div class="flex flex-col">
                     <span class="text-xs font-black tracking-wider text-white">MAXSHOP <span class="text-cyan-400 font-light">| AsistMax</span></span>
-                    <!-- CORREGIDO: Eliminada la palabra "Híbrida" -->
                     <span class="text-[10px] text-cyan-400 font-semibold tracking-widest uppercase">Red de Comercios & Ahorro</span>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="abrirLogin()" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-xl border border-cyan-500/30 transition font-semibold">
+                <button onclick="abrirModalAuth('login')" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-xl border border-cyan-500/30 transition font-semibold">
                     🔑 Login
                 </button>
                 <button onclick="abrirAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700 transition font-medium">
@@ -180,23 +199,17 @@ def mostrar_interfaz():
         </main>
 
         <!-- Modales -->
-        <div id="modalLogin" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <!-- Modal Login / Registro Seguro con Contraseña -->
+        <div id="authModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
-                        <button onclick="cerrarLogin()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
-                        <h3 class="text-sm font-bold text-white">🔑 Iniciar Sesión</h3>
+                        <button onclick="cerrarModalAuth()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <h3 class="text-sm font-bold text-white" id="authTitle">🔑 Iniciar Sesión en MaxShop</h3>
                     </div>
-                    <button onclick="cerrarLogin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+                    <button onclick="cerrarModalAuth()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
-                <div id="loginFormContainer" class="space-y-3">
-                    <p class="text-[11px] text-slate-400">Ingrese su Correo Electrónico para ver su estado y saldo actual.</p>
-                    <div>
-                        <label class="text-[11px] font-semibold text-slate-400">Correo Electrónico</label>
-                        <input type="email" id="inputLoginCorreo" placeholder="ej: tu@correo.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none mt-1">
-                    </div>
-                    <button onclick="ejecutarLogin()" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs shadow-lg">Ingresar</button>
-                </div>
+
                 <div id="panelSesionContainer" class="space-y-4 hidden">
                     <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex justify-between items-center">
                         <div>
@@ -210,6 +223,42 @@ def mostrar_interfaz():
                         <p class="text-[11px] text-slate-300">Crédito Disponible: <strong id="sesionCredito" class="text-emerald-400">$0</strong></p>
                     </div>
                 </div>
+
+                <form id="authForm" onsubmit="procesarAutenticacion(event)" class="space-y-3 text-xs">
+                    <div id="camposRegistro" class="space-y-3 hidden">
+                        <div>
+                            <label class="text-slate-400">Nombre Completo</label>
+                            <input type="text" id="reg_nombre" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
+                        </div>
+                        <div>
+                            <label class="text-slate-400">DNI</label>
+                            <input type="text" id="reg_dni" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="reg_dir" placeholder="Dirección" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none">
+                            <input type="text" id="reg_loc" placeholder="Localidad" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none">
+                        </div>
+                        <div>
+                            <label class="text-slate-400">WhatsApp</label>
+                            <input type="text" id="reg_wpp" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-slate-400">Correo Electrónico</label>
+                        <input type="email" id="auth_correo" required placeholder="tu@correo.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
+                    </div>
+                    <div>
+                        <label class="text-slate-400">Contraseña</label>
+                        <input type="password" id="auth_password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
+                    </div>
+
+                    <button type="submit" id="btnSubmitAuth" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2">Ingresar</button>
+                    
+                    <div class="text-center pt-2">
+                        <span id="toggleAuthText" onclick="cambiarModoAuth()" class="text-cyan-400 cursor-pointer hover:underline">¿No tienes cuenta? Regístrate aquí</span>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -251,7 +300,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Modal Sumar Comercio (CORREGIDO: Sin mención pública de comisiones) -->
+        <!-- Modal Sumar Comercio -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -338,7 +387,6 @@ def mostrar_interfaz():
                     <div class="text-[10px] text-slate-400 pt-1">
                         <label class="flex items-center space-x-2 cursor-pointer">
                             <input type="checkbox" id="c_terminos" required class="rounded bg-slate-950 border-slate-800 text-cyan-500">
-                            <!-- CORREGIDO: Términos limpios sin porcentajes visibles al público -->
                             <span>Acepto las condiciones de participación y publicación en la red MaxShop.</span>
                         </label>
                     </div>
@@ -347,7 +395,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
-        <!-- Modal de Planes y Beneficios Detallados -->
+        <!-- Modal de Planes y Beneficios Detallados (Texto Plan Pro Corregido) -->
         <div id="modalPlanesDetallados" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -372,67 +420,29 @@ def mostrar_interfaz():
                             <li><strong>Descuento activo:</strong> Accedes al 50% del beneficio real publicado por cada comercio (ej. si el comercio ofrece 20%, tú obtienes 10% de ahorro directo).</li>
                             <li><strong>Recarga exprés opcional:</strong> Si te quedas sin saldo y no quieres pagar abonos fijos, puedes recargar $10.000 extra de crédito por sólo $500 en cualquier momento.</li>
                         </ul>
-                        <button onclick="cerrarModalPlanesDetallados(); abrirModalUsuarioGratis();" class="w-full mt-2 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold rounded-xl text-xs transition">Registrarme en Plan Gratuito</button>
+                        <button onclick="cerrarModalPlanesDetallados(); abrirModalAuth('registro');" class="w-full mt-2 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold rounded-xl text-xs transition">Registrarme en Plan Gratuito</button>
                     </div>
 
-                    <!-- Tarjeta Plan Pro -->
+                    <!-- Tarjeta Plan Pro (TEXTO CORREGIDO) -->
                     <div class="bg-slate-950 border border-cyan-500/40 rounded-2xl p-4 space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="text-cyan-400 font-black text-sm">⭐ Plan Pro Mensual ($5.000 / mes)</span>
                             <span class="bg-cyan-950 text-cyan-300 text-[10px] px-2 py-0.5 rounded-full font-bold">Beneficio Pleno</span>
                         </div>
                         <ul class="space-y-1 text-slate-400 text-[11px] list-disc list-inside">
-                            <li><strong>Abono tipo telefonía:</strong> Se renueva mensualmente para tener línea de ahorro abierta y sin interrupciones.</li>
+                            <li><strong>Suscripción mensual automática:</strong> Se renueva cada mes para mantener tu línea de beneficios de ahorro activa y sin interrupciones.</li>
                             <li><strong>Descuento pleno (100%):</strong> Disfrutas del total del porcentaje de descuento que publica el comercio sin ningún tipo de recorte (ej. si el comercio ofrece 20%, te llevas el 20% entero).</li>
                             <li><strong>Saldo mensual extra:</strong> Recibes $50.000 frescos todos los 1 de cada mes en tu billetera.</li>
                         </ul>
-                        <button onclick="ejecutarSuscripcionProDESDEModal()" class="w-full mt-2 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs transition shadow-md">Activar Plan Pro ($5.000/mes)</button>
+                        <button onclick="cerrarModalPlanesDetallados(); ejecutarSuscripcionProDESDEModal();" class="w-full mt-2 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs transition shadow-md">Activar Plan Pro ($5.000/mes)</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Modal Registro Usuario Plan Gratuito -->
-        <div id="modalUsuarioGratis" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                    <div class="flex items-center space-x-2">
-                        <button onclick="cerrarModalUsuarioGratis()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
-                        <h3 class="text-sm font-bold text-white">🎁 Registro Plan Gratuito</h3>
-                    </div>
-                    <button onclick="cerrarModalUsuarioGratis()" class="text-slate-400 hover:text-white font-bold">✕</button>
-                </div>
-                <form id="formUsuarioGratis" onsubmit="enviarUsuarioGratis(event)" class="space-y-3 text-xs">
-                    <div class="bg-emerald-950/40 border border-emerald-800/50 p-3 rounded-2xl text-[11px] text-emerald-300">
-                        ✨ Te estás registrando en el <strong>Plan Gratuito</strong> con $50.000 de saldo inicial de regalo.
-                    </div>
-                    <div>
-                        <label class="text-slate-400">Nombre Completo</label>
-                        <input type="text" id="u_nombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-slate-400">DNI</label>
-                        <input type="text" id="u_dni" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
-                    </div>
-                    <div>
-                        <input type="text" id="u_dir" placeholder="Dirección" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
-                        <input type="text" id="u_loc" placeholder="Localidad" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none mt-1.5">
-                    </div>
-                    <div>
-                        <label class="text-slate-400">WhatsApp</label>
-                        <input type="text" id="u_wpp" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-slate-400">Correo Electrónico</label>
-                        <input type="email" id="u_correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
-                    </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-extrabold rounded-xl shadow-lg mt-2">🚀 Finalizar Registro Gratuito</button>
-                </form>
-            </div>
-        </div>
-
+        <!-- Panel de Administración Completo y Avanzado -->
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
                         <button onclick="cerrarAdmin()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
@@ -442,8 +452,9 @@ def mostrar_interfaz():
                 </div>
                 <div class="flex border-b border-slate-800 space-x-4 pt-2 overflow-x-auto text-xs">
                     <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400">🏪 Comercios</button>
-                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 font-bold text-slate-400">👤 Usuarios & Planes</button>
+                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 font-bold text-slate-400">👤 Usuarios & Control Centralizado</button>
                 </div>
+                
                 <div id="seccionComerciosAdmin" class="space-y-3">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-bold text-cyan-400 uppercase">Comercios Adheridos</h4>
@@ -451,12 +462,29 @@ def mostrar_interfaz():
                     </div>
                     <div id="tablaComerciosAdminList" class="text-xs text-slate-400 max-h-60 overflow-y-auto space-y-2">Cargando...</div>
                 </div>
+
+                <!-- Sección de Usuarios con Tabla de Control Directo para Administrador -->
                 <div id="seccionUsuariosAdmin" class="space-y-3 hidden">
                     <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-bold text-blue-400 uppercase">Usuarios Registrados</h4>
+                        <h4 class="text-xs font-bold text-blue-400 uppercase">Clientes Registrados & Membresías</h4>
                         <a href="/api/admin/exportar/usuarios" target="_blank" class="text-[10px] bg-blue-500/25 text-blue-300 px-3 py-1.5 rounded-xl border border-blue-500/40 font-bold">📥 Exportar Usuarios (CSV)</a>
                     </div>
-                    <div id="tablaUsuariosAdminList" class="text-xs text-slate-400 max-h-60 overflow-y-auto space-y-2">Cargando...</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300 border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-cyan-400">
+                                    <th class="p-2">Cliente / WhatsApp</th>
+                                    <th class="p-2">Correo Electrónico</th>
+                                    <th class="p-2">Membresía</th>
+                                    <th class="p-2">Saldo Ahorro</th>
+                                    <th class="p-2 text-right">Acciones Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaUsuariosAdminBody">
+                                <tr><td colspan="5" class="text-center p-4 text-slate-500">Cargando usuarios...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -466,6 +494,7 @@ def mostrar_interfaz():
             let listaComerciosGlobal = [];
             let comercioEscaneadoActual = null;
             let usuarioLogueadoGlobal = null;
+            let modoRegistroAuth = false;
 
             function mostrarToast(mensaje, tipo = 'success') {
                 const contenedor = document.getElementById('toastContainer');
@@ -548,8 +577,105 @@ def mostrar_interfaz():
                 } catch(e) {}
             }
 
+            // Sistema de Autenticación Modal Seguro
+            function abrirModalAuth(modo) {
+                document.getElementById('authModal').classList.remove('hidden');
+                if (modo === 'registro' && !modoRegistroAuth) {
+                    cambiarModoAuth();
+                } else if (modo === 'login' && modoRegistroAuth) {
+                    cambiarModoAuth();
+                }
+                if (usuarioLogueadoGlobal) {
+                    document.getElementById('authForm').classList.add('hidden');
+                    document.getElementById('panelSesionContainer').classList.remove('hidden');
+                    document.getElementById('nombreSesionLabel').innerText = usuarioLogueadoGlobal.nombre_completo;
+                    document.getElementById('sesionTipoPlanLabel').innerText = usuarioLogueadoGlobal.es_pro ? "Plan Pro Mensual" : "Plan Gratuito";
+                    document.getElementById('sesionCredito').innerText = "$" + (usuarioLogueadoGlobal.credito_descuento_disponible || 0).toLocaleString();
+                } else {
+                    document.getElementById('authForm').classList.remove('hidden');
+                    document.getElementById('panelSesionContainer').classList.add('hidden');
+                }
+            }
+
+            function cerrarModalAuth() { document.getElementById('authModal').classList.add('hidden'); }
+
+            function cambiarModoAuth() {
+                modoRegistroAuth = !modoRegistroAuth;
+                const camposReg = document.getElementById('camposRegistro');
+                const titulo = document.getElementById('authTitle');
+                const btnSubmit = document.getElementById('btnSubmitAuth');
+                const toggleText = document.getElementById('toggleAuthText');
+
+                if (modoRegistroAuth) {
+                    camposReg.classList.remove('hidden');
+                    titulo.innerText = '🎁 Registro de Usuario Seguro';
+                    btnSubmit.innerText = 'Registrarse y Activar';
+                    toggleText.innerText = '¿Ya tienes cuenta? Inicia sesión aquí';
+                } else {
+                    camposReg.classList.add('hidden');
+                    titulo.innerText = '🔑 Iniciar Sesión en MaxShop';
+                    btnSubmit.innerText = 'Ingresar';
+                    toggleText.innerText = '¿No tienes cuenta? Regístrate aquí';
+                }
+            }
+
+            async function procesarAutenticacion(e) {
+                e.preventDefault();
+                let correo = document.getElementById('auth_correo').value.trim();
+                let password = document.getElementById('auth_password').value;
+
+                if (modoRegistroAuth) {
+                    mostrarLoader("Registrando usuario de forma segura...");
+                    let payload = {
+                        nombre_completo: document.getElementById('reg_nombre').value,
+                        dni: document.getElementById('reg_dni').value,
+                        direccion: document.getElementById('reg_dir').value,
+                        localidad: document.getElementById('reg_loc').value,
+                        whatsapp: document.getElementById('reg_wpp').value,
+                        correo: correo,
+                        password: password
+                    };
+                    let res = await fetch('/api/registro', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(payload)
+                    });
+                    let json = await res.json();
+                    ocultarLoader();
+                    if(res.ok) {
+                        mostrarToast("¡Registro exitoso con $50.000 de saldo!", "success");
+                        verificarEstadoUsuario(correo);
+                        cerrarModalAuth();
+                    } else {
+                        mostrarToast(json.detail || "Error en el registro", "error");
+                    }
+                } else {
+                    mostrarLoader("Verificando credenciales...");
+                    let res = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ correo: correo, password: password })
+                    });
+                    let json = await res.json();
+                    ocultarLoader();
+                    if(res.ok) {
+                        mostrarToast("¡Sesión iniciada con éxito!", "success");
+                        verificarEstadoUsuario(correo);
+                        cerrarModalAuth();
+                    } else {
+                        mostrarToast(json.detail || "Credenciales incorrectas", "error");
+                    }
+                }
+            }
+
+            function cerrarSesion() {
+                localStorage.removeItem('maxshop_correo_usuario');
+                usuarioLogueadoGlobal = null;
+                location.reload();
+            }
+
             async function ejecutarRecargaExpres() {
-                if(!usuarioLogueadoGlobal) { mostrarToast("Inicia sesión o regístrate primero.", "error"); abrirModalPlanesDetallados(); return; }
+                if(!usuarioLogueadoGlobal) { mostrarToast("Inicia sesión o regístrate primero.", "error"); abrirModalAuth('login'); return; }
                 let ok = confirm("¿Deseas realizar la Recarga Exprés de $500 para obtener $10.000 extra de crédito?");
                 if(!ok) return;
                 mostrarLoader("Procesando recarga de $500...");
@@ -571,23 +697,17 @@ def mostrar_interfaz():
             async function ejecutarSuscripcionPro() {
                 if(!usuarioLogueadoGlobal) { 
                     mostrarToast("Inicia sesión o regístrate primero para activar Plan Pro.", "error"); 
-                    abrirModalPlanesDetallados(); 
+                    abrirModalAuth('login'); 
                     return; 
                 }
                 confirmarYActivarPro();
             }
 
             async function ejecutarSuscripcionProDESDEModal() {
-                cerrarModalPlanesDetallados();
                 if(!usuarioLogueadoGlobal) {
-                    let correoReg = prompt("Ingrese su Correo Electrónico registrado para activar Plan Pro:");
-                    if(!correoReg) return;
-                    await verificarEstadoUsuario(correoReg);
-                    if(!usuarioLogueadoGlobal) {
-                        mostrarToast("Debe registrarse primero en Plan Gratuito para luego pasar a Pro.", "error");
-                        abrirModalUsuarioGratis();
-                        return;
-                    }
+                    mostrarToast("Debe iniciar sesión primero para activar el Plan Pro.", "error");
+                    abrirModalAuth('login');
+                    return;
                 }
                 confirmarYActivarPro();
             }
@@ -612,7 +732,7 @@ def mostrar_interfaz():
             }
 
             function iniciarEscaneoQR() {
-                if(!usuarioLogueadoGlobal) { mostrarToast("⚠️ Regístrate para usar tus créditos.", "error"); abrirModalPlanesDetallados(); return; }
+                if(!usuarioLogueadoGlobal) { mostrarToast("⚠️ Inicia sesión para usar tus créditos.", "error"); abrirModalAuth('login'); return; }
                 const modal = document.getElementById('modalQR');
                 modal.classList.remove('hidden');
                 if (!html5QrCode) { html5QrCode = new Html5Qrcode("reader"); }
@@ -672,32 +792,6 @@ def mostrar_interfaz():
             function cerrarModalComercio() { document.getElementById('modalComercio').classList.add('hidden'); }
             function abrirModalPlanesDetallados() { document.getElementById('modalPlanesDetallados').classList.remove('hidden'); }
             function cerrarModalPlanesDetallados() { document.getElementById('modalPlanesDetallados').classList.add('hidden'); }
-            function abrirModalUsuarioGratis() { document.getElementById('modalUsuarioGratis').classList.remove('hidden'); }
-            function cerrarModalUsuarioGratis() { document.getElementById('modalUsuarioGratis').classList.add('hidden'); }
-            function abrirLogin() { document.getElementById('modalLogin').classList.remove('hidden'); }
-            function cerrarLogin() { document.getElementById('modalLogin').classList.add('hidden'); }
-
-            async function ejecutarLogin() {
-                let correo = document.getElementById('inputLoginCorreo').value.trim();
-                if(!correo) return;
-                await verificarEstadoUsuario(correo);
-                if(usuarioLogueadoGlobal) {
-                    document.getElementById('loginFormContainer').classList.add('hidden');
-                    document.getElementById('panelSesionContainer').classList.remove('hidden');
-                    document.getElementById('nombreSesionLabel').innerText = usuarioLogueadoGlobal.nombre_completo;
-                    document.getElementById('sesionTipoPlanLabel').innerText = usuarioLogueadoGlobal.es_pro ? "Plan Pro Mensual" : "Plan Gratuito";
-                    document.getElementById('sesionCredito').innerText = "$" + (usuarioLogueadoGlobal.credito_descuento_disponible || 0).toLocaleString();
-                    mostrarToast("¡Sesión iniciada con éxito!", "success");
-                } else {
-                    mostrarToast("Usuario no encontrado", "error");
-                }
-            }
-
-            function cerrarSesion() {
-                localStorage.removeItem('maxshop_correo_usuario');
-                usuarioLogueadoGlobal = null;
-                location.reload();
-            }
 
             function abrirAdmin() {
                 let c = prompt("Clave Admin:");
@@ -726,9 +820,42 @@ def mostrar_interfaz():
                     let json = await res.json();
                     if(json.success) {
                         document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1"><b>${c.nombre_fantasias}</b> - ${c.rubro} (${c.localidad})<br><span class="text-[10px] text-slate-400">Titular: ${c.nombre_completo} | CUIT: ${c.cuit_cuil}</span></div>`).join('') || 'Sin comercios';
-                        document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl mb-1"><b>${u.nombre_completo}</b> (${u.correo}) - Plan: <b>${u.es_pro ? 'PRO' : 'GRATIS'}</b><br><span class="text-[10px] text-slate-400">DNI: ${u.dni} | Crédito: $${u.credito_descuento_disponible || 0}</span></div>`).join('') || 'Sin usuarios';
+                        
+                        // Renderizado de la tabla de control centralizado de usuarios para el Administrador
+                        let tablaUsuariosHtml = '';
+                        json.usuarios.forEach(u => {
+                            let planBadge = u.es_pro ? '<span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded-full text-[10px] font-bold">Plan Pro</span>' : '<span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full text-[10px] font-bold">Plan Gratuito</span>';
+                            tablaUsuariosHtml += `
+                                <tr class="border-b border-slate-800/60 hover:bg-slate-950/40">
+                                    <td class="p-2"><b>${u.nombre_completo}</b><br><small class="text-slate-400">${u.whatsapp || 'Sin WhatsApp'}</small></td>
+                                    <td class="p-2 text-slate-300">${u.correo}</td>
+                                    <td class="p-2">${planBadge}</td>
+                                    <td class="p-2 font-black text-emerald-400">$${(u.credito_descuento_disponible || 0).toLocaleString()}</td>
+                                    <td class="p-2 text-right space-x-1">
+                                        <button onclick="adminCambiarPlan('${u.correo}', '${u.es_pro ? 'FREE' : 'PRO'}')" class="px-2 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-lg text-[10px] font-bold hover:bg-cyan-500/20">Cambiar a ${u.es_pro ? 'Free' : 'Pro'}</button>
+                                    </td>
+                                </tr>`;
+                        });
+                        document.getElementById('tablaUsuariosAdminBody').innerHTML = tablaUsuariosHtml || '<tr><td colspan="5" class="text-center p-4 text-slate-500">Sin usuarios registrados</td></tr>';
                     }
                 } catch(e) {}
+            }
+
+            async function adminCambiarPlan(correo, nuevoPlan) {
+                let ok = confirm(`¿Deseas cambiar el plan del usuario ${correo} a ${nuevoPlan}?`);
+                if(!ok) return;
+                let res = await fetch(`/api/admin/usuario/plan`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ correo: correo, nuevo_plan: nuevoPlan })
+                });
+                let json = await res.json();
+                if(json.success) {
+                    mostrarToast("Membresía actualizada con éxito", "success");
+                    cargarDatosAdmin();
+                } else {
+                    mostrarToast("Error al actualizar plan", "error");
+                }
             }
 
             async function enviarComercio(e) {
@@ -776,35 +903,14 @@ def mostrar_interfaz():
                     }
                 } catch(err) { ocultarLoader(); mostrarToast("Error de conexión", "error"); }
             }
-
-            async function enviarUsuarioGratis(e) {
-                e.preventDefault();
-                mostrarLoader("Activando cuenta gratuita...");
-                const data = {
-                    nombre_completo: document.getElementById('u_nombre').value,
-                    dni: document.getElementById('u_dni').value,
-                    direccion: document.getElementById('u_dir').value,
-                    localidad: document.getElementById('u_loc').value,
-                    whatsapp: document.getElementById('u_wpp').value,
-                    correo: document.getElementById('u_correo').value
-                };
-                try {
-                    let res = await fetch('/api/registrar-usuario-gratis', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-                    let json = await res.json();
-                    ocultarLoader();
-                    if(json.success) {
-                        mostrarToast("¡Cuenta activada con $50.000 de saldo!", "success");
-                        cerrarModalUsuarioGratis();
-                        verificarEstadoUsuario(data.correo);
-                    } else {
-                        mostrarToast("Error al registrar usuario", "error");
-                    }
-                } catch(err) { ocultarLoader(); mostrarToast("Error de conexión", "error"); }
-            }
         </script>
     </body>
     </html>
     """
+
+# ==========================================
+# RUTAS BACKEND DE API (SUPABASE / SUPABASE DB)
+# ==========================================
 
 @app.post("/api/subir-imagen")
 async def subir_imagen(file: UploadFile = File(...)):
@@ -837,6 +943,48 @@ def obtener_usuario(correo: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Registro con contraseña segura
+@app.post("/api/registro")
+def registrar_usuario_seguro(u: UsuarioRegistroModel):
+    if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
+    try:
+        existe = supabase.table("usuarios").select("correo").eq("correo", u.correo).execute()
+        if existe.data and len(existe.data) > 0:
+            raise HTTPException(status_code=400, detail="El correo ya se encuentra registrado.")
+        
+        data = u.dict()
+        password_plana = data.pop("password")
+        data["password_hash"] = encriptar_password(password_plana)
+        data["es_pro"] = False
+        data["credito_descuento_disponible"] = 50000 # Saldo inicial bienvenida
+        
+        supabase.table("usuarios").insert(data).execute()
+        return {"success": True}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Login con contraseña segura
+@app.post("/api/login")
+def iniciar_sesion_seguro(cred: UsuarioLoginModel):
+    if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
+    try:
+        res = supabase.table("usuarios").select("*").eq("correo", cred.correo).execute()
+        if not res.data or len(res.data) == 0:
+            raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos.")
+        
+        user = res.data[0]
+        pwd_hash = encriptar_password(cred.password)
+        if user.get("password_hash") != pwd_hash:
+            raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos.")
+            
+        return {"success": True, "usuario": user}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/admin/datos")
 def admin_datos():
     if not supabase: return {"success": False, "comercios": [], "usuarios": []}
@@ -845,6 +993,25 @@ def admin_datos():
         ru = supabase.table("usuarios").select("*").execute()
         return {"success": True, "comercios": rc.data, "usuarios": ru.data}
     except: return {"success": False, "comercios": [], "usuarios": []}
+
+@app.put("/api/admin/usuario/plan")
+def admin_cambiar_plan(payload: dict):
+    if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
+    try:
+        correo = payload.get("correo")
+        nuevo_plan = payload.get("nuevo_plan")
+        es_pro = (nuevo_plan == "PRO")
+        
+        res = supabase.table("usuarios").select("credito_descuento_disponible").eq("correo", correo).execute()
+        if not res.data: raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+        actual = float(res.data[0].get("credito_descuento_disponible", 0))
+        nuevo_saldo = (actual + 50000) if es_pro else actual
+        
+        supabase.table("usuarios").update({"es_pro": es_pro, "credito_descuento_disponible": nuevo_saldo}).eq("correo", correo).execute()
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/api/admin/exportar/comercios", response_class=PlainTextResponse)
 def exportar_comercios():
@@ -872,18 +1039,6 @@ def registrar_comercio(c: ComercioModel):
     try:
         res = supabase.table("comercios").insert(c.dict()).execute()
         return {"success": True, "data": res.data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/registrar-usuario-gratis")
-def registrar_usuario_gratis(u: UsuarioModel):
-    if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
-    try:
-        data = u.dict()
-        data["es_pro"] = False
-        data["credito_descuento_disponible"] = 50000 # Saldo inicial
-        supabase.table("usuarios").upsert(data, on_conflict="correo").execute()
-        return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
