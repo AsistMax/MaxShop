@@ -11,7 +11,7 @@ import os
 from supabase import create_client, Client
 import mercadopago
 
-app = FastAPI(title="MaxShop - AsistMax", version="8.1")
+app = FastAPI(title="MaxShop - AsistMax", version="8.2")
 
 app.add_middleware(
     CORSMiddleware,
@@ -197,7 +197,10 @@ def mostrar_interfaz():
         <div id="modalLogin" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                    <h3 class="text-sm font-bold text-white">🔑 Iniciar Sesión en MaxShop</h3>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="cerrarLogin()" class="text-cyan-400 hover:text-cyan-300 text-sm font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <h3 class="text-sm font-bold text-white">🔑 Iniciar Sesión</h3>
+                    </div>
                     <button onclick="cerrarLogin()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
                 <div id="loginFormContainer" class="space-y-3">
@@ -229,7 +232,8 @@ def mostrar_interfaz():
         <div id="modalQR" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl text-center">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-sm font-bold text-white">📷 Escanear QR del Comercio</h3>
+                    <button onclick="cerrarEscaneoQR()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                    <h3 class="text-sm font-bold text-white">📷 Escanear QR</h3>
                     <button onclick="cerrarEscaneoQR()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
                 </div>
                 <div id="reader" class="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 min-h-[220px]"></div>
@@ -241,7 +245,10 @@ def mostrar_interfaz():
         <div id="modalMontoVenta" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <h3 class="text-sm font-bold text-white">💳 Canjear Descuento (Créditos)</h3>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="cerrarModalVenta()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <h3 class="text-sm font-bold text-white">💳 Canjear Descuento</h3>
+                    </div>
                     <button onclick="cerrarModalVenta()" class="text-slate-400 hover:text-white font-bold">✕</button>
                 </div>
                 <div class="space-y-3 text-xs">
@@ -260,10 +267,14 @@ def mostrar_interfaz():
             </div>
         </div>
 
+        <!-- Modal Sumar Comercio Actualizado con Botón Volver y Limpiar Imágenes -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-base font-bold text-white">🏪 Sumar mi Comercio (Gratis)</h3>
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="cerrarModalComercio()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 transition hover:bg-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <h3 class="text-sm font-bold text-white">🏪 Sumar mi Comercio</h3>
+                    </div>
                     <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
                 </div>
                 <form id="formComercio" onsubmit="enviarComercio(event)" class="space-y-3">
@@ -299,16 +310,21 @@ def mostrar_interfaz():
                             <option value="Otro">Otro</option>
                         </select>
                     </div>
+
+                    <!-- Campos Multimedia Mejorados con Botón Eliminar -->
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="text-[10px] font-semibold text-cyan-400">Logo del Negocio (Galería)</label>
-                            <input type="file" id="c_logo_file" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-[10px] text-slate-300 outline-none mt-1 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400 cursor-pointer">
+                        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-2.5 space-y-1.5">
+                            <label class="text-[10px] font-semibold text-cyan-400 block">Logo del Negocio</label>
+                            <input type="file" id="c_logo_file" accept="image/*" class="w-full text-[9px] text-slate-300 file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400 cursor-pointer">
+                            <button type="button" onclick="limpiarArchivo('c_logo_file')" class="w-full text-[9px] bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 py-1 rounded-lg border border-rose-500/20 font-semibold transition">🗑️ Quitar Logo</button>
                         </div>
-                        <div>
-                            <label class="text-[10px] font-semibold text-cyan-400">Foto del Negocio (Galería)</label>
-                            <input type="file" id="c_foto_file" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-[10px] text-slate-300 outline-none mt-1 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400 cursor-pointer">
+                        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-2.5 space-y-1.5">
+                            <label class="text-[10px] font-semibold text-cyan-400 block">Foto del Negocio</label>
+                            <input type="file" id="c_foto_file" accept="image/*" class="w-full text-[9px] text-slate-300 file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400 cursor-pointer">
+                            <button type="button" onclick="limpiarArchivo('c_foto_file')" class="w-full text-[9px] bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 py-1 rounded-lg border border-rose-500/20 font-semibold transition">🗑️ Quitar Foto</button>
                         </div>
                     </div>
+
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="text-[10px] font-semibold text-cyan-400">Descuento Base (%)</label>
@@ -349,8 +365,11 @@ def mostrar_interfaz():
 
         <div id="modalUsuario" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-base font-bold text-white">👤 Elegir Plan & Membresía MaxShop</h3>
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="cerrarModalUsuario()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <h3 class="text-sm font-bold text-white">👤 Membresía MaxShop</h3>
+                    </div>
                     <button onclick="cerrarModalUsuario()" class="text-slate-400 hover:text-white font-bold">✕</button>
                 </div>
                 <form id="formUsuario" onsubmit="enviarUsuario(event)" class="space-y-3 text-xs">
@@ -391,7 +410,10 @@ def mostrar_interfaz():
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                    <h3 class="text-base font-bold text-white">⚙️ Panel de Control & Auditoría MaxShop</h3>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="cerrarAdmin()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <h3 class="text-base font-bold text-white">⚙️ Panel de Control & Auditoría MaxShop</h3>
+                    </div>
                     <button onclick="cerrarAdmin()" class="text-slate-400 hover:text-white font-bold">✕</button>
                 </div>
                 <div class="flex border-b border-slate-800 space-x-4 pt-2 overflow-x-auto text-xs">
@@ -464,6 +486,12 @@ def mostrar_interfaz():
 
             function ocultarLoader() {
                 document.getElementById('modalLoader').classList.add('hidden');
+            }
+
+            function limpiarArchivo(idInput) {
+                const input = document.getElementById(idInput);
+                input.value = "";
+                mostrarToast("Imagen descartada.", "success");
             }
 
             function inicializarApp() {
@@ -819,10 +847,7 @@ async def subir_imagen(file: UploadFile = File(...)):
         file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
         file_name = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{os.urandom(4).hex()}.{file_ext}"
         
-        # Sube al bucket 'comercios-multimedia'
-        res = supabase.storage.from_("comercios-multimedia").upload(file_name, file_bytes, {"content-type": file.content_type or "image/jpeg"})
-        
-        # Obtener URL pública
+        supabase.storage.from_("comercios-multimedia").upload(file_name, file_bytes, {"content-type": file.content_type or "image/jpeg"})
         public_url_res = supabase.storage.from_("comercios-multimedia").get_public_url(file_name)
         return {"success": True, "url": public_url_res}
     except Exception as e:
