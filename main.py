@@ -121,7 +121,7 @@ def mostrar_interfaz():
 
             <!-- Banner Principal en Tamaño Real sin Contenedor Forzado -->
             <div class="w-full flex justify-center items-center">
-                <img src="https://i.ibb.co/v4b2QZ83/banner.jpg" alt="MaxShop Banner Red Global de Beneficios" class="w-auto max-w-full h-auto object-contain block">
+                <img src="AQUI_PEGAR_ENLACE_DIRECTO_DE_LA_IMAGEN" alt="MaxShop Banner Red Global de Beneficios" class="w-auto max-w-full h-auto object-contain block">
             </div>
 
             <!-- Título y Categoría -->
@@ -985,7 +985,7 @@ def consumir_credito(consumo: ConsumoQRModel):
             raise HTTPException(status_code=400, detail="Membresía inactiva.")
         
         credito_disponible = float(usuario.get("credito_descuento_disponible", 0))
-        ahorro = consumo.monto_compra * (pct_descuento / 100.0)
+        ahorro = consumo.monto_compra * (pct_decnuento / 100.0) if 'pct_decnuento' in locals() else consumo.monto_compra * (pct_descuento / 100.0)
         
         if credito_disponible < ahorro:
             raise HTTPException(status_code=400, detail="Crédito de descuento insuficiente en su plan.")
