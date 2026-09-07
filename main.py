@@ -13,7 +13,7 @@ from email.mime.multipart import MIMEMultipart
 from supabase import create_client, Client
 import mercadopago
 
-app = FastAPI(title="MaxShop - AsistMax", version="7.9")
+app = FastAPI(title="MaxShop - AsistMax", version="8.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -119,9 +119,9 @@ def mostrar_interfaz():
         <!-- Contenido Principal -->
         <main class="w-full max-w-md mx-auto px-4 py-6 space-y-6 flex-1">
 
-            <!-- Banner Principal en Tamaño Real sin Contenedor Forzado -->
+            <!-- Banner Principal con enlace directo de Google Drive -->
             <div class="w-full flex justify-center items-center">
-                <img src="AQUI_PEGAR_ENLACE_DIRECTO_DE_LA_IMAGEN" alt="MaxShop Banner Red Global de Beneficios" class="w-auto max-w-full h-auto object-contain block">
+                <img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" alt="MaxShop Banner Red Global de Beneficios" class="w-auto max-w-full h-auto object-contain block">
             </div>
 
             <!-- Título y Categoría -->
@@ -985,7 +985,7 @@ def consumir_credito(consumo: ConsumoQRModel):
             raise HTTPException(status_code=400, detail="Membresía inactiva.")
         
         credito_disponible = float(usuario.get("credito_descuento_disponible", 0))
-        ahorro = consumo.monto_compra * (pct_decnuento / 100.0) if 'pct_decnuento' in locals() else consumo.monto_compra * (pct_descuento / 100.0)
+        ahorro = consumo.monto_compra * (pct_descuento / 100.0)
         
         if credito_disponible < ahorro:
             raise HTTPException(status_code=400, detail="Crédito de descuento insuficiente en su plan.")
