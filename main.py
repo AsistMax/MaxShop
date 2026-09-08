@@ -5,13 +5,13 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from pydantic import BaseModel, EmailStr
 import os
 import hashlib
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - Red de Comercios & Ahorro", version="8.8")
+app = FastAPI(title="MaxShop - Red de Comercios & Ahorro", version="8.9")
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,7 +42,7 @@ class ComercioModel(BaseModel):
     direccion: str
     localidad: str
     cuit_cuil: str
-    descuento_base_diario: float = 5.0  # Política obligatoria del 5% diario
+    descuento_base_diario: float = 5.0
     porcentaje_campana: float = 20.0
     dias_campana: str = "Martes y Jueves"
     logo_url: str = ""
@@ -66,10 +66,6 @@ class ConsumoQRModel(BaseModel):
     nombre_comercio: str
     monto_compra: float
 
-class CambioPlanModel(BaseModel):
-    correo: str
-    nuevo_plan: str # 'FREE' o 'PRO'
-
 def encriptar_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -89,7 +85,7 @@ def mostrar_interfaz():
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </head>
-    <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950" onload="inicializarApp()">
+    <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-cyan-500 selection:text-slate-950">
 
         <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
         <div id="modalLoader" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center">
@@ -112,10 +108,10 @@ def mostrar_interfaz():
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="abrirModalAuth('login')" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-xl border border-cyan-500/30 transition font-semibold">
+                <button type="button" onclick="abrirModalAuth('login')" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-xl border border-cyan-500/30 transition font-semibold cursor-pointer">
                     🔑 Login
                 </button>
-                <button onclick="abrirAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700 transition font-medium">
+                <button type="button" onclick="abrirAdmin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700 transition font-medium cursor-pointer">
                     ⚙️ Admin
                 </button>
             </div>
@@ -138,18 +134,18 @@ def mostrar_interfaz():
                         <h3 class="text-xs font-bold text-slate-400 uppercase">Crédito de Ahorro</h3>
                         <p class="text-2xl font-black text-emerald-400 mt-0.5" id="lblCreditoDisponible">$0</p>
                     </div>
-                    <button onclick="abrirModalPlanesDetallados()" class="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3.5 py-2 rounded-xl font-extrabold shadow-lg shadow-cyan-500/20 transition">
+                    <button type="button" onclick="abrirModalPlanesDetallados()" class="text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3.5 py-2 rounded-xl font-extrabold shadow-lg shadow-cyan-500/20 transition cursor-pointer">
                         📋 Ver Planes / Registrarse
                     </button>
                 </div>
 
                 <!-- Botones de Recarga / Planes con Mercado Pago -->
                 <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
-                    <button onclick="iniciarPagoRecargaExpres()" class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 p-2.5 rounded-2xl border border-cyan-500/30 text-center transition">
+                    <button type="button" onclick="iniciarPagoRecargaExpres()" class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 p-2.5 rounded-2xl border border-cyan-500/30 text-center transition cursor-pointer">
                         <span class="block text-xs font-bold">⚡ Recarga Exprés</span>
                         <span class="block text-[10px] text-slate-400">+$10.000 crédito por $500 (MP)</span>
                     </button>
-                    <button onclick="iniciarPagoPlanPro()" class="bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 p-2.5 rounded-2xl text-center shadow-md font-bold transition hover:opacity-90">
+                    <button type="button" onclick="iniciarPagoPlanPro()" class="bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 p-2.5 rounded-2xl text-center shadow-md font-bold transition hover:opacity-90 cursor-pointer">
                         <span class="block text-xs font-black">⭐ Plan Pro Mensual</span>
                         <span class="block text-[9px] text-slate-950/80">100% Descuento + $50k ($5.000/mes MP)</span>
                     </button>
@@ -161,19 +157,19 @@ def mostrar_interfaz():
                 <h2 class="text-xl font-bold text-white mt-2">Canjear Descuento en Comercio</h2>
                 <p class="text-xs text-slate-400 mt-1">Escanea el QR del comercio adherido para aplicar tu descuento instantáneo.</p>
                 <div class="mt-4">
-                    <button onclick="iniciarEscaneoQR()" class="w-full py-3.5 text-sm font-bold text-slate-950 transition-all bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20">
+                    <button type="button" onclick="iniciarEscaneoQR()" class="w-full py-3.5 text-sm font-bold text-slate-950 transition-all bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl hover:from-cyan-300 hover:to-blue-400 shadow-lg shadow-cyan-500/20 cursor-pointer">
                         📷 Escanear QR del Comercio
                     </button>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <button onclick="abrirModalComercio()" class="bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 p-4 rounded-2xl text-left transition-all group">
+                <button type="button" onclick="abrirModalComercio()" class="bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 p-4 rounded-2xl text-left transition-all group cursor-pointer">
                     <div class="text-cyan-400 text-xl mb-1">🏪</div>
                     <h3 class="text-xs font-bold text-white group-hover:text-cyan-400 transition">Sumar mi Comercio</h3>
                     <p class="text-[11px] text-slate-400 mt-0.5">Súmate a la red gratuita</p>
                 </button>
-                <button onclick="abrirModalPlanesDetallados()" class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 p-4 rounded-2xl text-left transition-all group">
+                <button type="button" onclick="abrirModalPlanesDetallados()" class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 p-4 rounded-2xl text-left transition-all group cursor-pointer">
                     <div class="text-blue-400 text-xl mb-1">📋</div>
                     <h3 class="text-xs font-bold text-white group-hover:text-blue-400 transition">Conocer Beneficios</h3>
                     <p class="text-[11px] text-slate-400 mt-0.5">Información detallada</p>
@@ -206,10 +202,10 @@ def mostrar_interfaz():
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
-                        <button onclick="cerrarModalAuth()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <button type="button" onclick="cerrarModalAuth()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 cursor-pointer"><span>⬅️</span><span>Volver</span></button>
                         <h3 class="text-sm font-bold text-white" id="authTitle">🔑 Iniciar Sesión en MaxShop</h3>
                     </div>
-                    <button onclick="cerrarModalAuth()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+                    <button type="button" onclick="cerrarModalAuth()" class="text-slate-400 hover:text-white text-lg font-bold cursor-pointer">✕</button>
                 </div>
 
                 <div id="panelSesionContainer" class="space-y-4 hidden">
@@ -218,7 +214,7 @@ def mostrar_interfaz():
                             <span class="text-[10px] text-cyan-400 font-bold uppercase" id="sesionTipoPlanLabel">Plan Gratuito</span>
                             <h4 class="text-xs font-bold text-white" id="nombreSesionLabel">Usuario</h4>
                         </div>
-                        <button onclick="cerrarSesion()" class="text-[10px] bg-rose-500/10 text-rose-400 px-2.5 py-1 rounded-lg border border-rose-500/30">Cerrar Sesión</button>
+                        <button type="button" onclick="cerrarSesion()" class="text-[10px] bg-rose-500/10 text-rose-400 px-2.5 py-1 rounded-lg border border-rose-500/30 cursor-pointer">Cerrar Sesión</button>
                     </div>
                     <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
                         <h4 class="text-xs font-bold text-cyan-400 uppercase">📊 Mi Saldo MaxShop</h4>
@@ -255,7 +251,7 @@ def mostrar_interfaz():
                         <input type="password" id="auth_password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none mt-1">
                     </div>
 
-                    <button type="submit" id="btnSubmitAuth" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2">Ingresar</button>
+                    <button type="submit" id="btnSubmitAuth" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg mt-2 cursor-pointer">Ingresar</button>
                     
                     <div class="text-center pt-2">
                         <span id="toggleAuthText" onclick="cambiarModoAuth()" class="text-cyan-400 cursor-pointer hover:underline">¿No tienes cuenta? Regístrate aquí</span>
@@ -267,13 +263,13 @@ def mostrar_interfaz():
         <div id="modalQR" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl text-center">
                 <div class="flex justify-between items-center">
-                    <button onclick="cerrarEscaneoQR()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                    <button type="button" onclick="cerrarEscaneoQR()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800 cursor-pointer"><span>⬅️</span><span>Volver</span></button>
                     <h3 class="text-sm font-bold text-white">📷 Escanear QR</h3>
-                    <button onclick="cerrarEscaneoQR()" class="text-slate-400 hover:text-white text-lg font-bold p-1">✕</button>
+                    <button type="button" onclick="cerrarEscaneoQR()" class="text-slate-400 hover:text-white text-lg font-bold p-1 cursor-pointer">✕</button>
                 </div>
                 <div id="reader" class="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 min-h-[220px]"></div>
                 <p class="text-[11px] text-slate-400">Enfoque el código QR provisto por el comercio adherido.</p>
-                <button onclick="cerrarEscaneoQR()" class="w-full py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs">Cancelar</button>
+                <button type="button" onclick="cerrarEscaneoQR()" class="w-full py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs cursor-pointer">Cancelar</button>
             </div>
         </div>
 
@@ -281,10 +277,10 @@ def mostrar_interfaz():
             <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-5 space-y-4 shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                     <div class="flex items-center space-x-2">
-                        <button onclick="cerrarModalVenta()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <button type="button" onclick="cerrarModalVenta()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 cursor-pointer"><span>⬅️</span><span>Volver</span></button>
                         <h3 class="text-sm font-bold text-white">💳 Canjear Descuento</h3>
                     </div>
-                    <button onclick="cerrarModalVenta()" class="text-slate-400 hover:text-white font-bold">✕</button>
+                    <button type="button" onclick="cerrarModalVenta()" class="text-slate-400 hover:text-white font-bold cursor-pointer">✕</button>
                 </div>
                 <div class="space-y-3 text-xs">
                     <p class="text-slate-400">Comercio: <strong id="lblComercioEscaneado" class="text-cyan-400">Comercio</strong></p>
@@ -297,20 +293,20 @@ def mostrar_interfaz():
                         <div class="flex justify-between text-slate-400"><span>Descuento estimado:</span> <span id="lblAhorroCalculado" class="text-cyan-400 font-bold">$0</span></div>
                         <div class="flex justify-between text-slate-400 pt-1 border-t border-slate-900"><span>Total con Descuento:</span> <span id="lblTotalFinal" class="text-emerald-400 font-black text-sm">$0</span></div>
                     </div>
-                    <button onclick="confirmarConsumoCredito()" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg">Aplicar y Descontar de mi Crédito</button>
+                    <button type="button" onclick="confirmarConsumoCredito()" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg cursor-pointer">Aplicar y Descontar de mi Crédito</button>
                 </div>
             </div>
         </div>
 
-        <!-- Modal Sumar Comercio (Con regla estricta de 5% diario y campaña) -->
+        <!-- Modal Sumar Comercio -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
-                        <button onclick="cerrarModalComercio()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <button type="button" onclick="cerrarModalComercio()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 cursor-pointer"><span>⬅️</span><span>Volver</span></button>
                         <h3 class="text-sm font-bold text-white">🏪 Sumar mi Comercio a la Red</h3>
                     </div>
-                    <button onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+                    <button type="button" onclick="cerrarModalComercio()" class="text-slate-400 hover:text-white text-lg font-bold cursor-pointer">✕</button>
                 </div>
                 <form id="formComercio" onsubmit="enviarComercio(event)" class="space-y-3">
                     <div class="bg-cyan-950/40 border border-cyan-800/50 p-2.5 rounded-2xl text-[10px] text-cyan-300">
@@ -353,12 +349,12 @@ def mostrar_interfaz():
                         <div class="bg-slate-950 border border-slate-800 rounded-2xl p-2.5 space-y-1.5">
                             <label class="text-[10px] font-semibold text-cyan-400 block">Logo del Negocio</label>
                             <input type="file" id="c_logo_file" accept="image/*" class="w-full text-[9px] text-slate-300 file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 cursor-pointer">
-                            <button type="button" onclick="limpiarArchivo('c_logo_file')" class="w-full text-[9px] bg-rose-500/10 text-rose-400 py-1 rounded-lg border border-rose-500/20 font-semibold transition">🗑️ Quitar</button>
+                            <button type="button" onclick="limpiarArchivo('c_logo_file')" class="w-full text-[9px] bg-rose-500/10 text-rose-400 py-1 rounded-lg border border-rose-500/20 font-semibold transition cursor-pointer">🗑️ Quitar</button>
                         </div>
                         <div class="bg-slate-950 border border-slate-800 rounded-2xl p-2.5 space-y-1.5">
                             <label class="text-[10px] font-semibold text-cyan-400 block">Foto del Negocio</label>
                             <input type="file" id="c_foto_file" accept="image/*" class="w-full text-[9px] text-slate-300 file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-cyan-500 file:text-slate-950 cursor-pointer">
-                            <button type="button" onclick="limpiarArchivo('c_foto_file')" class="w-full text-[9px] bg-rose-500/10 text-rose-400 py-1 rounded-lg border border-rose-500/20 font-semibold transition">🗑️ Quitar</button>
+                            <button type="button" onclick="limpiarArchivo('c_foto_file')" class="w-full text-[9px] bg-rose-500/10 text-rose-400 py-1 rounded-lg border border-rose-500/20 font-semibold transition cursor-pointer">🗑️ Quitar</button>
                         </div>
                     </div>
 
@@ -392,7 +388,7 @@ def mostrar_interfaz():
                             <span>Acepto las condiciones (Obligatorio ofrecer 5% diario y respetar días de campaña inamovibles).</span>
                         </label>
                     </div>
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg">Sumar mi Comercio</button>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs mt-2 shadow-lg cursor-pointer">Sumar mi Comercio</button>
                 </form>
             </div>
         </div>
@@ -402,10 +398,10 @@ def mostrar_interfaz():
             <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
-                        <button onclick="cerrarModalPlanesDetallados()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <button type="button" onclick="cerrarModalPlanesDetallados()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 cursor-pointer"><span>⬅️</span><span>Volver</span></button>
                         <h3 class="text-sm font-bold text-white">📋 Opciones de Membresía & Ahorro</h3>
                     </div>
-                    <button onclick="cerrarModalPlanesDetallados()" class="text-slate-400 hover:text-white font-bold">✕</button>
+                    <button type="button" onclick="cerrarModalPlanesDetallados()" class="text-slate-400 hover:text-white font-bold cursor-pointer">✕</button>
                 </div>
 
                 <div class="space-y-4 text-xs text-slate-300">
@@ -422,7 +418,7 @@ def mostrar_interfaz():
                             <li><strong>Descuento activo:</strong> Accedes al 50% del beneficio real publicado por cada comercio.</li>
                             <li><strong>Recarga exprés opcional:</strong> Recarga $10.000 extra por sólo $500 vía Mercado Pago.</li>
                         </ul>
-                        <button onclick="cerrarModalPlanesDetallados(); abrirModalAuth('registro');" class="w-full mt-2 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold rounded-xl text-xs transition">Registrarme en Plan Gratuito</button>
+                        <button type="button" onclick="cerrarModalPlanesDetallados(); abrirModalAuth('registro');" class="w-full mt-2 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold rounded-xl text-xs transition cursor-pointer">Registrarme en Plan Gratuito</button>
                     </div>
 
                     <!-- Tarjeta Plan Pro -->
@@ -436,25 +432,25 @@ def mostrar_interfaz():
                             <li><strong>Descuento pleno (100%):</strong> Disfrutas del total del descuento publicado por el comercio.</li>
                             <li><strong>Saldo mensual extra:</strong> Recibes $50.000 todos los 1 de cada mes.</li>
                         </ul>
-                        <button onclick="cerrarModalPlanesDetallados(); iniciarPagoPlanPro();" class="w-full mt-2 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs transition shadow-md">Pagar y Activar Plan Pro ($5.000/mes MP)</button>
+                        <button type="button" onclick="cerrarModalPlanesDetallados(); iniciarPagoPlanPro();" class="w-full mt-2 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl text-xs transition shadow-md cursor-pointer">Pagar y Activar Plan Pro ($5.000/mes MP)</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Panel de Administración con Control de Usuarios y Modificación Exclusiva Admin -->
+        <!-- Panel de Administración -->
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <div class="flex items-center space-x-2">
-                        <button onclick="cerrarAdmin()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800"><span>⬅️</span><span>Volver</span></button>
+                        <button type="button" onclick="cerrarAdmin()" class="text-cyan-400 text-xs font-bold flex items-center space-x-1 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800 cursor-pointer"><span>⬅️</span><span>Volver</span></button>
                         <h3 class="text-base font-bold text-white">⚙️ Panel de Control & Auditoría MaxShop</h3>
                     </div>
-                    <button onclick="cerrarAdmin()" class="text-slate-400 hover:text-white font-bold">✕</button>
+                    <button type="button" onclick="cerrarAdmin()" class="text-slate-400 hover:text-white font-bold cursor-pointer">✕</button>
                 </div>
                 <div class="flex border-b border-slate-800 space-x-4 pt-2 overflow-x-auto text-xs">
-                    <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400">🏪 Comercios</button>
-                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 font-bold text-slate-400">👤 Usuarios & Control Centralizado</button>
+                    <button type="button" onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400 cursor-pointer">🏪 Comercios</button>
+                    <button type="button" onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="pb-2 font-bold text-slate-400 cursor-pointer">👤 Usuarios & Control Centralizado</button>
                 </div>
                 
                 <div id="seccionComerciosAdmin" class="space-y-3">
@@ -497,8 +493,13 @@ def mostrar_interfaz():
             let usuarioLogueadoGlobal = null;
             let modoRegistroAuth = false;
 
+            window.addEventListener('DOMContentLoaded', () => {
+                inicializarApp();
+            });
+
             function mostrarToast(mensaje, tipo = 'success') {
                 const contenedor = document.getElementById('toastContainer');
+                if(!contenedor) return;
                 const toast = document.createElement('div');
                 let bgColors = "bg-slate-900 border-emerald-500/40 text-emerald-400";
                 let icono = "✅";
@@ -536,6 +537,7 @@ def mostrar_interfaz():
 
             function renderizarComercios(comercios) {
                 const contenedor = document.getElementById('listaComerciosPublicos');
+                if(!contenedor) return;
                 if(!comercios || comercios.length === 0) {
                     contenedor.innerHTML = `<div class="text-center py-6 text-xs text-slate-500">No hay comercios registrados aún.</div>`;
                     return;
@@ -672,7 +674,6 @@ def mostrar_interfaz():
                 location.reload();
             }
 
-            // Integración de Pasarela de Pagos Mercado Pago para Plan Pro y Recarga Exprés
             function iniciarPagoPlanPro() {
                 if(!usuarioLogueadoGlobal) { 
                     mostrarToast("Debe iniciar sesión primero para adquirir el Plan Pro.", "error"); 
@@ -737,12 +738,8 @@ def mostrar_interfaz():
                         document.getElementById('lblComercioEscaneado').innerText = decodedText;
                         let comercioObj = listaComerciosGlobal.find(c => c.nombre_fantasias === decodedText || c.nombre_completo === decodedText);
                         
-                        // Lógica estricta de porcentajes (Base 5% diario + campaña sin acumulación)
-                        let pctBase = 5.0; 
                         let pctCampana = comercioObj && comercioObj.porcentaje_campana ? parseFloat(comercioObj.porcentaje_campana) : 20.0;
-                        
                         let esPro = usuarioLogueadoGlobal.es_pro || false;
-                        // Si es Pro se lleva el 100% de la campaña (o base), si es Free se lleva el 50%
                         let pctFinal = esPro ? pctCampana : (pctCampana * 0.5);
                         window.porcentajeDescActual = pctFinal;
                         
@@ -800,13 +797,13 @@ def mostrar_interfaz():
 
             function cambiarPestanaAdmin(pestana) {
                 if(pestana === 'comercios') {
-                    document.getElementById('btnTabComercios').className = "pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400";
-                    document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-slate-400";
+                    document.getElementById('btnTabComercios').className = "pb-2 font-bold text-cyan-400 border-b-2 border-cyan-400 cursor-pointer";
+                    document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-slate-400 cursor-pointer";
                     document.getElementById('seccionComerciosAdmin').classList.remove('hidden');
                     document.getElementById('seccionUsuariosAdmin').classList.add('hidden');
                 } else {
-                    document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-blue-400 border-b-2 border-blue-400";
-                    document.getElementById('btnTabComercios').className = "pb-2 font-bold text-slate-400";
+                    document.getElementById('btnTabUsuarios').className = "pb-2 font-bold text-blue-400 border-b-2 border-blue-400 cursor-pointer";
+                    document.getElementById('btnTabComercios').className = "pb-2 font-bold text-slate-400 cursor-pointer";
                     document.getElementById('seccionUsuariosAdmin').classList.remove('hidden');
                     document.getElementById('seccionComerciosAdmin').classList.add('hidden');
                 }
@@ -817,7 +814,6 @@ def mostrar_interfaz():
                     let res = await fetch('/api/admin/datos');
                     let json = await res.json();
                     if(json.success) {
-                        // Renderizado de comercios con control exclusivo de admin para campañas
                         let comerciosHtml = '';
                         json.comercios.forEach(c => {
                             comerciosHtml += `
@@ -828,7 +824,7 @@ def mostrar_interfaz():
                                         <span class="text-[10px] text-cyan-400">Campaña: ${c.porcentaje_campana || 20}% (${c.dias_campana || 'Martes y Jueves'})</span><br>
                                         <span class="text-[9px] text-slate-400">Titular: ${c.nombre_completo} | CUIT: ${c.cuit_cuil}</span>
                                     </div>
-                                    <button onclick="adminModificarCampanaComercio('${c.correo}')" class="px-2.5 py-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-xl text-[10px] font-bold hover:bg-amber-500/20">⚙️ Modificar Campaña (Admin)</button>
+                                    <button type="button" onclick="adminModificarCampanaComercio('${c.correo}')" class="px-2.5 py-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-xl text-[10px] font-bold hover:bg-amber-500/20 cursor-pointer">⚙️ Modificar Campaña (Admin)</button>
                                 </div>`;
                         });
                         document.getElementById('tablaComerciosAdminList').innerHTML = comerciosHtml || 'Sin comercios';
@@ -843,7 +839,7 @@ def mostrar_interfaz():
                                     <td class="p-2">${planBadge}</td>
                                     <td class="p-2 font-black text-emerald-400">$${(u.credito_descuento_disponible || 0).toLocaleString()}</td>
                                     <td class="p-2 text-right space-x-1">
-                                        <button onclick="adminCambiarPlan('${u.correo}', '${u.es_pro ? 'FREE' : 'PRO}')" class="px-2 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-lg text-[10px] font-bold hover:bg-cyan-500/20">Cambiar a ${u.es_pro ? 'Free' : 'Pro'}</button>
+                                        <button type="button" onclick="adminCambiarPlan('${u.correo}', '${u.es_pro ? 'FREE' : 'PRO}')" class="px-2 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-lg text-[10px] font-bold hover:bg-cyan-500/20 cursor-pointer">Cambiar a ${u.es_pro ? 'Free' : 'Pro'}</button>
                                     </td>
                                 </tr>`;
                         });
@@ -914,7 +910,7 @@ def mostrar_interfaz():
                         direccion: document.getElementById('c_dir').value,
                         localidad: document.getElementById('c_loc').value,
                         cuit_cuil: document.getElementById('c_cuit').value,
-                        descuento_base_diario: 5.0, // Fijo 5% diario por política
+                        descuento_base_diario: 5.0,
                         porcentaje_campana: parseFloat(document.getElementById('c_porcentaje_campana').value) || 20.0,
                         dias_campana: document.getElementById('c_dias_campana').value,
                         logo_url: logoUrl,
@@ -973,7 +969,6 @@ def obtener_usuario(correo: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Registro seguro con contraseña cifrada
 @app.post("/api/registro")
 def registrar_usuario_seguro(u: UsuarioRegistroModel):
     if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
@@ -986,7 +981,7 @@ def registrar_usuario_seguro(u: UsuarioRegistroModel):
         password_plana = data.pop("password")
         data["password_hash"] = encriptar_password(password_plana)
         data["es_pro"] = False
-        data["credito_descuento_disponible"] = 50000 # Saldo inicial de bienvenida
+        data["credito_descuento_disponible"] = 50000
         
         supabase.table("usuarios").insert(data).execute()
         return {"success": True}
@@ -995,7 +990,6 @@ def registrar_usuario_seguro(u: UsuarioRegistroModel):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Login seguro con verificación estricta de contraseña
 @app.post("/api/login")
 def iniciar_sesion_seguro(cred: UsuarioLoginModel):
     if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
@@ -1124,7 +1118,6 @@ def consumir_credito(consumo: ConsumoQRModel):
         
         user = u_res.data[0]
         es_pro = user.get("es_pro", False)
-        # Regla estricta: No se suman con el 5% base, se respeta el porcentaje de campaña autorizado sin acumulación
         pct_aplicado = pct_campana if es_pro else (pct_campana * 0.5)
 
         credito_disponible = float(user.get("credito_descuento_disponible", 0))
