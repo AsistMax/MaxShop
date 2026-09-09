@@ -1,102 +1,12 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MaxShop Enterprise | Red Fintech</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
-<script src="https://unpkg.com/html5-qrcode"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
-<style>body{font-family:'Inter',sans-serif;background:#080C14}.mono{font-family:'JetBrains Mono',monospace}.glass{background:rgba(15,23,42,0.85);backdrop-filter:blur(12px);border:1px solid rgba(148,163,184,0.1)}.glow{box-shadow:0 0 40px rgba(6,182,212,0.15)}.banner-bg{background:radial-gradient(60% 100% at 0% 0%, rgba(6,182,212,0.25) 0%, transparent 50%), radial-gradient(60% 100% at 100% 0%, rgba(139,92,246,0.25) 0%, transparent 50%), #0F172A}</style>
-</head>
-<body class="text-slate-100 min-h-screen flex flex-col" onload="init()">
-<div id="toastContainer" class="fixed top-20 right-4 z-[100] flex flex-col gap-2"></div>
-<div id="loader" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center"><div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">Procesando...</div></div>
-<a href="https://wa.me/5493834607740?text=Hola%20MaxShop%20Enterprise" target="_blank" class="fixed bottom-6 right-6 z-50 bg-white text-black p-4 rounded-full shadow-2xl"><i data-lucide="bot" class="w-5 h-5"></i></a>
-
-<header class="sticky top-0 z-50 glass border-b border-slate-800/80 px-4 py-3 flex justify-between items-center">
-<div class="flex gap-3 items-center">
-<img src="https://drive.google.com/uc?export=view&id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib" class="w-10 h-10 rounded-xl object-contain bg-white p-1 border border-slate-200 shadow-lg" alt="MaxShop Logo" onerror="this.src='https://i.ibb.co/7JpG3yZ/maxshop-logo.png'">
-<div><p class="text-xs font-black tracking-widest">MAXSHOP <span class="text-cyan-400 font-light">ENTERPRISE</span></p><p class="text-[9px] text-slate-500 tracking-widest uppercase">Red de Ahorro Fintech • Catamarca</p></div>
-</div>
-<div class="flex gap-2"><button onclick="openAuth()" class="text-xs bg-slate-800 border border-slate-700 px-3 py-2 rounded-xl flex gap-1 items-center"><i data-lucide="log-in" class="w-4 h-4"></i> Login</button><button onclick="openAdmin()" class="text-xs bg-slate-900 px-3 py-2 rounded-xl"><i data-lucide="settings-2" class="w-4 h-4"></i></button></div>
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script src="https://cdn.tailwindcss.com"></script><link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800&display=swap" rel="stylesheet"><style>body{font-family:Inter;background:#080C14;color:white}</style></head><body class="p-4">
+<header class="flex items-center gap-3 border-b border-white/10 pb-4">
+<img src="https://lh3.googleusercontent.com/d/1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib" class="w-12 h-12 rounded-xl bg-white object-contain p-1">
+<h1 class="text-xl font-black">MaxShop <span class="text-cyan-400">Enterprise</span></h1>
 </header>
-
-<main class="w-full max-w-[440px] mx-auto px-4 py-6 space-y-6 flex-1">
-
-<!-- BANNER REAL INTEGRADO -->
-<div class="relative rounded-[28px] overflow-hidden border border-slate-800 h-40 shadow-2xl">
-<img src="https://drive.google.com/uc?export=view&id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" class="w-full h-full object-cover" alt="Banner MaxShop" onerror="this.parentElement.classList.add('banner-bg')">
-<div class="absolute inset-0 bg-gradient-to-r from-[#080C14]/90 via-[#080C14]/40 to-cyan-500/20"></div>
-<div class="absolute inset-0 p-5 flex flex-col justify-end">
-<span class="text-[10px] bg-white text-black px-3 py-1 rounded-full font-black w-fit">NUEVO • RED CATAMARCA</span>
-<h2 class="text-lg font-black mt-2 leading-tight text-white">Tu ahorro vale más<br><span class="text-cyan-400">en cada compra.</span></h2>
-<p class="text-[11px] text-slate-300 mt-1">5% diario garantizado • 100+ comercios</p>
-</div>
-</div>
-
-<div class="relative overflow-hidden bg-gradient-to-br from-slate-900 to-cyan-950/20 border border-slate-800 rounded-[28px] p-5 glow">
-<div class="absolute -top-20 -right-20 w-64 h-64 bg-cyan-500/20 blur-[60px] rounded-full"></div>
-<div class="relative flex justify-between"><span id="lblPlan" class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full font-bold">PLAN GRATUITO</span><span class="text-[10px] text-slate-500">BASE 5% OFF</span></div>
-<div class="relative mt-4 flex justify-between items-end"><div><p class="text-[11px] text-slate-400 uppercase tracking-widest">Crédito de Ahorro</p><p id="lblCredito" class="mono text-3xl font-bold">$0</p></div><button onclick="document.getElementById('modalPlanes').classList.remove('hidden')" class="bg-white text-black text-xs font-black px-4 py-2.5 rounded-xl">Beneficios</button></div>
-<div class="relative grid grid-cols-2 gap-3 mt-5 pt-5 border-t border-slate-800/60">
-<button onclick="pagar('RECARGA')" class="bg-slate-800/80 border border-slate-700 p-3 rounded-2xl text-left"><p class="text-xs font-bold flex gap-1.5 items-center"><i data-lucide="battery-charging" class="w-4 h-4 text-cyan-400"></i> Recarga Exprés</p><p class="text-[10px] text-slate-400 mt-1">+$10k por $500</p></button>
-<button onclick="pagar('PRO')" class="bg-cyan-400 text-black p-3 rounded-2xl text-left font-black"><p class="text-xs flex gap-1.5 items-center"><i data-lucide="crown" class="w-4 h-4"></i> Plan Pro</p><p class="text-[10px] opacity-80">$5k/mes</p></button>
-</div>
-</div>
-
-<div class="glass rounded-[28px] p-6"><span class="text-[10px] text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1 rounded-full">BILLETERA INTELIGENTE</span><h2 class="text-xl font-bold mt-3">Canjear Descuento</h2><button onclick="startQR()" class="w-full mt-4 py-4 bg-white text-black font-black rounded-2xl flex justify-center gap-2"><i data-lucide="qr-code"></i> Escanear QR Comercio</button><div id="reader" class="mt-4 hidden"></div><div id="panelVenta" class="hidden mt-4 space-y-3"><p id="lblComercio" class="text-cyan-400 font-bold text-sm"></p><input id="monto" type="number" placeholder="Monto compra" onkeyup="calc()" class="w-full bg-black border border-slate-700 rounded-xl px-4 py-3 text-sm"><p class="text-xs">Ahorro: <span id="lblAhorro" class="text-cyan-400 font-bold">$0</span> | Total: <span id="lblTotal" class="text-emerald-400 font-bold">$0</span></p><button onclick="confirmar()" class="w-full py-3 bg-cyan-400 text-black font-black rounded-xl">Aplicar Descuento</button></div></div>
-
-<div class="grid grid-cols-2 gap-3">
-<button onclick="openCom()" class="glass p-4 rounded-2xl text-left hover:border-cyan-400/30 transition"><i data-lucide="store" class="text-cyan-400"></i><p class="text-xs font-bold mt-2">Sumar Comercio</p><p class="text-[10px] text-slate-500">16 rubros disponibles</p></button>
-<button onclick="openPrestamo()" class="glass p-4 rounded-2xl text-left hover:border-violet-400/30"><i data-lucide="landmark" class="text-violet-400"></i><p class="text-xs font-bold mt-2">Préstamos / Seguros</p><p class="text-[10px] text-slate-500">WhatsApp IA</p></button>
-</div>
-
-<div class="glass rounded-[28px] p-5">
-<div class="flex justify-between items-center"><h3 class="text-sm font-black flex gap-2"><i data-lucide="map-pinned" class="w-4 h-4 text-cyan-400"></i> Comercios Adheridos</h3><span id="countCom" class="text-[10px] bg-slate-800 px-2 py-1 rounded-full">0</span></div>
-<input id="searchCom" onkeyup="filterCom()" placeholder="Buscar rubro, servicio, localidad..." class="w-full mt-3 bg-black border border-slate-800 rounded-xl px-4 py-3 text-xs outline-none focus:border-cyan-500/50">
-<div class="flex gap-2 mt-3 overflow-x-auto pb-2" id="chipsRubros"></div>
-<div id="listaCom" class="mt-3 space-y-2 max-h-96 overflow-y-auto">Cargando...</div>
-</div>
-</main>
-
-<div id="modalCom" class="fixed inset-0 bg-[#080C14]/90 backdrop-blur z-50 hidden flex items-center justify-center p-4"><div class="bg-[#0F172A] border border-slate-800 w-full max-w-md rounded-[28px] p-6 space-y-3 max-h-[90vh] overflow-y-auto"><div class="flex justify-between"><button onclick="closeCom()" class="text-xs text-cyan-400">Volver</button><h3 class="text-sm font-bold">Sumar Comercio</h3><button onclick="closeCom()">✕</button></div>
-<form onsubmit="sendCom(event)" class="space-y-2 text-xs">
-<input id="c_nombre" required placeholder="Titular" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="c_correo" required placeholder="Email" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="c_wpp" required placeholder="WhatsApp 549..." class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="c_fantasia" required placeholder="Nombre Fantasía" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5">
-<select id="c_rubro" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5">
-<option>Supermercados y Almacenes</option><option>Carnicerías y Verdulerías</option><option>Panaderías y Confiterías</option><option>Gastronomía y Bares</option><option>Indumentaria y Calzado</option><option>Salud y Farmacia</option><option>Perfumería y Belleza</option><option>Electro y Hogar</option><option>Ferretería y Construcción</option><option>Automotor y Moto</option><option>Librería y Juguetería</option><option>Turismo y Hotelería</option><option>Gimnasios y Deportes</option><option>Servicios Profesionales</option><option>Servicios Generales</option><option>Otros Rubros</option>
-</select>
-<div class="grid grid-cols-2 gap-2"><input id="c_porcentaje" type="number" value="20" class="bg-black border border-slate-800 rounded-xl px-3 py-2.5"><select id="c_dia" class="bg-black border border-slate-800 rounded-xl px-3 py-2.5"><option>Todos los días</option><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option><option>Domingo</option></select></div>
-<input id="c_dir" required placeholder="Dirección" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="c_loc" required placeholder="Localidad" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="c_cuit" required placeholder="CUIT" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><label class="flex gap-2 text-[10px]"><input type="checkbox" required> Acepto ofrecer 5% diario.</label><button class="w-full py-3 bg-cyan-400 text-black font-black rounded-xl">Registrar Comercio</button>
-</form></div></div>
-
-<div id="modalPrestamo" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4"><div class="bg-[#0F172A] border border-violet-500/30 w-full max-w-md rounded-[28px] p-6 space-y-4"><h3 class="font-bold">Préstamo / Seguro - WhatsApp IA</h3><form onsubmit="sendPrestamo(event)" class="space-y-2 text-xs"><select id="p_tipo" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><option>Préstamo Personal</option><option>Seguro Comercio</option><option>Seguro Hogar</option><option>Seguro Auto</option></select><input id="p_nombre" required placeholder="Nombre" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="p_wpp" required placeholder="WhatsApp" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="p_dni" required placeholder="DNI" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="p_fotos" type="file" multiple accept="image/*" class="w-full text-[10px]"><button class="w-full py-3 bg-violet-500 text-white font-bold rounded-xl">Enviar a WhatsApp IA</button></form><button onclick="closePrestamo()" class="w-full text-xs text-slate-500">Cerrar</button></div></div>
-<div id="modalAuth" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4"><div class="bg-[#0F172A] border border-slate-800 w-full max-w-md rounded-[28px] p-6 space-y-3"><h3 id="authTitle" class="font-bold">Login</h3><form onsubmit="doAuth(event)" class="space-y-2 text-xs"><div id="regFields" class="hidden space-y-2"><input id="r_nombre" placeholder="Nombre" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="r_dni" placeholder="DNI" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="r_dir" placeholder="Direccion" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="r_loc" placeholder="Localidad" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="r_wpp" placeholder="WhatsApp" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"></div><input id="a_correo" type="email" required placeholder="Correo" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><input id="a_pass" type="password" required placeholder="Password" class="w-full bg-black border border-slate-800 rounded-xl px-3 py-2.5"><button class="w-full py-3 bg-white text-black font-black rounded-xl">Continuar</button></form><p class="text-xs text-center"><span onclick="toggleAuth()" id="toggleText" class="text-cyan-400 cursor-pointer">¿No tenes cuenta? Registrate</span></p><button onclick="closeAuth()" class="w-full text-xs text-slate-500">Cerrar</button></div></div>
-<div id="modalPlanes" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4"><div class="bg-[#0F172A] border border-slate-800 w-full max-w-md rounded-[28px] p-6 space-y-3"><h3 class="font-bold">Beneficios</h3><div class="bg-black border border-emerald-500/20 rounded-2xl p-4 text-xs"><p class="font-bold text-emerald-400">Gratuito</p><p>$50k inicial, 50% del descuento</p></div><div class="bg-black border border-cyan-500/30 rounded-2xl p-4 text-xs"><p class="font-bold text-cyan-400">Pro $5k/mes</p><p>100% del descuento</p></div><button onclick="document.getElementById('modalPlanes').classList.add('hidden')" class="w-full text-xs text-slate-500">Cerrar</button></div></div>
-
+<img src="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" class="w-full h-56 object-cover rounded-2xl mt-4">
+<div id="lista" class="grid grid-cols-2 gap-3 mt-6"></div>
 <script>
-let lista=[], comercioActual=null, pctActual=20, user=null, modoReg=false, html5Qr=null;
-const RUBROS_TODOS=["Todos","Supermercados","Gastronomía","Indumentaria","Salud","Belleza","Hogar","Automotor","Turismo","Servicios","Otros"];
-function toast(m,t='ok'){const c=document.getElementById('toastContainer');const d=document.createElement('div');d.className=`px-4 py-3 rounded-xl text-xs font-bold border ${t=='error'?'bg-rose-500/10 text-rose-400':'bg-emerald-500/10 text-emerald-400'}`;d.innerText=m;c.appendChild(d);setTimeout(()=>d.remove(),4000)}
-function init(){lucide.createIcons(); renderChips(); loadCom(); const s=localStorage.getItem('maxshop_correo'); if(s) checkUser(s);}
-function renderChips(){document.getElementById('chipsRubros').innerHTML=RUBROS_TODOS.map(r=>`<button onclick="filterByRubro('${r}')" class="text-[10px] bg-slate-800 hover:bg-cyan-500/20 border border-slate-700 px-3 py-1.5 rounded-full whitespace-nowrap">${r}</button>`).join('')}
-async function loadCom(){let r=await fetch('/api/comercios'); let j=await r.json(); if(j.success){lista=j.data; render(j.data);}}
-function render(data){document.getElementById('listaCom').innerHTML=data.length?data.map(c=>`<div class="p-3 bg-black border border-slate-800 rounded-xl flex justify-between items-center"><div><p class="text-xs font-bold">${c.nombre_fantasias}</p><p class="text-[10px] text-cyan-400">${c.porcentaje_descuento}% OFF • ${c.dia_promocion}</p><p class="text-[10px] text-slate-500">${c.localidad} • ${c.rubro}</p></div><a href="https://wa.me/${c.whatsapp}" target="_blank" class="p-2 bg-emerald-500/10 rounded-lg"><i data-lucide="message-circle" class="w-4 h-4 text-emerald-400"></i></a></div>`).join(''):`<p class="text-xs text-slate-500 text-center py-4">Aún no hay comercios. ¡Sumá el primero!</p>`; lucide.createIcons(); document.getElementById('countCom').innerText=data.length;}
-function filterCom(){let t=document.getElementById('searchCom').value.toLowerCase(); render(lista.filter(c=> (c.nombre_fantasias+c.rubro+c.localidad).toLowerCase().includes(t)))}
-function filterByRubro(r){if(r==='Todos') render(lista); else render(lista.filter(c=>c.rubro.toLowerCase().includes(r.toLowerCase())))}
-async function checkUser(correo){let r=await fetch(`/api/usuario/${correo}`); let j=await r.json(); if(j.success){user=j.data; localStorage.setItem('maxshop_correo',correo); let cred=j.data.credito_descuento_disponible||j.data.credito_descuento_total||0; document.getElementById('lblCredito').innerText='$'+Number(cred).toLocaleString(); let isPro=j.data.es_pro||j.data.suscripcion_activa||false; document.getElementById('lblPlan').innerText=isPro?'⭐ PLAN PRO ACTIVO':'⚡ PLAN GRATUITO ACTIVO';}}
-async function pagar(tipo){if(!user){toast('Inicia sesion','error'); openAuth(); return;} document.getElementById('loader').classList.remove('hidden'); let r=await fetch('/api/pagos/crear-preferencia',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:user.correo,tipo})}); let j=await r.json(); document.getElementById('loader').classList.add('hidden'); if(j.success) window.location.href=j.init_point; else toast('Error MP','error');}
-function openCom(){document.getElementById('modalCom').classList.remove('hidden')} function closeCom(){document.getElementById('modalCom').classList.add('hidden')}
-function openPrestamo(){document.getElementById('modalPrestamo').classList.remove('hidden')} function closePrestamo(){document.getElementById('modalPrestamo').classList.add('hidden')}
-function openAuth(){document.getElementById('modalAuth').classList.remove('hidden')} function closeAuth(){document.getElementById('modalAuth').classList.add('hidden')}
-function toggleAuth(){modoReg=!modoReg; document.getElementById('regFields').classList.toggle('hidden',!modoReg); document.getElementById('authTitle').innerText=modoReg?'Registro - $50k gratis':'Login'; document.getElementById('toggleText').innerText=modoReg?'¿Ya tenes cuenta? Login':'¿No tenes cuenta? Registrate';}
-async function doAuth(e){e.preventDefault(); if(modoReg){let payload={nombre_completo:r_nombre.value,dni:r_dni.value,direccion:r_dir.value,localidad:r_loc.value,whatsapp:r_wpp.value,correo:a_correo.value,password:a_pass.value}; let r=await fetch('/api/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); if(r.ok){toast('Registrado! $50k'); checkUser(a_correo.value); closeAuth();} else toast('Error','error')} else {let r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:a_correo.value,password:a_pass.value})}); let j=await r.json(); if(r.ok){toast('Bienvenido'); checkUser(j.usuario.correo); closeAuth();} else toast('Credenciales invalidas','error')}}
-async function sendCom(e){e.preventDefault(); let payload={nombre_completo:c_nombre.value,correo:c_correo.value,whatsapp:c_wpp.value,nombre_fantasias:c_fantasia.value,rubro:c_rubro.value,direccion:c_dir.value,localidad:c_loc.value,cuit_cuil:c_cuit.value,porcentaje_descuento:parseFloat(c_porcentaje.value),dia_promocion:c_dia.value}; let r=await fetch('/api/registrar-comercio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); if(r.ok){toast('Comercio registrado'); closeCom(); loadCom();} else toast('Error','error')}
-async function sendPrestamo(e){e.preventDefault(); toast('Enviado! Te hablamos por WhatsApp IA'); closePrestamo();}
-function startQR(){if(!user){toast('Login primero','error'); openAuth(); return;} document.getElementById('reader').classList.remove('hidden'); if(!html5Qr) html5Qr=new Html5Qrcode("reader"); html5Qr.start({facingMode:"environment"},{fps:10,qrbox:200},t=>{html5Qr.stop(); document.getElementById('reader').classList.add('hidden'); comercioActual=t; document.getElementById('lblComercio').innerText=t; let obj=lista.find(c=>c.nombre_fantasias===t); let base=obj?parseFloat(obj.porcentaje_descuento):20; let isPro=user.es_pro||user.suscripcion_activa||false; pctActual=isPro?base:base*0.5; document.getElementById('panelVenta').classList.remove('hidden');}).catch(()=>{})}
-function calc(){let m=parseFloat(document.getElementById('monto').value)||0; let ahorro=m*(pctActual/100); document.getElementById('lblAhorro').innerText='$'+ahorro.toLocaleString(); document.getElementById('lblTotal').innerText='$'+(m-ahorro).toLocaleString();}
-async function confirmar(){let m=parseFloat(document.getElementById('monto').value)||0; let r=await fetch('/api/consumir-credito',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo_usuario:user.correo,nombre_comercio:comercioActual,monto_compra:m})}); let j=await r.json(); if(j.success){toast('Ahorro aplicado $'+j.ahorro_aplicado); checkUser(user.correo); document.getElementById('panelVenta').classList.add('hidden')} else toast('Error','error')}
-function openAdmin(){let k=prompt('Clave admin'); if(k==='AsistMaxAdmin2026Secure') window.open('/api/admin/datos','_blank');}
-</script>
-</body>
-  </html>
+fetch('/api/comercios').then(r=>r.json()).then(j=>{
+ document.getElementById('lista').innerHTML=j.data.map(c=>`<div class="bg-white/5 p-3 rounded-xl border border-white/10"><img src="${c.logo_url||''}" class="w-full h-20 object-contain bg-white rounded"><p class="font-bold mt-2">${c.nombre_fantasias}</p><p class="text-cyan-400 text-sm">${c.porcentaje_descuento}% OFF - ${c.dia_promocion}</p></div>`).join('')
+})
+</script></body></html>
