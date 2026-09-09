@@ -187,11 +187,15 @@ def consumir(consumo: ConsumoQRModel):
 
 @app.get("/api/admin/datos")
 def admin():
-    if not supabase: return {"success": False}
-    rc=supabase.table("comercios").select("*").execute()
-    ru=supabase.table("usuarios").select("*").execute()
-    ra=supabase.table("acciones_log").select("*").order("id",desc=True).limit(100).execute()
-    return {"success": True, "comercios": rc.data, "usuarios": ru.data, "acciones": ra.data}
+    rc = supabase.table("comercios").select("*").order("id", desc=True).execute()
+    ru = supabase.table("usuarios").select("*").order("id", desc=True).execute()
+    ra = supabase.table("acciones_log").select("*").order("id", desc=True).limit(100).execute()
+    usuarios_norm = []
+    for u in (ru.data or []):
+        u['es_pro'] = u.get('es_pro') or u.get('suscripcion_activa') or False
+        u['credito_descuento_disponible'] = u.get('credito_descuento_disponible') or u.get('credito_descuento_total') or 0
+        usuarios_norm.append(u)
+    return {"success": True, "comercios": rc.data, "usuarios": usuarios_norm, "acciones": ra.data}
 
 @app.get("/", response_class=HTMLResponse)
 def ui():
