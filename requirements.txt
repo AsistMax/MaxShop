@@ -12,3 +12,4 @@ apscheduler
 mercadopago==2.3.0
 mercadopago
 passlib[bcrypt]
+python-dotenv
