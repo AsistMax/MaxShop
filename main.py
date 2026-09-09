@@ -11,7 +11,7 @@ import os
 import hashlib
 from supabase import create_client, Client
 
-app = FastAPI(title="MaxShop - Red de Comercios & Ahorro", version="9.6")
+app = FastAPI(title="MaxShop - Red de Comercios & Ahorro", version="9.7")
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,7 +39,7 @@ class ComercioModel(BaseModel):
     localidad: str
     cuit_cuil: str
     porcentaje_descuento: float = 20.0
-    dia_promocion: str = "Ninguno"
+    dia_promocion: str = "Todos los días"
     logo_url: str = ""
     fotos_url: str = ""
 
@@ -127,11 +127,11 @@ def mostrar_interfaz():
                 <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
                     <button onclick="ejecutarRecargaExpres()" class="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 p-2.5 rounded-2xl border border-cyan-500/30 text-center transition cursor-pointer">
                         <span class="block text-xs font-bold">⚡ Recarga Exprés</span>
-                        <span class="block text-[10px] text-slate-400">+$10k crédito por $500 (MP)</span>
+                        <span class="block text-[10px] text-slate-400">+$10k crédito por $500</span>
                     </button>
                     <button onclick="ejecutarSuscripcionPro()" class="bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 p-2.5 rounded-2xl text-center shadow-md font-bold transition hover:opacity-90 cursor-pointer">
                         <span class="block text-xs font-black">⭐ Plan Pro Mensual</span>
-                        <span class="block text-[9px] text-slate-950/80">$5.000/mes (Mercado Pago)</span>
+                        <span class="block text-[9px] text-slate-950/80">$5.000/mes (Pase Libre)</span>
                     </button>
                 </div>
             </div>
@@ -238,6 +238,7 @@ def mostrar_interfaz():
             </div>
         </div>
 
+        <!-- Modal Sumar Comercio (Rubros completos y días de lunes a domingo) -->
         <div id="modalComercio" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -250,12 +251,21 @@ def mostrar_interfaz():
                     <input type="email" id="c_correo" required placeholder="Correo Electrónico" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none">
                     <input type="text" id="c_wpp" required placeholder="WhatsApp" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none">
                     <input type="text" id="c_fantasia" required placeholder="Nombre de Fantasía" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none">
+                    
                     <select id="c_rubro" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none">
-                        <option value="Supermercados">Supermercados</option>
-                        <option value="Gastronomía">Gastronomía</option>
-                        <option value="Indumentaria">Indumentaria</option>
+                        <option value="Supermercados, Almacenes y Autoservicios">Supermercados, Almacenes y Autoservicios</option>
+                        <option value="Gastronomía (Restaurantes, Cafés, Bares)">Gastronomía (Restaurantes, Cafés, Bares)</option>
+                        <option value="Indumentaria, Calzado y Marroquinería">Indumentaria, Calzado y Marroquinería</option>
+                        <option value="Salud, Farmacias y Perfumerías">Salud, Farmacias y Perfumerías</option>
+                        <option value="Electro, Tecnología y Hogar">Electro, Tecnología y Hogar</option>
+                        <option value="Construcción, Ferretería y Pinturería">Construcción, Ferretería y Pinturería</option>
+                        <option value="Automotor, Repuestos y Lubricentros">Automotor, Repuestos y Lubricentros</option>
+                        <option value="Belleza, Estética y Peluquerías">Belleza, Estética y Peluquerías</option>
+                        <option value="Entretenimiento, Turismo y Hotelería">Entretenimiento, Turismo y Hotelería</option>
+                        <option value="Servicios Profesionales y Oficios">Servicios Profesionales y Oficios</option>
                         <option value="Otro">Otro</option>
                     </select>
+
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-slate-950 border border-slate-800 rounded-xl p-2">
                             <label class="text-[10px] text-cyan-400 block font-semibold">Logo</label>
@@ -269,28 +279,32 @@ def mostrar_interfaz():
                     <div class="grid grid-cols-2 gap-2">
                         <input type="number" id="c_porcentaje" value="20" placeholder="% Descuento" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none">
                         <select id="c_dia_promo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none">
-                            <option value="Ninguno">Todos los días</option>
+                            <option value="Todos los días">Todos los días</option>
                             <option value="Lunes">Lunes</option>
                             <option value="Martes">Martes</option>
                             <option value="Miércoles">Miércoles</option>
+                            <option value="Jueves">Jueves</option>
+                            <option value="Viernes">Viernes</option>
+                            <option value="Sábado">Sábado</option>
+                            <option value="Domingo">Domingo</option>
                         </select>
                     </div>
                     <input type="text" id="c_dir" required placeholder="Dirección" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none">
                     <input type="text" id="c_loc" required placeholder="Localidad" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none">
                     <input type="text" id="c_cuit" required placeholder="CUIT / CUIL" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none">
-                    <div class="text-[10px] text-slate-400 space-y-1">
+                    <div class="text-[10px] text-slate-400 space-y-1 pt-1">
                         <label class="flex items-center space-x-2 cursor-pointer">
                             <input type="checkbox" id="c_terminos" required class="rounded bg-slate-950 border-slate-800 text-cyan-500">
-                            <span>Acepto términos, condiciones y ofrecer un 5% todos los días en la red.</span>
+                            <span>Acepto términos y condiciones y acepto ofrecer un 5% todos los días en la red.</span>
                         </label>
-                        <p class="text-cyan-400">ℹ️ Si desea saber más sobre otros costos, comunicarse al WhatsApp <a href="https://wa.me/5493834000000?text=Hola,%20quiero%20consultar%20costos" target="_blank" class="underline font-bold">👉 ℹ️ (Enlace WhatsApp)</a></p>
+                        <p class="text-cyan-400">ℹ️ Si desea saber más sobre otros costos, comunicarse al WhatsApp <a href="https://wa.me/5493834000000?text=Hola,%20quiero%20consultar%20costos%20para%20comercios" target="_blank" class="underline font-bold">👉 ℹ️ (Enlace WhatsApp)</a></p>
                     </div>
                     <button type="submit" class="w-full py-3 bg-cyan-400 text-slate-950 font-bold rounded-xl cursor-pointer shadow-lg">Registrar Comercio</button>
                 </form>
             </div>
         </div>
 
-        <!-- Modal Conocer Beneficios (Con toda la información detallada) -->
+        <!-- Modal Conocer Beneficios (Redacción corregida con "accederás") -->
         <div id="modalPlanesDetallados" class="fixed inset-0 bg-slate-950/85 z-50 hidden flex items-center justify-center p-4">
             <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl text-xs">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -301,31 +315,52 @@ def mostrar_interfaz():
                 <div class="space-y-4 text-slate-300 leading-relaxed">
                     <div class="bg-slate-950 border border-emerald-500/30 rounded-2xl p-4 space-y-2">
                         <h4 class="text-emerald-400 font-bold text-sm">⚡ Plan Gratuito (Pase Libre)</h4>
-                        <p>Accediste a un plan totalmente gratuito, y por ser la primera vez te damos <b>$50.000</b> en crédito para usarlos como más te guste en toda nuestra red de comercios adheridos. Además, tenés <b>5% de descuento todos los días</b> en toda la red. Con este plan obtienes <b>50% de descuento</b> del descuento promocionado por el comercio adherido. Si deseas tener 100% en tus descuentos proporcionados por el comercio, cámbiate al Plan Pro.</p>
+                        <p>Al registrarte accederás a un plan totalmente gratuito, y por ser la primera vez te daremos <b>$50.000</b> en crédito para usarlos como más te guste en toda nuestra red de comercios adheridos. Además, tenés <b>5% de descuento todos los días</b> en toda la red. Con este plan obtienes <b>50% de descuento</b> del descuento promocionado por el comercio adherido. Si deseas tener 100% en tus descuentos proporcionados por el comercio, cámbiate al Plan Pro.</p>
                         <button onclick="cerrarModalPlanesDetallados(); abrirModalAuth('registro');" class="w-full py-2 bg-emerald-500/20 text-emerald-400 rounded-xl font-bold cursor-pointer">Registrarme en Plan Gratuito</button>
                     </div>
                     <div class="bg-slate-950 border border-cyan-500/30 rounded-2xl p-4 space-y-2">
                         <h4 class="text-cyan-400 font-bold text-sm">⚡ Recarga Exprés ($500)</h4>
-                        <p>Si te quedas sin saldo, realiza una recarga rápida de <b>$10.000 extra de crédito</b> abonando únicamente <b>$500</b> mediante Mercado Pago.</p>
+                        <p>Si te quedas sin saldo, realiza una recarga rápida de <b>$10.000 extra de crédito</b> abonando únicamente <b>$500</b> mediante plataforma de pago segura.</p>
                         <button onclick="cerrarModalPlanesDetallados(); ejecutarRecargaExpres();" class="w-full py-2 bg-cyan-500/20 text-cyan-300 rounded-xl font-bold cursor-pointer">Realizar Recarga Exprés</button>
                     </div>
                     <div class="bg-slate-950 border border-cyan-500/50 rounded-2xl p-4 space-y-2">
                         <h4 class="text-cyan-400 font-bold text-sm">⭐ Plan Pro Mensual ($5.000 / mes)</h4>
-                        <p>Suscripción mensual automática por Mercado Pago. Disfrutas del <b>100% del descuento</b> proporcionado por el comercio sin recortes. No requiere saldo acumulado extra, ya que tienes un plan completo y libre.</p>
+                        <p>Suscripción mensual automática. Disfrutas del <b>100% del descuento</b> proporcionado por el comercio sin recortes. No requiere saldo acumulado extra, ya que tienes un plan completo y libre de restricciones.</p>
                         <button onclick="cerrarModalPlanesDetallados(); ejecutarSuscripcionPro();" class="w-full py-2 bg-cyan-400 text-slate-950 rounded-xl font-bold cursor-pointer">Pagar Plan Pro ($5.000/mes)</button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Panel de Administrador Avanzado Sectorizado -->
         <div id="modalAdmin" class="fixed inset-0 bg-slate-950/95 z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl text-xs">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <button onclick="cerrarAdmin()" class="text-cyan-400 text-xs font-bold bg-slate-950 px-2 py-1 rounded-xl border border-slate-800 cursor-pointer">⬅️ Volver</button>
-                    <h3 class="text-base font-bold text-white">⚙️ Panel Admin</h3>
+                    <h3 class="text-base font-bold text-white">⚙️ Panel de Control & Auditoría MaxShop</h3>
                     <button onclick="cerrarAdmin()" class="text-slate-400 font-bold cursor-pointer">✕</button>
                 </div>
-                <div id="tablaComerciosAdminList" class="text-xs text-slate-300 space-y-2">Cargando...</div>
+                
+                <div class="flex border-b border-slate-800 space-x-4 pb-2 overflow-x-auto">
+                    <button onclick="cambiarPestanaAdmin('comercios')" id="btnTabComercios" class="font-bold text-cyan-400 border-b-2 border-cyan-400 pb-1 cursor-pointer">🏪 Comercios & Planes Titulares</button>
+                    <button onclick="cambiarPestanaAdmin('usuarios')" id="btnTabUsuarios" class="font-bold text-slate-400 pb-1 cursor-pointer">👤 Clientes Registrados</button>
+                    <button onclick="cambiarPestanaAdmin('acciones')" id="btnTabAcciones" class="font-bold text-slate-400 pb-1 cursor-pointer">📊 Informe de Recargas & Acciones</button>
+                </div>
+
+                <div id="seccionComerciosAdmin" class="space-y-2">
+                    <h4 class="font-bold text-cyan-400 uppercase">Listado de Comercios Adheridos y Planes de Titulares</h4>
+                    <div id="tablaComerciosAdminList" class="space-y-2">Cargando...</div>
+                </div>
+
+                <div id="seccionUsuariosAdmin" class="space-y-2 hidden">
+                    <h4 class="font-bold text-blue-400 uppercase">Clientes / Usuarios Registrados</h4>
+                    <div id="tablaUsuariosAdminList" class="space-y-2">Cargando...</div>
+                </div>
+
+                <div id="seccionAccionesAdmin" class="space-y-2 hidden">
+                    <h4 class="font-bold text-emerald-400 uppercase">Auditoría de Recargas Exprés, Pro y Transacciones</h4>
+                    <div id="tablaAccionesAdminList" class="space-y-2">Cargando registro de transacciones...</div>
+                </div>
             </div>
         </div>
 
@@ -374,7 +409,7 @@ def mostrar_interfaz():
                 let html = '';
                 comercios.forEach(c => {
                     html += `<div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl flex justify-between items-center text-xs">
-                        <div><b>${c.nombre_fantasias}</b> (${c.rubro})<br><span class="text-[10px] text-cyan-400">${c.porcentaje_descuento || 20}% Off</span></div>
+                        <div><b>${c.nombre_fantasias}</b> (${c.rubro})<br><span class="text-[10px] text-cyan-400">${c.porcentaje_descuento || 20}% Off • ${c.dia_promocion || 'Todos los días'}</span></div>
                         <a href="https://wa.me/${c.whatsapp}" target="_blank" class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">WhatsApp</a>
                     </div>`;
                 });
@@ -461,7 +496,7 @@ def mostrar_interfaz():
                         body: JSON.stringify(payload)
                     });
                     if(res.ok) {
-                        mostrarToast("¡Accediste a un plan totalmente gratuito! Y por ser la primera vez te damos $50.000 en crédito para usarlos en toda la red.");
+                        mostrarToast("¡Accediste a un plan totalmente gratuito! Y por ser la primera vez te damos $50.000 en crédito para usarlos en toda nuestra red de comercios adheridos.");
                         verificarEstadoUsuario(correo);
                         cerrarModalAuth();
                     } else {
@@ -492,26 +527,26 @@ def mostrar_interfaz():
 
             function ejecutarRecargaExpres() {
                 if(!usuarioLogueadoGlobal) { mostrarToast("Inicia sesión o regístrate primero", "error"); abrirModalAuth('login'); return; }
-                if(confirm("Redirigiendo a Mercado Pago para abonar Recarga Exprés ($500)...")) {
+                if(confirm("Redirigiendo a plataforma de pago segura para abonar Recarga Exprés ($500)...")) {
                     fetch('/api/recarga-expres', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ correo: usuarioLogueadoGlobal.correo })
                     }).then(r => r.json()).then(res => {
-                        if(res.success) { mostrarToast("¡Pago aprobado por Mercado Pago! +$10.000 acreditados."); verificarEstadoUsuario(usuarioLogueadoGlobal.correo); }
+                        if(res.success) { mostrarToast("¡Pago aprobado! +$10.000 acreditados a tu saldo."); verificarEstadoUsuario(usuarioLogueadoGlobal.correo); }
                     });
                 }
             }
 
             function ejecutarSuscripcionPro() {
                 if(!usuarioLogueadoGlobal) { mostrarToast("Inicia sesión o regístrate primero", "error"); abrirModalAuth('login'); return; }
-                if(confirm("Redirigiendo a Mercado Pago para abonar Plan Pro Mensual ($5.000)...")) {
+                if(confirm("Redirigiendo a plataforma de pago segura para abonar Plan Pro Mensual ($5.000)...")) {
                     fetch('/api/suscripcion-pro', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ correo: usuarioLogueadoGlobal.correo })
                     }).then(r => r.json()).then(res => {
-                        if(res.success) { mostrarToast("¡Pago aprobado por Mercado Pago! Plan Pro Activo."); verificarEstadoUsuario(usuarioLogueadoGlobal.correo); }
+                        if(res.success) { mostrarToast("¡Pago aprobado! Plan Pro Activo con 100% de descuento."); verificarEstadoUsuario(usuarioLogueadoGlobal.correo); }
                     });
                 }
             }
@@ -581,7 +616,7 @@ def mostrar_interfaz():
                 };
                 let res = await fetch('/api/registrar-comercio', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
                 if(res.ok) {
-                    mostrarToast("¡Comercio registrado con éxito!");
+                    mostrarToast("¡Comercio registrado con éxito en la red!");
                     document.getElementById('modalComercio').classList.add('hidden');
                     cargarComerciosPublicos();
                 } else {
@@ -603,11 +638,44 @@ def mostrar_interfaz():
             }
             function cerrarAdmin() { document.getElementById('modalAdmin').classList.add('hidden'); }
 
+            function cambiarPestanaAdmin(pestana) {
+                document.getElementById('seccionComerciosAdmin').classList.add('hidden');
+                document.getElementById('seccionUsuariosAdmin').classList.add('hidden');
+                document.getElementById('seccionAccionesAdmin').classList.add('hidden');
+                document.getElementById('btnTabComercios').className = "font-bold text-slate-400 pb-1 cursor-pointer";
+                document.getElementById('btnTabUsuarios').className = "font-bold text-slate-400 pb-1 cursor-pointer";
+                document.getElementById('btnTabAcciones').className = "font-bold text-slate-400 pb-1 cursor-pointer";
+
+                if(pestana === 'comercios') {
+                    document.getElementById('seccionComerciosAdmin').classList.remove('hidden');
+                    document.getElementById('btnTabComercios').className = "font-bold text-cyan-400 border-b-2 border-cyan-400 pb-1 cursor-pointer";
+                } else if(pestana === 'usuarios') {
+                    document.getElementById('seccionUsuariosAdmin').classList.remove('hidden');
+                    document.getElementById('btnTabUsuarios').className = "font-bold text-blue-400 border-b-2 border-blue-400 pb-1 cursor-pointer";
+                } else {
+                    document.getElementById('seccionAccionesAdmin').classList.remove('hidden');
+                    document.getElementById('btnTabAcciones').className = "font-bold text-emerald-400 border-b-2 border-emerald-400 pb-1 cursor-pointer";
+                }
+            }
+
             async function cargarDatosAdmin() {
                 let res = await fetch('/api/admin/datos');
                 let json = await res.json();
                 if(json.success) {
-                    document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `<div class="p-2 border-b border-slate-800"><b>${c.nombre_fantasias}</b> (${c.rubro}) - Titular: ${c.nombre_completo}</div>`).join('') || 'Sin comercios';
+                    document.getElementById('tablaComerciosAdminList').innerHTML = json.comercios.map(c => `
+                        <div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl flex justify-between items-center">
+                            <div><b>${c.nombre_fantasias}</b> (${c.rubro})<br><span class="text-[10px] text-slate-400">Titular: ${c.nombre_completo} (${c.correo}) | Plan Titular: ${c.es_pro ? 'PRO' : 'FREE'}</span></div>
+                        </div>`).join('') || 'Sin comercios';
+
+                    document.getElementById('tablaUsuariosAdminList').innerHTML = json.usuarios.map(u => `
+                        <div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl flex justify-between items-center">
+                            <div><b>${u.nombre_completo}</b> (${u.correo})<br><span class="text-[10px] text-cyan-400">Membresía: ${u.es_pro ? 'Plan Pro' : 'Plan Gratuito'} | Saldo: $${u.credito_descuento_disponible}</span></div>
+                        </div>`).join('') || 'Sin usuarios';
+
+                    document.getElementById('tablaAccionesAdminList').innerHTML = json.acciones.map(a => `
+                        <div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl flex justify-between items-center">
+                            <div><b>Acción:</b> ${a.tipo} <br><span class="text-[10px] text-slate-400">Usuario/Emisor: ${a.correo} | Detalle: ${a.detalle} | Fecha: ${a.fecha}</span></div>
+                        </div>`).join('') || 'Sin registros de acciones';
                 }
             }
         </script>
@@ -625,6 +693,12 @@ def registrar_usuario_seguro(u: UsuarioRegistroModel):
         data["es_pro"] = False
         data["credito_descuento_disponible"] = 50000
         supabase.table("usuarios").insert(data).execute()
+        
+        # Registrar acción en auditoría
+        try:
+            supabase.table("acciones_log").insert({"correo": u.correo, "tipo": "REGISTRO_GRATUITO", "detalle": "Nuevo usuario registrado con $50.000 iniciales"}).execute()
+        except: pass
+
         return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -663,19 +737,27 @@ def obtener_comercios():
 def registrar_comercio(c: ComercioModel):
     if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
     try:
-        res = supabase.table("comercios").insert(c.dict()).execute()
-        return {"success": True, "data": res.data}
+        data = c.dict()
+        data["es_pro"] = False # Identificador de plan titular comercio
+        supabase.table("comercios").insert(data).execute()
+        
+        try:
+            supabase.table("acciones_log").insert({"correo": c.correo, "tipo": "REGISTRO_COMERCIO", "detalle": f"Comercio adherido: {c.nombre_fantasias}"}).execute()
+        except: pass
+
+        return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/admin/datos")
 def admin_datos():
-    if not supabase: return {"success": False, "comercios": [], "usuarios": []}
+    if not supabase: return {"success": False, "comercios": [], "usuarios": [], "acciones": []}
     try:
         rc = supabase.table("comercios").select("*").execute()
         ru = supabase.table("usuarios").select("*").execute()
-        return {"success": True, "comercios": rc.data, "usuarios": ru.data}
-    except: return {"success": False, "comercios": [], "usuarios": []}
+        ra = supabase.table("acciones_log").select("*").order("id", desc=True).limit(50).execute()
+        return {"success": True, "comercios": rc.data, "usuarios": ru.data, "acciones": ra.data if ra.data else []}
+    except: return {"success": False, "comercios": [], "usuarios": [], "acciones": []}
 
 @app.post("/api/suscripcion-pro")
 def suscripcion_pro(payload: dict):
@@ -683,6 +765,9 @@ def suscripcion_pro(payload: dict):
     if not supabase: raise HTTPException(status_code=500, detail="Sin BD")
     try:
         supabase.table("usuarios").update({"es_pro": True}).eq("correo", correo).execute()
+        try:
+            supabase.table("acciones_log").insert({"correo": correo, "tipo": "PAGO_PLAN_PRO", "detalle": "Suscripción Plan Pro Mensual activada ($5.000)"}).execute()
+        except: pass
         return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -696,6 +781,9 @@ def recarga_expres(payload: dict):
         actual = float(res.data[0].get("credito_descuento_disponible", 0)) if res.data else 0
         nuevo = actual + 10000
         supabase.table("usuarios").update({"credito_descuento_disponible": nuevo}).eq("correo", correo).execute()
+        try:
+            supabase.table("acciones_log").insert({"correo": correo, "tipo": "RECARGA_EXPRES", "detalle": "Recarga exprés de $500 realizada (+$10k crédito)"}).execute()
+        except: pass
         return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -723,6 +811,10 @@ def consumir_credito(consumo: ConsumoQRModel):
 
         nuevo_credito = credito_disponible - ahorro if not es_pro else credito_disponible
         supabase.table("usuarios").update({"credito_descuento_disponible": nuevo_credito}).eq("correo", consumo.correo_usuario).execute()
+
+        try:
+            supabase.table("acciones_log").insert({"correo": consumo.correo_usuario, "tipo": "CANJE_DESCUENTO", "detalle": f"Canje en {consumo.nombre_comercio} por ${consumo.monto_compra} (Ahorro: ${ahorro})"}).execute()
+        except: pass
 
         return {"success": True, "ahorro_aplicado": ahorro, "credito_restante": nuevo_credito}
     except Exception as e:
