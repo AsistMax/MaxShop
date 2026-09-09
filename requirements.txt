@@ -10,3 +10,5 @@ jinja2
 flask==3.0.3
 apscheduler
 mercadopago==2.3.0
+mercadopago
+passlib[bcrypt]
