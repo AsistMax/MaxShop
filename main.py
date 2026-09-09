@@ -51,6 +51,67 @@ def crear_preferencia(correo: str, tipo: str):
     result = mp_sdk.preference().create(pref)
     if result["status"] not in [200,201]: raise HTTPException(400, f"MP Error {result}")
     return result["response"]["init_point"]
+    from fastapi import UploadFile, File, Form
+import requests
+import uuid
+
+@app.post("/api/solicitudes/prestamo-seguro")
+async def solicitud_prestamo(
+    tipo: str = Form(...),
+    nombre: str = Form(...),
+    whatsapp: str = Form(...),
+    dni: str = Form(...),
+    fotos: list[UploadFile] = File(default=[])
+):
+    if not supabase:
+        raise HTTPException(500, "Sin BD")
+
+    urls = []
+    for foto in fotos:
+        if foto.filename:
+            file_content = await foto.read()
+            file_name = f"{uuid.uuid4()}_{foto.filename}"
+            try:
+                supabase.storage.from_("prestamos-requisitos").upload(file_name, file_content, {"content-type": foto.content_type})
+                public_url = supabase.storage.from_("prestamos-requisitos").get_public_url(file_name)
+                urls.append(public_url)
+            except Exception as e:
+                print(f"Error subiendo {file_name}: {e}")
+
+    # Guarda en DB
+    supabase.table("solicitudes_prestamos").insert({
+        "tipo": tipo,
+        "nombre_completo": nombre,
+        "whatsapp": whatsapp,
+        "dni": dni,
+        "fotos_urls": urls,
+        "estado": "nuevo"
+    }).execute()
+
+    log_accion(whatsapp, "SOLICITUD_PRESTAMO", f"{tipo} de {nombre} DNI {dni}")
+
+    # --- AVISO A TU WHATSAPP CON CALLMEBOT + IA ---
+    CALLMEBOT_PHONE = os.getenv("CALLMEBOT_PHONE", "5493834000000") # tu numero con 549
+    CALLMEBOT_APIKEY = os.getenv("CALLMEBOT_APIKEY")
+
+    if CALLMEBOT_APIKEY:
+        mensaje = f"🚨 *MaxShop Enterprise* - Nueva Solicitud%0A%0A"
+        mensaje += f"*Tipo:* {tipo}%0A"
+        mensaje += f"*Nombre:* {nombre}%0A"
+        mensaje += f"*DNI:* {dni}%0A"
+        mensaje += f"*WhatsApp Cliente:* {whatsapp}%0A"
+        mensaje += f"*Fotos:* {len(urls)} adjuntas%0A"
+        if urls:
+            mensaje += f"*Link Foto 1:* {urls[0]}%0A"
+        mensaje += f"%0A_Responde con IA en 10 seg._"
+
+        try:
+            url_callmebot = f"https://api.callmebot.com/whatsapp.php?phone={CALLMEBOT_PHONE}&text={mensaje}&apikey={CALLMEBOT_APIKEY}"
+            requests.get(url_callmebot, timeout=10)
+        except Exception as e:
+            print(f"Error CallMeBot: {e}")
+
+    return {"success": True, "fotos_subidas": len(urls), "urls": urls}
 
 @app.get("/api/comercios")
 def get_comercios():
