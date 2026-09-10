@@ -10,6 +10,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 templates = Jinja2Templates(directory="templates")
 
 ADMIN_KEY = os.getenv("ADMIN_KEY", "MaxShop2026!Admin")
+RUBROS = ["gastronomia","indumentaria","supermercado","farmacia","ferreteria","estetica","gimnasio","tecnologia","hogar","construccion","automotriz","libreria","jugueteria","calzado","servicios","salud","mascotas","otros"]
 
 _supabase = None
 def get_supabase():
@@ -18,7 +19,7 @@ def get_supabase():
     try:
         from supabase import create_client
         url = os.getenv("SUPABASE_URL")
-        key = os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        key = os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SECRET_KEY")
         if not url or not key: return None
         _supabase = create_client(url, key)
         return _supabase
@@ -66,7 +67,7 @@ async def registro(req: Request):
         "nombre_completo": d['nombre_completo'], "dni": d['dni'], "direccion": d['direccion'],
         "localidad": d['localidad'], "whatsapp": d['whatsapp'], "correo": d['correo'], "password": d['password'],
         "es_pro": False, "credito_descuento_disponible": 50000, "credito_descuento_total": 50000,
-        "credito_ilimitado": False
+        "credito_ilimitado": False, "suscripcion_activa": False
     }
     sb.table("usuarios").insert(nuevo).execute()
     return {"success": True}
@@ -89,8 +90,10 @@ async def login_comercio(req: Request):
 async def reg_com(req: Request):
     sb = get_supabase(); d = await req.json()
     pct = float(d.get('porcentaje_descuento') or 5)
-    if pct < 5: return JSONResponse({"success": False, "error":"Minimo 5%"},400)
+    if pct < 5: return JSONResponse({"success": False, "error":"Minimo 5 por ciento obligatorio"},400)
     d['fecha_alta'] = datetime.now().isoformat()
+    if not d.get('correo') or not d.get('password'):
+        return JSONResponse({"success": False, "error":"Comercio debe tener correo y contraseña"},400)
     r = sb.table("comercios").insert(d).execute()
     return {"success": True, "data": r.data}
 
@@ -99,12 +102,19 @@ async def crear_pago_recarga(req: Request):
     d = await req.json(); mp = get_mp(); sb = get_supabase()
     if not mp:
         u = sb.table("usuarios").select("*").eq("correo", d['correo']).single().execute()
-        if u.data:
+        if u.data and not u.data.get('credito_ilimitado'):
             nuevo = float(u.data.get('credito_descuento_disponible') or 0) + 10000
             total = float(u.data.get('credito_descuento_total') or 0) + 10000
             sb.table("usuarios").update({"credito_descuento_disponible": nuevo, "credito_descuento_total": total}).eq("correo", d['correo']).execute()
-            return {"success": True, "demo": True, "nuevo_credito": nuevo}
-    pref = {"items": [{"title":"Recarga MaxShop 500=10000 credito","quantity":1,"unit_price":500,"currency_id":"ARS"}],"payer":{"email":d['correo']},"external_reference":f"recarga_{d['correo']}_{uuid.uuid4()}","back_urls":{"success":f"{os.getenv('BASE_URL','')}/?pago=ok","failure":f"{os.getenv('BASE_URL','')}/?pago=fail"},"auto_return":"approved"}
+            return {"success": True, "demo": True, "nuevo_credito": nuevo, "init_point": None}
+        return {"success": False}
+    pref = {
+        "items": [{"title":"Recarga MaxShop 500 pesos por 10000 de credito","quantity":1,"unit_price":500,"currency_id":"ARS"}],
+        "payer": {"email": d['correo']},
+        "external_reference": f"recarga_{d['correo']}_{uuid.uuid4()}",
+        "back_urls": {"success": f"{os.getenv('BASE_URL','')}/?pago=ok", "failure": f"{os.getenv('BASE_URL','')}/?pago=fail"},
+        "auto_return": "approved"
+    }
     res = mp.preference().create(pref)
     return {"success": True, "init_point": res["response"]["init_point"]}
 
@@ -112,9 +122,15 @@ async def crear_pago_recarga(req: Request):
 async def crear_pago_pro(req: Request):
     d = await req.json(); mp = get_mp(); sb = get_supabase()
     if not mp:
-        sb.table("usuarios").update({"es_pro": True, "credito_ilimitado": True, "credito_descuento_disponible": 999999999}).eq("correo", d['correo']).execute()
-        return {"success": True, "demo": True}
-    pref = {"items": [{"title":"MaxShop PRO 5000 ilimitado","quantity":1,"unit_price":5000,"currency_id":"ARS"}],"payer":{"email":d['correo']},"external_reference":f"pro_{d['correo']}_{uuid.uuid4()}","back_urls":{"success":f"{os.getenv('BASE_URL','')}/?pro=ok","failure":f"{os.getenv('BASE_URL','')}/?pro=fail"},"auto_return":"approved"}
+        sb.table("usuarios").update({"es_pro": True, "suscripcion_activa": True, "credito_ilimitado": True, "credito_descuento_disponible": 999999999}).eq("correo", d['correo']).execute()
+        return {"success": True, "demo": True, "init_point": None}
+    pref = {
+        "items": [{"title":"MaxShop PRO 5000 pesos - Credito ilimitado y 100 por ciento descuentos","quantity":1,"unit_price":5000,"currency_id":"ARS"}],
+        "payer": {"email": d['correo']},
+        "external_reference": f"pro_{d['correo']}_{uuid.uuid4()}",
+        "back_urls": {"success": f"{os.getenv('BASE_URL','')}/?pro=ok", "failure": f"{os.getenv('BASE_URL','')}/?pro=fail"},
+        "auto_return": "approved"
+    }
     res = mp.preference().create(pref)
     return {"success": True, "init_point": res["response"]["init_point"]}
 
@@ -147,7 +163,7 @@ async def qr_scan(req: Request):
 @app.post("/api/admin/login")
 async def admin_login(req: Request):
     d = await req.json()
-    if d.get('key')!= ADMIN_KEY: return JSONResponse({"success": False},401)
+    if d.get('key')!= ADMIN_KEY: return JSONResponse({"success": False, "error":"Clave incorrecta"},401)
     return {"success": True}
 
 @app.get("/api/admin/datos")
