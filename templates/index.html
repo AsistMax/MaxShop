@@ -1,96 +1,188 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MaxShop Enterprise</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
-body{background:#0a0a0a;color:#fff}
-.header{position:sticky;top:0;z-index:100;background:rgba(0,0,0,.92);backdrop-filter:blur(12px);border-bottom:1px solid #222;padding:12px 18px;display:flex;align-items:center;gap:12px}
-.logo-img{width:50px;height:50px;border-radius:12px;background:#fff;object-fit:cover;border:2px solid #facc15}
-.banner-wrap{position:relative;height:360px;background:#111;overflow:hidden}
-.banner{width:100%;height:100%;object-fit:cover}
-.banner-overlay{position:absolute;inset:0;background:linear-gradient(0deg,#0a0a0a 15%,transparent 70%);display:flex;align-items:end;padding:28px}
-.container{max-width:1200px;margin:auto;padding:20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:20px}
-.card{background:#18181b;border:1px solid #27272a;border-radius:18px;overflow:hidden;cursor:pointer;transition:.25s}
-.card:hover{transform:translateY(-5px);border-color:#facc15}
-.card-banner{width:100%;height:170px;object-fit:cover;background:#222}
-.card-body{padding:14px}
-.badge{background:#facc15;color:#000;padding:5px 10px;border-radius:20px;font-weight:900;font-size:11px}
-.btn{width:100%;background:#facc15;color:#000;border:none;padding:12px;border-radius:12px;font-weight:800;cursor:pointer}
-.btn-dark{background:#222;color:#fff}
-.input{width:100%;background:#111;border:1px solid #333;color:#fff;padding:12px;border-radius:10px;margin:6px 0}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:999;padding:12px}
-.modal.active{display:flex}
-.modal-box{background:#18181b;border:1px solid #333;border-radius:20px;max-width:650px;width:100%;max-height:95vh;overflow:auto}
-.m-banner{width:100%;height:220px;object-fit:cover;background:#222}
-.tab{padding:9px 14px;border-radius:10px;background:#222;border:none;color:#fff;cursor:pointer;font-size:13px}
-.tab.active{background:#facc15;color:#000}
-.preview{width:100%;height:110px;object-fit:cover;border-radius:10px;display:none;background:#222;margin:6px 0}
-.credit-box{background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;padding:12px 16px;border-radius:12px;font-weight:800}
-</style>
-</head>
-<body>
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MaxShop Enterprise</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}body{background:#0a0a0a;color:#fff}
+.header{position:sticky;top:0;z-index:100;background:rgba(0,0,0,.95);border-bottom:1px solid #222;padding:10px 16px;display:flex;align-items:center;gap:10px}
+.logo-img{width:46px;height:46px;border-radius:10px;background:#fff;object-fit:cover;border:2px solid #facc15}
+.banner-wrap{position:relative;height:320px;background:#111;overflow:hidden}.banner{width:100%;height:100%;object-fit:cover}
+.banner-overlay{position:absolute;inset:0;background:linear-gradient(0deg,#0a0a0a 20%,transparent 70%);display:flex;align-items:end;padding:20px}
+.container{max-width:1200px;margin:auto;padding:16px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:#18181b;border:1px solid #27272a;border-radius:16px;overflow:hidden;cursor:pointer;transition:.2s}.card:hover{border-color:#facc15}
+.card-banner{width:100%;height:160px;object-fit:cover;background:#222;display:block}.card-body{padding:12px}
+.badge{background:#facc15;color:#000;padding:4px 10px;border-radius:20px;font-weight:900;font-size:11px}
+.btn{width:100%;background:#facc15;color:#000;border:none;padding:11px;border-radius:10px;font-weight:800;cursor:pointer}
+.btn-dark{background:#222;color:#fff}.input{width:100%;background:#111;border:1px solid #333;color:#fff;padding:11px;border-radius:10px;margin:5px 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:999;padding:10px}.modal.active{display:flex}
+.modal-box{background:#18181b;border:1px solid #333;border-radius:18px;max-width:680px;width:100%;max-height:95vh;overflow:auto}
+.m-banner{width:100%;height:200px;object-fit:cover;background:#222;display:block}.tab{padding:8px 12px;border-radius:10px;background:#222;border:none;color:#fff;cursor:pointer;font-size:12px}.tab.active{background:#facc15;color:#000}
+.preview{width:100%;height:100px;object-fit:cover;border-radius:8px;display:none;background:#222;margin:5px 0}.credit-box{background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;padding:8px 12px;border-radius:10px;font-weight:900;font-size:13px}
+.days{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.day{padding:6px 10px;border-radius:8px;background:#222;border:1px solid #333;cursor:pointer;font-size:12px}.day.on{background:#facc15;color:#000;border-color:#facc15}
+</style></head><body>
 <div class="header">
-<img src="https://drive.google.com/uc?export=view&id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib" class="logo-img">
-<div style="line-height:1"><b>MaxShop</b><br><small style="color:#facc15;font-weight:800">ENTERPRISE</small></div>
-<div id="userInfo" style="margin-left:auto;display:flex;gap:8px;align-items:center"></div>
+<img src="https://drive.google.com/uc?export=view&id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib" class="logo-img" onerror="this.src='https://via.placeholder.com/100'">
+<div><b>MaxShop</b><br><small style="color:#facc15;font-weight:800">ENTERPRISE</small></div>
+<div id="userInfo" style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
 </div>
-
 <div class="banner-wrap">
-<img src="https://drive.google.com/uc?export=view&id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" class="banner">
-<div class="banner-overlay">
-<div>
-<h1 style="font-size:42px;font-weight:900;line-height:.9">MaxShop Enterprise</h1>
-<p style="color:#d4d4d8;margin-top:8px;max-width:620px">Ahorrá hasta 50% en Catamarca. Tarjeta digital con $50.000 de crédito de descuento para usar en comercios adheridos.</p>
-<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><span class="badge">20% STANDARD</span><span class="badge" style="background:#fff">50% PRO</span><span class="badge" style="background:#000;color:#facc15;border:1px solid #facc15">$50K CRÉDITO</span></div>
+<img src="https://drive.google.com/uc?export=view&id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" class="banner" onerror="this.src='https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200'">
+<div class="banner-overlay"><div><h1 style="font-size:36px;font-weight:900">MaxShop Enterprise</h1><p style="color:#ccc;margin-top:6px;max-width:600px;font-size:14px">Gratis: $50.000 crédito y 50% del descuento publicado. PRO $5.000/mes: crédito ilimitado y 100% del descuento. Recarga rápida: $500 = $10.000 crédito.</p></div></div>
 </div>
-</div>
-</div>
-
 <div class="container">
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin:18px 0;justify-content:space-between;align-items:center">
-<div style="display:flex;gap:8px"><button class="tab active" onclick="filtrar('todos',this)">Todos</button><button class="tab" onclick="filtrar('gastronomia',this)">Gastro</button><button class="tab" onclick="filtrar('indumentaria',this)">Ropa</button><button class="tab" onclick="filtrar('servicios',this)">Servicios</button></div>
-<div style="display:flex;gap:8px"><button class="tab" onclick="openRegCom()">+ Comercio</button><button class="tab" id="btnAuth" onclick="openAuth()">Ingresar / Registro</button></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin:14px 0;justify-content:space-between">
+<div id="filtros" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+<div style="display:flex;gap:6px"><button class="tab" onclick="openCom()">+ Comercio</button><button class="tab" id="btnAuth" onclick="openAuth()">Ingresar / Registrarse</button><button class="tab" onclick="openAdmin()">Admin</button></div>
+</div>
+<div id="grid" class="grid"></div>
 </div>
 
-<div id="grid" class="grid"><p style="color:#666">Cargando comercios...</p></div>
+<!-- DETALLE -->
+<div id="mDet" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box">
+<img id="dBan" class="m-banner"><div style="padding:16px">
+<div style="display:flex;gap:10px;align-items:center"><img id="dLogo" style="width:56px;height:56px;border-radius:12px;background:#fff;object-fit:cover;border:2px solid #facc15"><div><h2 id="dNom" style="font-weight:900"></h2><div id="dBadge" class="badge" style="margin-top:4px"></div><small id="dDias" style="color:#888"></small></div></div>
+<p id="dDesc" style="margin:12px 0;color:#aaa;font-size:14px"></p>
+<div style="background:#000;border:1px solid #27272a;border-radius:12px;padding:12px;display:grid;gap:4px;font-size:13px"><p>📍 <b id="dDir"></b></p><p>📞 <b id="dTel"></b></p><p>🏷️ <span id="dRub" style="color:#facc15"></span> • <b id="dPct" style="color:#facc15"></b></p><p>🕒 Días: <b id="dDias2" style="color:#fff"></b></p><p>💡 Gratis obtenés <b id="dMitad" style="color:#facc15"></b> | PRO obtenés <b id="dFull" style="color:#facc15"></b></p></div>
+<div id="boxCons" style="margin-top:12px;background:#111;border:1px dashed #facc15;border-radius:12px;padding:12px;display:none"><h4 style="font-size:13px">Aplicar descuento</h4><input id="monto" type="number" class="input" placeholder="Monto compra ej: 20000"><button class="btn" onclick="consumir()">Aplicar y descontar de mi crédito</button><p id="resCons" style="margin-top:6px;font-size:13px;color:#facc15"></p></div>
+<a id="dWsp" target="_blank" class="btn btn-dark" style="display:block;text-align:center;text-decoration:none;margin-top:8px">💬 WhatsApp</a><a id="dMap" target="_blank" class="btn btn-dark" style="display:block;text-align:center;text-decoration:none;margin-top:6px">📍 Ver en Maps</a>
+<button onclick="document.getElementById('mDet').classList.remove('active')" class="btn btn-dark" style="margin-top:8px">Cerrar</button></div></div></div>
 
-<div style="margin-top:50px;background:#111;border:1px solid #222;border-radius:16px;padding:20px">
-<h3 style="font-weight:900">¿Cómo funciona para el cliente?</h3>
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:15px;color:#a1a1aa;font-size:14px;line-height:1.5">
-<div><b style="color:#fff">1. Registrate gratis</b><br>Obtenés $50.000 de crédito para descuentos. Sin pagar nada.</div>
-<div><b style="color:#fff">2. Elegí comercio</b><br>Tocá "Ver descuento" para ver dirección, teléfono y WhatsApp.</div>
-<div><b style="color:#fff">3. Mostrá tu tarjeta</b><br>El comercio te aplica 20% OFF (o 50% si sos PRO) y se descuenta de tu crédito.</div>
-<div><b style="color:#fff">4. PRO $2.500/mes</b><br>Duplica tu descuento y accedés a promos exclusivas.</div>
+<!-- AUTH -->
+<div id="mAuth" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box" style="padding:18px">
+<h2 id="tAuth" style="font-weight:900">Ingresar</h2>
+<div id="bLogin"><input id="l_mail" class="input" placeholder="Correo"><input id="l_pass" type="password" class="input" placeholder="Contraseña"><button class="btn" onclick="login()">Ingresar</button><p style="text-align:center;margin-top:8px;font-size:12px;color:#888">¿No tenés cuenta? <span style="color:#facc15;cursor:pointer" onclick="showReg()">Registrate - $50k gratis</span></p></div>
+<div id="bReg" style="display:none"><input id="r_nom" class="input" placeholder="Nombre completo *"><input id="r_dni" class="input" placeholder="DNI *"><input id="r_dir" class="input" placeholder="Dirección *"><input id="r_loc" class="input" placeholder="Localidad *"><input id="r_wsp" class="input" placeholder="WhatsApp *"><input id="r_mail" class="input" placeholder="Correo *"><input id="r_pass" type="password" class="input" placeholder="Contraseña *"><button class="btn" onclick="registro()">Crear cuenta con $50.000</button><p style="text-align:center;margin-top:8px;font-size:12px;color:#888"><span style="color:#facc15;cursor:pointer" onclick="showLog()">Ya tengo cuenta</span></p></div>
+<div id="bCred" style="display:none;margin-top:12px;border-top:1px solid #222;padding-top:12px">
+<h3 style="font-size:14px">Recargas y PRO</h3>
+<button class="btn" style="margin-top:8px" onclick="recarga()">⚡ Recarga rápida $500 → $10.000 crédito</button>
+<button class="btn" style="margin-top:6px;background:#fff" onclick="activarPro()">⭐ Activar PRO $5.000 - Crédito ilimitado + 100% descuento</button>
+<p id="resCred" style="font-size:12px;color:#facc15;margin-top:6px"></p>
 </div>
-</div>
-</div>
+</div></div>
 
-<!-- DETALLE COMERCIO + CONSUMIR -->
-<div id="modalDetalle" class="modal" onclick="if(event.target==this) this.classList.remove('active')">
-<div class="modal-box">
-<img id="mBanner" class="m-banner">
-<div style="padding:20px">
-<div style="display:flex;gap:12px;align-items:center"><img id="mLogo" style="width:60px;height:60px;border-radius:12px;background:#fff;object-fit:cover;border:2px solid #facc15"><div><h2 id="mNombre" style="font-weight:900"></h2><div id="mBadge" class="badge" style="margin-top:4px"></div></div></div>
-<p id="mDesc" style="margin:14px 0;color:#a1a1aa"></p>
-<div style="background:#000;border:1px solid #27272a;border-radius:12px;padding:14px;display:grid;gap:6px;font-size:14px">
-<p>📍 <b id="mDir"></b></p><p>📞 <b id="mTel"></b></p><p>🏷️ <span id="mRubro" style="color:#facc15"></span> • <b id="mPct" style="color:#facc15"></b></p>
-</div>
-<div id="consumoBox" style="margin-top:14px;background:#111;border:1px dashed #facc15;border-radius:12px;padding:14px;display:none">
-<h4 style="font-size:14px">Aplicar mi descuento en este comercio</h4>
-<input id="montoCompra" type="number" class="input" placeholder="Monto de la compra (ej: 10000)">
-<button class="btn" onclick="consumirCredito()">Aplicar Descuento y Descontar de mi Crédito</button>
-<p id="consumoRes" style="margin-top:8px;font-size:13px;color:#facc15"></p>
-</div>
-<a id="mWsp" target="_blank" class="btn btn-dark" style="display:block;text-align:center;text-decoration:none;margin-top:10px">💬 WhatsApp</a>
-<a id="mMap" target="_blank" class="btn btn-dark" style="display:block;text-align:center;text-decoration:none;margin-top:6px">📍 Google Maps</a>
-<button onclick="document.getElementById('modalDetalle').classList.remove('active')" class="btn btn-dark" style="margin-top:10px">Cerrar</button>
-</div>
-</div>
-</div>
+<!-- COMERCIO -->
+<div id="mCom" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box" style="padding:18px">
+<h2 style="font-weight:900">Registrar comercio - Mínimo 5% obligatorio</h2>
+<input id="c_nom" class="input" placeholder="Nombre fantasía *"><select id="c_rubro" class="input"><option value="">Rubro *</option></select>
+<input id="c_dir" class="input" placeholder="Dirección *"><input id="c_tel" class="input" placeholder="WhatsApp *">
+<input id="c_pct" type="number" min="5" max="90" class="input" placeholder="% Descuento que ofrece (mín 5% - ej: 20) *">
+<small style="color:#888">El comercio elige %; cliente gratis recibe la mitad, PRO recibe el 100%</small>
+<div style="margin-top:8px"><small style="color:#888">Días que aplica el descuento:</small><div id="diasSel" class="days"></div></div>
+<textarea id="c_desc" class="input" placeholder="Descripción promo"></textarea>
+<label style="font-size:11px;color:#888">Logo desde galería</label><input id="c_logo" type="file" class="input" accept="image/*" onchange="prev(this,'pLogo')"><img id="pLogo" class="preview">
+<label style="font-size:11px;color:#888">Banner desde galería</label><input id="c_banner" type="file" class="input" accept="image/*" onchange="prev(this,'pBan')"><img id="pBan" class="preview">
+<button id="btnGC" class="btn" onclick="guardarCom()">Publicar comercio</button>
+</div></div>
 
-<!-- AUTH CLIENTE -->
-<div id="modalAuth" class="modal" onclick="if(event.target==this) this.classList.remove('active
+<!-- ADMIN -->
+<div id="mAdmin" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box" style="padding:16px;max-width:900px">
+<h2 style="font-weight:900">Panel Admin - Control Total</h2>
+<div style="display:flex;gap:6px;margin:12px 0"><button class="tab active" onclick="tabAdmin('com')">Comercios</button><button class="tab" onclick="tabAdmin('usu')">Usuarios</button><button class="tab" onclick="tabAdmin('acc')">Consumos</button></div>
+<div id="adminCom"></div><div id="adminUsu" style="display:none"></div><div id="adminAcc" style="display:none"></div>
+</div></div>
+
+<script>
+const LOGO="https://drive.google.com/uc?export=view&id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib";
+const BANNER="https://drive.google.com/uc?export=view&id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI";
+let comercios=[], usuario=null, comActual=null, diasElegidos=["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+const RUBROS=["gastronomia","indumentaria","supermercado","farmacia","ferreteria","estetica","gimnasio","tecnologia","hogar","construccion","automotriz","libreria","jugueteria","calzado","servicios","salud","mascotas","otros"];
+function prev(i,id){const el=document.getElementById(id); if(i.files[0]){el.style.display='block'; el.src=URL.createObjectURL(i.files[0])}}
+function openAuth(){document.getElementById('mAuth').classList.add('active'); renderCredBox()}
+function openCom(){document.getElementById('mCom').classList.add('active')}
+function openAdmin(){document.getElementById('mAdmin').classList.add('active'); loadAdmin()}
+function showReg(){document.getElementById('bLogin').style.display='none';document.getElementById('bReg').style.display='block';document.getElementById('bCred').style.display='none';document.getElementById('tAuth').innerText='Registro - $50.000 gratis'}
+function showLog(){document.getElementById('bReg').style.display='none';document.getElementById('bLogin').style.display='block';document.getElementById('bCred').style.display=usuario?'block':'none';document.getElementById('tAuth').innerText='Mi cuenta'}
+function renderCredBox(){document.getElementById('bCred').style.display=usuario?'block':'none'}
+function renderUser(){
+const el=document.getElementById('userInfo');
+if(!usuario){el.innerHTML=''; document.getElementById('btnAuth').innerText='Ingresar / Registrarse'; return}
+const cred=usuario.credito_ilimitado||usuario.es_pro?'ILIMITADO PRO ⭐':`$${Number(usuario.credito_descuento_disponible||0).toLocaleString()}`;
+el.innerHTML=`<div class="credit-box">${cred}</div><small style="max-width:100px;overflow:hidden;text-overflow:ellipsis">${usuario.nombre_completo||usuario.correo}</small><button class="tab" onclick="logout()">Salir</button>`;
+document.getElementById('btnAuth').innerText='Mi cuenta';
+}
+function initFiltros(){
+const cont=document.getElementById('filtros'); cont.innerHTML='<button class="tab active" onclick="filtrar(\'todos\',this)">Todos</button>'+RUBROS.map(r=>`<button class="tab" onclick="filtrar('${r}',this)">${r}</button>`).join('');
+const sel=document.getElementById('c_rubro'); sel.innerHTML='<option value="">Rubro *</option>'+RUBROS.map(r=>`<option value="${r}">${r}</option>`).join('');
+const dias=["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+document.getElementById('diasSel').innerHTML=dias.map(d=>`<div class="day on" id="day_${d}" onclick="toggleDia('${d}')">${d}</div>`).join('');
+}
+function toggleDia(d){const el=document.getElementById('day_'+d); el.classList.toggle('on'); if(diasElegidos.includes(d)) diasElegidos=diasElegidos.filter(x=>x!==d); else diasElegidos.push(d)}
+async function cargar(){const r=await fetch('/api/comercios'); const j=await r.json(); comercios=j.data||[]; render(comercios)}
+function render(lista){
+if(!lista.length){document.getElementById('grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#666">Sin comercios - ¡Sé el primero!</div>'; return}
+document.getElementById('grid').innerHTML=lista.map(c=>{
+const b=c.banner_url||c.imagen_url||BANNER; const l=c.logo_url||LOGO;
+return `<div class="card" onclick='abrir(${JSON.stringify(c).replace(/'/g,"&#39;")})'><img class="card-banner" src="${b}" onerror="this.src='${BANNER}'"><div class="card-body"><div style="display:flex;gap:8px;align-items:center"><img src="${l}" style="width:38px;height:38px;border-radius:8px;background:#fff;object-fit:cover" onerror="this.src='${LOGO}'"><b style="font-size:14px">${c.nombre_fantasias||c.nombre}</b></div><p style="color:#888;font-size:11px;margin:6px 0;height:32px;overflow:hidden">${(c.descripcion||'Promo').slice(0,80)}</p><div style="display:flex;justify-content:space-between;align-items:center"><span class="badge">${c.porcentaje_descuento||5}% OFF</span><small style="color:#666;font-size:10px">${(c.dias_descuento||[]).join(', ').slice(0,20) || c.rubro||''}</small></div><button class="btn" style="margin-top:8px;font-size:12px">Ver info + descuento →</button></div></div>`
+}).join('')
+}
+function filtrar(cat,el){if(el){document.querySelectorAll('#filtros.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active')} if(cat==='todos') render(comercios); else render(comercios.filter(c=>(c.rubro||'').toLowerCase()===cat))}
+function abrir(c){if(typeof c==='string') c=JSON.parse(c); comActual=c;
+document.getElementById('dBan').src=c.banner_url||c.imagen_url||BANNER;
+document.getElementById('dLogo').src=c.logo_url||LOGO;
+document.getElementById('dNom').innerText=c.nombre_fantasias||c.nombre;
+document.getElementById('dBadge').innerText=(c.porcentaje_descuento||5)+'% OFF PUBLICADO';
+document.getElementById('dDesc').innerText=c.descripcion||'';
+document.getElementById('dDir').innerText=c.direccion||'-'; document.getElementById('dTel').innerText=c.telefono||c.whatsapp||'-';
+document.getElementById('dRub').innerText=c.rubro||''; document.getElementById('dPct').innerText=(c.porcentaje_descuento||5)+'% OFF';
+document.getElementById('dDias').innerText=(c.dias_descuento||[]).join(', ')||'Todos los días';
+document.getElementById('dDias2').innerText=(c.dias_descuento||[]).join(', ')||'Todos los días';
+document.getElementById('dMitad').innerText=( (c.porcentaje_descuento||5)*0.5 )+'%'; document.getElementById('dFull').innerText=(c.porcentaje_descuento||5)+'%';
+const tel=(c.whatsapp||c.telefono||'').replace(/[^0-9]/g,'');
+document.getElementById('dWsp').href=tel?`https://wa.me/${tel}?text=Hola! Vi su promo de ${c.porcentaje_descuento}% en MaxShop`:'#';
+document.getElementById('dMap').href=c.direccion?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.direccion)}`:'#';
+document.getElementById('boxCons').style.display=usuario?'block':'none';
+document.getElementById('mDet').classList.add('active');
+}
+async function subir(f){if(!f) return null; const fd=new FormData(); fd.append('file',f); const r=await fetch('/api/upload',{method:'POST',body:fd}); const j=await r.json(); if(!j.success) throw new Error(j.error); return j.url}
+async function guardarCom(){
+const b=document.getElementById('btnGC'); b.innerText='Subiendo desde tu celular...'; b.disabled=true
+try{
+let l=null, bn=null
+if(document.getElementById('c_logo').files[0]) l=await subir(document.getElementById('c_logo').files[0])
+if(document.getElementById('c_banner').files[0]) bn=await subir(document.getElementById('c_banner').files[0])
+const pct=parseFloat(document.getElementById('c_pct').value||0)
+if(pct<5) throw new Error('Mínimo 5% obligatorio')
+const data={nombre_fantasias:document.getElementById('c_nom').value,rubro:document.getElementById('c_rubro').value.toLowerCase(),direccion:document.getElementById('c_dir').value,telefono:document.getElementById('c_tel').value,whatsapp:document.getElementById('c_tel').value,porcentaje_descuento:pct,dias_descuento:diasElegidos,descripcion:document.getElementById('c_desc').value,logo_url:l,banner_url:bn,imagen_url:bn}
+if(!data.nombre_fantasias||!data.rubro||!data.direccion||!data.telefono) throw new Error('Completa todos los *')
+const r=await fetch('/api/registrar-comercio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); const j=await r.json()
+if(j.success){alert('¡Comercio publicado con '+pct+'%!'); document.getElementById('mCom').classList.remove('active'); cargar()} else throw new Error(j.error||'Error')
+}catch(e){alert(e.message)} b.innerText='Publicar comercio'; b.disabled=false
+}
+async function registro(){
+const data={nombre_completo:document.getElementById('r_nom').value,dni:document.getElementById('r_dni').value,direccion:document.getElementById('r_dir').value,localidad:document.getElementById('r_loc').value,whatsapp:document.getElementById('r_wsp').value,correo:document.getElementById('r_mail').value,password:document.getElementById('r_pass').value}
+const r=await fetch('/api/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); const j=await r.json()
+if(j.success){alert('Cuenta creada con $50.000 y 50% de descuentos! Ingresá'); showLog()} else alert(j.error)
+}
+async function login(){
+const data={correo:document.getElementById('l_mail').value,password:document.getElementById('l_pass').value}
+const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); const j=await r.json()
+if(j.success){usuario=j.usuario; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser(); document.getElementById('mAuth').classList.remove('active'); renderCredBox()} else alert('Credenciales incorrectas')
+}
+async function consumir(){
+if(!usuario) return openAuth()
+const monto=document.getElementById('monto').value; if(!monto) return alert('Monto?')
+const r=await fetch('/api/consumir-credito',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo_usuario:usuario.correo,nombre_comercio:comActual.nombre_fantasias||comActual.nombre,monto_compra:monto})})
+const j=await r.json()
+if(j.success){
+document.getElementById('resCons').innerText=`¡Ahorraste $${j.ahorro_aplicado.toFixed(0)} con ${j.porcentaje_aplicado}% aplicado! ${j.nuevo_credito==='ILIMITADO'?'Crédito ILIMITADO PRO':'Te quedan $'+Number(j.nuevo_credito).toLocaleString()}`;
+if(j.nuevo_credito!=='ILIMITADO'){usuario.credito_descuento_disponible=j.nuevo_credito; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser()}
+} else alert(j.error)
+}
+async function recarga(){
+const r=await fetch('/api/recarga-rapida',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:usuario.correo})}); const j=await r.json()
+if(j.success){document.getElementById('resCred').innerText='¡Recargado! Nuevo crédito: $'+j.nuevo_credito; usuario.credito_descuento_disponible=j.nuevo_credito; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser()} else alert('Error')
+}
+async function activarPro(){
+const r=await fetch('/api/activar-pro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:usuario.correo})}); const j=await r.json()
+if(j.success){alert('PRO activado! Ahora crédito ilimitado y 100% descuentos'); usuario.es_pro=true; usuario.credito_ilimitado=true; usuario.credito_descuento_disponible=999999999; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser(); document.getElementById('resCred').innerText='PRO ACTIVO - ILIMITADO'}
+}
+function logout(){localStorage.removeItem('maxshop_user'); usuario=null; renderUser()}
+async function loadAdmin(){
+const r=await fetch('/api/admin/datos'); const j=await r.json()
+document.getElementById('adminCom').innerHTML=j.comercios.map(c=>`<div style="background:#111;border:1px solid #222;padding:10px;border-radius:10px;margin:6px 0;display:flex;justify-content:space-between;align-items:center"><div><b>${c.nombre_fantasias}</b> - ${c.porcentaje_descuento}% - ${c.rubro} - ${c.direccion}<br><small>${(c.dias_descuento||[]).join(',')}</small></div><button class="tab" onclick="delCom(${c.id})">Eliminar</button></div>`).join('');
+document.getElementById('adminUsu').innerHTML=j.usuarios.map(u=>`<div style="background:#111;border:1px solid #222;padding:10px;border-radius:10px;margin:6px 0;display:flex;justify-content:space-between"><div>${u.nombre_completo} - ${u.correo} - $${u.credito_descuento_disponible} - ${u.es_pro?'PRO':''}</div><button class="tab" onclick="delUsu('${u.correo}')">Eliminar</button></div>`).join('');
+document.getElementById('adminAcc').innerHTML=j.acciones.map(a=>`<div style="background:#111;border:1px solid #222;padding:8px;border-radius:8px;margin:4px 0;font-size:12px">${a.correo_usuario} -> ${a.nombre_comercio} $${a.monto_compra} ahorro $${a.ahorro_aplicado} (${a.porcentaje_aplicado}%)</div>`).join('');
+}
+function tabAdmin(t){document.getElementById('adminCom').style.display=t==='com'?'block':'none'; document.getElementById('adminUsu').style.display=t==='usu'?'block':'none'; document.getElementById('adminAcc').style.display=t==='acc'?'block':'none'}
+async function delCom(id){if(!confirm('Eliminar comercio?')) return; await fetch('/api/admin/comercio/'+id,{method:'DELETE'}); loadAdmin(); cargar()}
+async function delUsu(correo){if(!confirm('Eliminar usuario?')) return; await fetch('/api/admin/usuario/'+correo,{method:'DELETE'}); loadAdmin()}
+(function(){try{usuario=JSON.parse(localStorage.getItem('maxshop_user')); renderUser()}catch(e){}})();
+initFiltros(); cargar();
+</script></body></html>
