@@ -9,7 +9,7 @@ app = FastAPI(title="MaxShop Descuento de Locos")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"], allow_credentials=True)
 templates = Jinja2Templates(directory="templates")
 
-ADMIN_KEY = os.getenv("ADMIN_KEY", "MaxShop2026!Admin") # Cambiala en Render Environment
+ADMIN_KEY = os.getenv("ADMIN_KEY", "MaxShop2026!Admin")
 RUBROS = ["gastronomia","indumentaria","supermercado","farmacia","ferreteria","estetica","gimnasio","tecnologia","hogar","construccion","automotriz","libreria","jugueteria","calzado","servicios","salud","mascotas","otros"]
 
 _supabase = None
@@ -35,7 +35,7 @@ def get_mp():
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return templates.TemplateResponse(request, "index.html", {"admin_key_exists": bool(ADMIN_KEY)})
+    return templates.TemplateResponse(request, "index.html", {})
 
 @app.post("/api/upload")
 async def upload(file: UploadFile = File(...)):
@@ -148,10 +148,8 @@ async def consumir(req: Request):
     if not usu.data or not com.data: return JSONResponse({"success": False, "error":"No encontrado"},404)
     monto = float(d['monto_compra'])
     pct_com = float(com.data.get('porcentaje_descuento') or 5)
-    # Clausula: 5% fijo diario no suma al descuento programado
-    pct_final = pct_com
     es_pro = usu.data.get('es_pro') or usu.data.get('credito_ilimitado')
-    pct_real = pct_final if es_pro else pct_final*0.5
+    pct_real = pct_com if es_pro else pct_com*0.5
     ahorro = monto*(pct_real/100)
     if es_pro and usu.data.get('credito_ilimitado'):
         nuevo = "ILIMITADO"
@@ -191,9 +189,9 @@ def admin_datos(key: str = ""):
     sb = get_supabase()
     rc = sb.table("comercios").select("*").order("id", desc=True).execute()
     ru = sb.table("usuarios").select("*").order("id", desc=True).execute()
-    try: ra = sb.table("acciones_log").select("*").order("id", desc=True).limit(300).execute(); acc = ra.data or []
+    try: ra = sb.table("acciones_log").select("*").order("id", desc=True).limit(500).execute(); acc = ra.data or []
     except: acc=[]
-    try: rs = sb.table("qr_scans").select("*").order("id", desc=True).limit(300).execute(); scans = rs.data or []
+    try: rs = sb.table("qr_scans").select("*").order("id", desc=True).limit(500).execute(); scans = rs.data or []
     except: scans=[]
     total_ahorro = sum([float(a.get('ahorro_aplicado') or 0) for a in acc])
     ventas_por_comercio = {}
