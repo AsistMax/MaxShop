@@ -1,103 +1,193 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MaxShop Enterprise</title>
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MaxShop - Descuento de Locos</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}body{background:#0a0a0a;color:#fff}
-.header{position:sticky;top:0;z-index:100;background:rgba(0,0,0,.95);border-bottom:1px solid #222;padding:10px 14px;display:flex;align-items:center;gap:10px}
-.logo-img{width:46px;height:46px;border-radius:10px;background:#fff;object-fit:cover;border:2px solid #facc15}
-.banner-wrap{position:relative;height:300px;background:#111;overflow:hidden}.banner{width:100%;height:100%;object-fit:cover;display:block}
-.banner-overlay{position:absolute;inset:0;background:linear-gradient(0deg,#0a0a0a 25%,transparent 70%);display:flex;align-items:end;padding:18px}
-.container{max-width:1200px;margin:auto;padding:14px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.header{position:sticky;top:0;z-index:100;background:#000;border-bottom:2px solid #facc15;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.logo-img{width:54px;height:54px;border-radius:12px;background:#fff;object-fit:contain;border:2px solid #facc15;padding:2px}
+.menu-btn{margin-left:auto;background:#facc15;color:#000;border:none;width:42px;height:42px;border-radius:10px;font-size:22px;font-weight:900;cursor:pointer}
+.credit-bar{background:linear-gradient(90deg,#18181b,#27272a);border-bottom:1px solid #333;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.credit-pill{background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;padding:8px 14px;border-radius:20px;font-weight:900;font-size:12px}
+.banner-wrap{position:relative;height:320px;background:#111;overflow:hidden}.banner{width:100%;height:100%;object-fit:cover;display:block}
+.banner-overlay{position:absolute;inset:0;background:linear-gradient(0deg,#0a0a0a 85%,rgba(0,0,0,.3) 100%);display:flex;align-items:end;padding:20px}
+.hero-title{font-size:38px;font-weight:900;line-height:.9}.hero-title span{color:#facc15}
+.hero-sub{background:rgba(250,204,21,.15);border:1px solid #facc15;color:#facc15;padding:8px 12px;border-radius:10px;margin-top:10px;font-size:13px;font-weight:700;display:inline-block}
+.container{max-width:1240px;margin:auto;padding:14px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .card{background:#18181b;border:1px solid #27272a;border-radius:16px;overflow:hidden;cursor:pointer}.card:hover{border-color:#facc15}
 .card-banner{width:100%;height:160px;object-fit:cover;background:#222;display:block}.card-body{padding:12px}
 .badge{background:#facc15;color:#000;padding:4px 10px;border-radius:20px;font-weight:900;font-size:11px}
-.btn{width:100%;background:#facc15;color:#000;border:none;padding:11px;border-radius:10px;font-weight:800;cursor:pointer}
-.btn-dark{background:#222;color:#fff}.input{width:100%;background:#111;border:1px solid #333;color:#fff;padding:11px;border-radius:10px;margin:5px 0}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:999;padding:10px}.modal.active{display:flex}
-.modal-box{background:#18181b;border:1px solid #333;border-radius:18px;max-width:700px;width:100%;max-height:96vh;overflow:auto}
+.btn{width:100%;background:#facc15;color:#000;border:none;padding:12px;border-radius:12px;font-weight:900;cursor:pointer;margin-top:6px}
+.btn-dark{background:#222;color:#fff}.input{width:100%;background:#111;border:1px solid #333;color:#fff;padding:12px;border-radius:10px;margin:5px 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:999;padding:10px}.modal.active{display:flex}
+.modal-box{background:#18181b;border:1px solid #333;border-radius:18px;max-width:760px;width:100%;max-height:96vh;overflow:auto}
 .m-banner{width:100%;height:200px;object-fit:cover;background:#222;display:block}.tab{padding:8px 12px;border-radius:10px;background:#222;border:none;color:#fff;cursor:pointer;font-size:12px}.tab.active{background:#facc15;color:#000}
-.preview{width:100%;height:100px;object-fit:cover;border-radius:8px;display:none;background:#222;margin:5px 0}.credit-box{background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;padding:8px 12px;border-radius:10px;font-weight:900;font-size:12px}
-.days{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.day{padding:6px 10px;border-radius:8px;background:#222;border:1px solid #333;cursor:pointer;font-size:12px}.day.on{background:#facc15;color:#000}
-.qr-box{background:#fff;padding:14px;border-radius:12px;display:flex;flex-direction:column;align-items:center;margin:10px 0}
+.preview{width:100%;height:90px;object-fit:cover;border-radius:8px;display:none;background:#222;margin:4px 0}.days{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.day{padding:6px 10px;border-radius:8px;background:#222;border:1px solid #333;cursor:pointer;font-size:12px}.day.on{background:#facc15;color:#000}
+.qr-box{background:#fff;padding:16px;border-radius:12px;display:flex;flex-direction:column;align-items:center;margin:10px 0}
+.side-menu{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none}.side-menu.active{display:block}
+.side-panel{position:absolute;right:0;top:0;width:340px;max-width:85%;height:100%;background:#111;border-left:2px solid #facc15;padding:18px;overflow:auto}
+.menu-item{padding:14px;background:#18181b;border:1px solid #27272a;border-radius:12px;margin:8px 0;cursor:pointer;display:flex;justify-content:space-between}
+.menu-item:hover{border-color:#facc15}
+.legal{font-size:12px;color:#999;line-height:1.5}
+.legal h3{color:#facc15;margin:12px 0 6px}
 </style></head><body>
+
 <div class="header">
-<img src="https://drive.google.com/uc?export=view&id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib" class="logo-img" onerror="this.src='https://via.placeholder.com/100'">
-<div><b>MaxShop</b><br><small style="color:#facc15;font-weight:800">ENTERPRISE</small></div>
-<div id="userInfo" style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
+<img id="logoMain" src="" class="logo-img">
+<div><div style="font-weight:900;font-size:18px;line-height:1">MaxShop</div><div style="color:#facc15;font-weight:900;font-size:12px;letter-spacing:1px">DESCUENTO DE LOCOS</div></div>
+<button class="menu-btn" onclick="openMenu()">☰</button>
 </div>
+
+<div class="credit-bar" id="creditBar">
+<div style="display:flex;gap:10px;align-items:center"><span id="creditText" style="font-weight:800;font-size:13px;color:#aaa">Inicia sesion para ver tu credito</span><span id="creditPill" class="credit-pill" style="display:none"></span></div>
+<div style="display:flex;gap:6px"><button class="tab" onclick="openAuth(); openMenu(false)" style="background:#facc15;color:#000">⚡ Recargar 500 = 10000</button><button class="tab" onclick="openPro()" style="background:#fff;color:#000">⭐ Plan PRO 5000</button></div>
+</div>
+
 <div class="banner-wrap">
-<img src="https://drive.google.com/uc?export=view&id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI" class="banner" onerror="this.src='https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200'">
-<div class="banner-overlay"><div><h1 style="font-size:34px;font-weight:900">MaxShop Enterprise</h1><p style="color:#ccc;font-size:13px;max-width:620px;margin-top:6px">Gratis: 50000 de credito y 50 por ciento del descuento publicado. PRO por 5000 pesos por mes: credito ilimitado y 100 por ciento del descuento. Recarga rapida: 500 pesos = 10000 de credito.</p></div></div>
+<img id="bannerMain" src="" class="banner">
+<div class="banner-overlay"><div>
+<div class="hero-title">AHORRA <span>HASTA 90%</span><br>EN TU CIUDAD</div>
+<div class="hero-sub">🔥 Gratis 50000 de credito • 50% descuento | PRO 5000 por mes = 100% descuentos + credito ilimitado | Recarga rapida 500 pesos = 10000 de credito</div>
+</div></div>
 </div>
+
 <div class="container">
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin:12px 0;justify-content:space-between">
-<div id="filtros" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-<div style="display:flex;gap:6px"><button class="tab" onclick="openCom()">+ Comercio</button><button class="tab" id="btnAuth" onclick="openAuth()">Ingresar / Registrarse</button><button class="tab" onclick="openAdmin()">Admin</button></div>
-</div>
+<div id="filtros" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"></div>
 <div id="grid" class="grid"></div>
+
+<div style="margin-top:30px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div style="background:#18181b;border:1px solid #27272a;border-radius:16px;padding:14px"><h3>💰 Prestamos Personales</h3><p style="color:#888;font-size:12px;margin:6px 0">Consulta rapida, aprobacion en el dia</p><input id="pre_nom" class="input" placeholder="Nombre"><input id="pre_monto" class="input" placeholder="Monto que necesitas"><button class="btn" onclick="consultarWsp('prestamo')">Consultar por WhatsApp IA</button></div>
+<div style="background:#18181b;border:1px solid #27272a;border-radius:16px;padding:14px"><h3>🛡️ Seguros</h3><p style="color:#888;font-size:12px;margin:6px 0">Auto, hogar, vida, comercio</p><input id="seg_nom" class="input" placeholder="Nombre"><input id="seg_tipo" class="input" placeholder="Que queres asegurar?"><button class="btn" onclick="consultarWsp('seguro')">Consultar por WhatsApp IA</button></div>
 </div>
+
+<div style="margin-top:20px;text-align:center;padding:16px;border-top:1px solid #222">
+<a onclick="openInfo()" style="color:#facc15;cursor:pointer;margin:0 10px">ℹ️ Informacion</a>
+<a onclick="openLegal()" style="color:#888;cursor:pointer;margin:0 10px">Politicas, Terminos y Clausulas</a>
+</div>
+</div>
+
+<div id="sideMenu" class="side-menu" onclick="if(event.target==this) openMenu(false)"><div class="side-panel">
+<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-weight:900">Menu</h2><button class="tab" onclick="openMenu(false)">✕</button></div>
+<div style="margin-top:16px">
+<div class="menu-item" onclick="openAuth(); openMenu(false)">👤 <b>Registro Gratis</b> <span>50000 credito</span></div>
+<div class="menu-item" onclick="openAuth(); openMenu(false)">⚡ <b>Recarga Rapida</b> <span>500 = 10000</span></div>
+<div class="menu-item" onclick="openPro(); openMenu(false)">⭐ <b>Plan PRO</b> <span>5000 ilimitado</span></div>
+<div class="menu-item" onclick="openCom(); openMenu(false)">🏪 <b>Sumar Comercio</b> <span>5% minimo</span></div>
+<div class="menu-item" onclick="openComercioLogin(); openMenu(false)">🔐 <b>Panel Comercio</b> <span>QR privado</span></div>
+<div class="menu-item" onclick="openInfo(); openMenu(false)">ℹ️ <b>Informacion</b></div>
+<div class="menu-item" onclick="openLegal(); openMenu(false)">📄 <b>Politicas y Terminos</b></div>
+<div class="menu-item" onclick="openAdmin(); openMenu(false)">🛠️ <b>Admin App</b> <span>Solo admin</span></div>
+</div>
+<div id="menuUser" style="margin-top:20px;padding:10px;background:#000;border-radius:12px"></div>
+</div></div>
 
 <div id="mDet" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box">
 <img id="dBan" class="m-banner"><div style="padding:16px">
 <div style="display:flex;gap:10px;align-items:center"><img id="dLogo" style="width:56px;height:56px;border-radius:12px;background:#fff;object-fit:cover;border:2px solid #facc15"><div><h2 id="dNom" style="font-weight:900"></h2><div id="dBadge" class="badge"></div><small id="dDias" style="color:#888"></small></div></div>
 <p id="dDesc" style="margin:12px 0;color:#aaa;font-size:14px"></p>
-<div style="background:#000;border:1px solid #27272a;border-radius:12px;padding:12px;font-size:13px;display:grid;gap:4px"><p>📍 <b id="dDir"></b></p><p>📞 <b id="dTel"></b></p><p>🏷️ <span id="dRub" style="color:#facc15"></span> • <b id="dPct"></b></p><p>🕒 Dias: <b id="dDias2"></b></p><p>💡 Plan Gratis: obtenes <b id="dMitad" style="color:#facc15"></b> | Plan PRO: obtenes <b id="dFull" style="color:#facc15"></b></p></div>
+<div id="dGaleria" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0"></div>
+<div style="background:#000;border:1px solid #27272a;border-radius:12px;padding:12px;font-size:13px;display:grid;gap:4px"><p>📍 <b id="dDir"></b></p><p>📞 <b id="dTel"></b></p><p>🏷️ <span id="dRub" style="color:#facc15"></span> • <b id="dPct"></b> - Clausula 5% diario fijo no acumulable</p><p>🕒 Dias: <b id="dDias2"></b></p><p>💡 Gratis: <b id="dMitad" style="color:#facc15"></b> | PRO: <b id="dFull" style="color:#facc15"></b></p></div>
 <div id="boxCons" style="margin-top:12px;background:#111;border:1px dashed #facc15;border-radius:12px;padding:12px;display:none">
-<h4>Usar mi descuento en este comercio</h4><input id="monto" type="number" class="input" placeholder="Monto de la compra, ejemplo 20000"><button class="btn" onclick="consumir()">Aplicar descuento y descontar de mi credito</button><p id="resCons" style="margin-top:6px;font-size:13px;color:#facc15"></p>
+<h4>Usar mi descuento en este comercio (QR de comercio)</h4><input id="monto" type="number" class="input" placeholder="Monto de compra, ejemplo 20000"><button class="btn" onclick="consumir()">Aplicar descuento</button><p id="resCons" style="margin-top:6px;font-size:13px;color:#facc15"></p>
 </div>
-<div style="margin-top:10px"><button class="btn btn-dark" onclick="generarQR()">📱 Generar QR unico de este comercio para mostrador</button><div id="qrContainer" style="display:none"><div id="qrcode" class="qr-box"></div><small style="color:#888;text-align:center;display:block">Este QR es unico por comercio y lleva control de ventas</small><button class="btn btn-dark" style="margin-top:6px" onclick="imprimirQR()">🖨️ Imprimir QR para el local</button></div></div>
-<a id="dWsp" target="_blank" class="btn btn-dark" style="display:block;text-align:center;text-decoration:none;margin-top:8px">WhatsApp</a><a id="dMap" target="_blank" class="btn btn-dark" style="display:block;text-align:center;text-decoration:none;margin-top:6px">Ver en Google Maps</a>
+<a id="dWsp" target="_blank" class="btn btn-dark" style="display:block;text-align:center;text-decoration:none;margin-top:8px">WhatsApp Comercio</a><a id="dMap" target="_blank" class="btn btn-dark" style="display:block;text-align:center;text-decoration:none;margin-top:6px">Ver en Maps</a>
 <button onclick="document.getElementById('mDet').classList.remove('active')" class="btn btn-dark" style="margin-top:8px">Cerrar</button></div></div></div>
 
 <div id="mAuth" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box" style="padding:18px">
-<h2 id="tAuth" style="font-weight:900">Ingresar</h2>
-<div id="bLogin"><input id="l_mail" class="input" placeholder="Correo"><input id="l_pass" type="password" class="input" placeholder="Contraseña"><button class="btn" onclick="login()">Ingresar</button><p style="text-align:center;margin-top:8px;font-size:12px;color:#888">¿No tenes cuenta? <span style="color:#facc15;cursor:pointer" onclick="showReg()">Registrate - 50000 gratis</span></p></div>
+<h2 id="tAuth" style="font-weight:900">Registro Gratis - 50000 de credito</h2>
+<div id="bLogin"><input id="l_mail" class="input" placeholder="Correo"><input id="l_pass" type="password" class="input" placeholder="Contraseña"><button class="btn" onclick="login()">Ingresar</button><p style="text-align:center;margin-top:8px;font-size:12px;color:#888">¿No tenes cuenta? <span style="color:#facc15;cursor:pointer" onclick="showReg()">Registrate Gratis 50000</span></p></div>
 <div id="bReg" style="display:none"><input id="r_nom" class="input" placeholder="Nombre completo"><input id="r_dni" class="input" placeholder="DNI"><input id="r_dir" class="input" placeholder="Direccion"><input id="r_loc" class="input" placeholder="Localidad"><input id="r_wsp" class="input" placeholder="WhatsApp"><input id="r_mail" class="input" placeholder="Correo"><input id="r_pass" type="password" class="input" placeholder="Contraseña"><button class="btn" onclick="registro()">Crear cuenta con 50000 de credito</button><p style="text-align:center;margin-top:8px;font-size:12px;color:#888"><span style="color:#facc15;cursor:pointer" onclick="showLog()">Ya tengo cuenta</span></p></div>
 <div id="bCred" style="display:none;margin-top:12px;border-top:1px solid #222;padding-top:12px">
-<h3 style="font-size:14px">Recargas y PRO - Numeros reales</h3>
-<button class="btn" style="margin-top:8px" onclick="recarga()">⚡ Recarga rapida: 500 pesos = 10000 de credito para descuentos</button>
-<button class="btn" style="margin-top:6px;background:#fff" onclick="activarPro()">⭐ Activar PRO: 5000 pesos por mes - Credito ilimitado + 100 por ciento descuentos</button>
+<h3 style="font-size:14px">Recargas y PRO - Numeros reales sin K</h3>
+<button class="btn" style="margin-top:8px" onclick="recarga()">⚡ Recarga rapida: 500 pesos = 10000 de credito</button>
+<button class="btn" style="margin-top:6px;background:#fff" onclick="activarPro()">⭐ Plan PRO: 5000 pesos por mes - Credito ilimitado + 100 por ciento descuentos</button>
 <p id="resCred" style="font-size:12px;color:#facc15;margin-top:6px"></p>
 </div>
 </div></div>
 
 <div id="mCom" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box" style="padding:18px">
-<h2 style="font-weight:900">Registrar comercio - Minimo 5 por ciento obligatorio</h2>
-<input id="c_nom" class="input" placeholder="Nombre fantasia"><select id="c_rubro" class="input"></select>
-<input id="c_dir" class="input" placeholder="Direccion"><input id="c_tel" class="input" placeholder="WhatsApp">
+<h2 style="font-weight:900">Registrar Comercio - Clausula 5% minimo diario</h2>
+<p style="font-size:11px;color:#facc15">El 5% diario fijo no aplica ni suma al descuento programado. Si ofreces 20% el cliente ve 20%, no 25%. Edicion de porcentaje solo con autorizacion del administrador.</p>
+<input id="c_nom" class="input" placeholder="Nombre fantasia *"><select id="c_rubro" class="input"></select>
+<input id="c_dir" class="input" placeholder="Direccion *"><input id="c_tel" class="input" placeholder="WhatsApp *">
+<input id="c_correo" class="input" placeholder="Correo del comercio (usuario) *"><input id="c_pass" type="password" class="input" placeholder="Contraseña para panel privado *">
 <input id="c_pct" type="number" min="5" max="90" class="input" placeholder="Porcentaje que ofreces, minimo 5, ejemplo 20">
-<small style="color:#888">Cliente Gratis recibe la mitad, Cliente PRO recibe el total</small>
 <div><small>Dias con descuento:</small><div id="diasSel" class="days"></div></div>
 <textarea id="c_desc" class="input" placeholder="Descripcion promo"></textarea>
-<label style="font-size:11px">Logo desde galeria del celular</label><input id="c_logo" type="file" class="input" accept="image/*" onchange="prev(this,'pLogo')"><img id="pLogo" class="preview">
-<label style="font-size:11px">Banner desde galeria del celular</label><input id="c_banner" type="file" class="input" accept="image/*" onchange="prev(this,'pBan')"><img id="pBan" class="preview">
-<button id="btnGC" class="btn" onclick="guardarCom()">Publicar comercio</button>
+<label style="font-size:11px">Logo (desde galeria)</label><input id="c_logo" type="file" class="input" accept="image/*" onchange="prev(this,'pLogo')"><img id="pLogo" class="preview">
+<label style="font-size:11px">Foto 1 del negocio / publicidad</label><input id="c_img1" type="file" class="input" accept="image/*" onchange="prev(this,'p1')"><img id="p1" class="preview">
+<label style="font-size:11px">Foto 2 del negocio</label><input id="c_img2" type="file" class="input" accept="image/*" onchange="prev(this,'p2')"><img id="p2" class="preview">
+<label style="font-size:11px">Foto 3 del negocio</label><input id="c_img3" type="file" class="input" accept="image/*" onchange="prev(this,'p3')"><img id="p3" class="preview">
+<label style="font-size:11px">Banner principal</label><input id="c_banner" type="file" class="input" accept="image/*" onchange="prev(this,'pBan')"><img id="pBan" class="preview">
+<button id="btnGC" class="btn" onclick="guardarCom()">Publicar comercio con QR unico</button>
 </div></div>
 
-<div id="mAdmin" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box" style="padding:16px;max-width:900px">
-<h2 style="font-weight:900">Panel Admin - Control Total por Comercio</h2>
-<div style="display:flex;gap:6px;margin:12px 0;flex-wrap:wrap"><button class="tab active" onclick="tabAdmin('com')">Comercios + Ventas</button><button class="tab" onclick="tabAdmin('usu')">Usuarios</button><button class="tab" onclick="tabAdmin('acc')">Consumos y QR Scans</button></div>
-<div id="adminCom"></div><div id="adminUsu" style="display:none"></div><div id="adminAcc" style="display:none"></div>
+<div id="mComLogin" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box" style="padding:18px">
+<h2 style="font-weight:900">Panel Privado Comercio</h2><p style="font-size:12px;color:#888">Solo el comercio ve su QR para mostrar al cliente</p>
+<div id="comLoginBox"><input id="cl_mail" class="input" placeholder="Correo del comercio"><input id="cl_pass" type="password" class="input" placeholder="Contraseña"><button class="btn" onclick="loginComercio()">Ingresar a mi panel</button></div>
+<div id="comPanel" style="display:none"><h3 id="comPanelNom" style="font-weight:900"></h3><p id="comPanelInfo" style="font-size:12px;color:#888"></p><div id="qrcodeCom" class="qr-box"></div><button class="btn btn-dark" onclick="imprimirQRCom()">🖨️ Imprimir mi QR unico</button><p style="font-size:11px;color:#facc15;margin-top:8px">Mostrale este QR al cliente para que escanee y obtenga el descuento. Queda registrado en tu control de ventas.</p></div>
 </div></div>
+
+<div id="mAdmin" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box" style="padding:16px;max-width:960px">
+<h2 style="font-weight:900">Panel Admin - Acceso Restringido</h2>
+<div id="adminAuth"><input id="adminKey" type="password" class="input" placeholder="Clave unica administrador"><button class="btn" onclick="adminLogin()">Ingresar</button></div>
+<div id="adminContent" style="display:none">
+<div style="display:flex;gap:6px;margin:12px 0;flex-wrap:wrap"><button class="tab active" onclick="tabAdmin('com')">Comercios + Ventas + Edicion %</button><button class="tab" onclick="tabAdmin('usu')">Usuarios</button><button class="tab" onclick="tabAdmin('acc')">Consumos y QR Scans</button></div>
+<div id="adminCom"></div><div id="adminUsu" style="display:none"></div><div id="adminAcc" style="display:none"></div>
+</div>
+</div></div>
+
+<div id="mInfo" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box" style="padding:18px">
+<h2 style="font-weight:900">ℹ️ Informacion MaxShop - Descuento de Locos</h2>
+<div class="legal">
+<p><b>MaxShop</b> es la app que te hace ahorrar todos los dias. Gratis tenes 50000 de credito para descuentos y obtenes el 50 por ciento del descuento publicado por el comercio. Con PRO por 5000 pesos por mes tenes credito ilimitado y el 100 por ciento del descuento.</p>
+<p><b>Recarga rapida:</b> 500 pesos = 10000 de credito para seguir ahorrando.</p>
+<p><b>Para comercios:</b> Clausula obligatoria 5 por ciento minimo de descuento todos los dias. El 5% fijo no se suma al descuento programado. Si publicas 20% el cliente PRO recibe 20%, no 25%. La edicion de porcentaje solo la autoriza el administrador.</p>
+<p><b>QR unico por comercio:</b> Cada comercio tiene un QR privado en su panel. El cliente escanea al pagar y el sistema descuenta del credito y registra la venta.</p>
+</div></div></div>
+
+<div id="mLegal" class="modal" onclick="if(event.target==this) this.classList.remove('active')"><div class="modal-box" style="padding:18px"><div class="legal">
+<h2 style="font-weight:900;color:#facc15">Politicas, Terminos y Condiciones y Clausulas</h2>
+<h3>1. Objeto</h3><p>MaxShop - Descuento de Locos es una plataforma de intermediacion publicitaria que conecta usuarios con comercios adheridos que ofrecen descuentos. No vendemos productos propios.</p>
+<h3>2. Naturaleza del servicio</h3><p>MaxShop actua como intermediario publicitario. Las compras, productos, garantias, entregas y reclamos son responsabilidad exclusiva del comercio adherido. MaxShop no es vendedor, no es responsable por calidad, cantidad, estado, integridad o legitimidad de los productos ofrecidos. Ley 24.240 Defensa del Consumidor art 40 - intermediacion.</p>
+<h3>3. Credito para descuentos</h3><p>El credito otorgado (50000 gratis, recargas de 10000 por 500 pesos, o ilimitado PRO por 5000 pesos mensuales) es credito para aplicar descuentos, no dinero en efectivo, no reembolsable, no transferible, sin valor monetario fuera de la plataforma.</p>
+<h3>4. Clausula comercios - 5% minimo</h3><p>Todo comercio adherido acepta otorgar minimo 5 por ciento de descuento todos los dias como condicion de permanencia. Dicho 5 por ciento diario fijo no se acumula ni suma al descuento promocional programado (ejemplo: si ofrece 20 por ciento, el descuento total es 20 por ciento, no 25 por ciento). El cambio de porcentaje requiere autorizacion del administrador de la app.</p>
+<h3>5. Planes usuarios</h3><p>Plan Gratuito: recibe 50 por ciento del descuento publicado. Plan PRO (5000 pesos por mes): recibe 100 por ciento del descuento publicado y credito ilimitado para descuentos mientras la suscripcion este activa.</p>
+<h3>6. QR y control de ventas</h3><p>Cada comercio posee QR unico por ID. El escaneo queda registrado para control de ventas y auditoria.</p>
+<h3>7. Resguardo de la empresa - Tercerizacion</h3><p>MaxShop - Descuento de Locos se resguarda de toda responsabilidad por operaciones tercializadas entre usuario y comercio. Los productos o compras realizadas son tercializadas y no corresponden a la empresa estos tipos de reclamos. Somos intermediarios y ofrecemos un servicio publicitario, conforme art 1113 y 1114 Codigo Civil y Comercial y Ley 24.240. Ante cualquier controversia, el usuario debe reclamar directamente al comercio proveedor.</p>
+<h3>8. Prestamos y Seguros</h3><p>Seccion informativa, derivacion a terceros. MaxShop no otorga prestamos ni seguros directamente, solo facilita contacto.</p>
+<h3>9. Privacidad</h3><p>Datos protegidos segun Ley 25.326 Proteccion de Datos Personales Argentina.</p>
+<h3>10. Jurisdiccion</h3><p>Para todos los efectos legales, se fija jurisdiccion en tribunales de San Fernando del Valle de Catamarca, Argentina.</p>
+</div></div></div>
 
 <script>
-const LOGO="https://drive.google.com/uc?export=view&id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib";
-const BANNER="https://drive.google.com/uc?export=view&id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI";
-let comercios=[], usuario=null, comActual=null, diasElegidos=["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+const LOGO_URL="https://drive.google.com/thumbnail?id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib&sz=w200";
+const LOGO_FALLBACK="https://lh3.googleusercontent.com/d/1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib";
+const BANNER_URL="https://drive.google.com/thumbnail?id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI&sz=w1000";
+const BANNER_FALLBACK="https://lh3.googleusercontent.com/d/1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI";
+let comercios=[], usuario=null, comActual=null, comercioLogueado=null, diasElegidos=["lunes","martes","miercoles","jueves","viernes","sabado","domingo"], ADMIN_KEY_STORAGE="";
 const RUBROS=["gastronomia","indumentaria","supermercado","farmacia","ferreteria","estetica","gimnasio","tecnologia","hogar","construccion","automotriz","libreria","jugueteria","calzado","servicios","salud","mascotas","otros"];
 function prev(i,id){const el=document.getElementById(id); if(i.files[0]){el.style.display='block'; el.src=URL.createObjectURL(i.files[0])}}
+function openMenu(show=true){document.getElementById('sideMenu').classList.toggle('active',show!==false?show:undefined); if(show===false) document.getElementById('sideMenu').classList.remove('active'); else if(show!==true && document.getElementById('sideMenu').classList.contains('active') && show!==true){} updateMenuUser()}
+function updateMenuUser(){const el=document.getElementById('menuUser'); if(!usuario) el.innerHTML='<small style="color:#666">No logueado - Registro gratis con 50000 credito</small>'; else {const cred=usuario.credito_ilimitado||usuario.es_pro?'ILIMITADO PRO':`${Number(usuario.credito_descuento_disponible||0).toLocaleString('es-AR')} de credito disponible`; el.innerHTML=`<b>${usuario.nombre_completo}</b><br><small style="color:#facc15">${cred}</small><br><button class="tab" style="margin-top:6px" onclick="logout()">Salir</button>`}}
 function openAuth(){document.getElementById('mAuth').classList.add('active'); document.getElementById('bCred').style.display=usuario?'block':'none'}
 function openCom(){document.getElementById('mCom').classList.add('active')}
-function openAdmin(){document.getElementById('mAdmin').classList.add('active'); loadAdmin()}
-function showReg(){document.getElementById('bLogin').style.display='none';document.getElementById('bReg').style.display='block';document.getElementById('bCred').style.display='none';document.getElementById('tAuth').innerText='Registro - 50000 de credito gratis'}
+function openComercioLogin(){document.getElementById('mComLogin').classList.add('active')}
+function openInfo(){document.getElementById('mInfo').classList.add('active')}
+function openLegal(){document.getElementById('mLegal').classList.add('active')}
+function openPro(){openAuth(); showLog(); document.getElementById('bCred').style.display='block'}
+function openAdmin(){document.getElementById('mAdmin').classList.add('active')}
+function showReg(){document.getElementById('bLogin').style.display='none';document.getElementById('bReg').style.display='block';document.getElementById('bCred').style.display='none';document.getElementById('tAuth').innerText='Registro Gratis - 50000 de credito'}
 function showLog(){document.getElementById('bReg').style.display='none';document.getElementById('bLogin').style.display='block';document.getElementById('bCred').style.display=usuario?'block':'none';document.getElementById('tAuth').innerText='Mi cuenta'}
 function renderUser(){
- const el=document.getElementById('userInfo');
- if(!usuario){el.innerHTML=''; document.getElementById('btnAuth').innerText='Ingresar / Registrarse'; return}
- const cred=usuario.credito_ilimitado||usuario.es_pro?'ILIMITADO PRO':`${Number(usuario.credito_descuento_disponible||0).toLocaleString('es-AR')} de credito`;
- el.innerHTML=`<div class="credit-box">${cred}</div><small>${(usuario.nombre_completo||'').split(' ')[0]}</small><button class="tab" onclick="logout()">Salir</button>`;
- document.getElementById('btnAuth').innerText='Mi cuenta';
+ const el=document.getElementById('creditPill'); const txt=document.getElementById('creditText');
+ if(!usuario){el.style.display='none'; txt.innerText='Inicia sesion para ver tu credito - Registro gratis 50000'; return}
+ const isPro=usuario.credito_ilimitado||usuario.es_pro;
+ const cred=isPro?'ILIMITADO PRO':`${Number(usuario.credito_descuento_disponible||0).toLocaleString('es-AR')} de credito`;
+ el.style.display='inline-block'; el.innerText=cred;
+ txt.innerText=`Hola ${usuario.nombre_completo.split(' ')[0]} - Saldo: ${cred} | Consumo: ${(Number(usuario.credito_descuento_total||50000)-Number(usuario.credito_descuento_disponible||0)).toLocaleString('es-AR')} usado`;
 }
 function initFiltros(){
+ document.getElementById('logoMain').src=LOGO_URL; document.getElementById('logoMain').onerror=function(){this.src=LOGO_FALLBACK};
+ document.getElementById('bannerMain').src=BANNER_URL; document.getElementById('bannerMain').onerror=function(){this.src=BANNER_FALLBACK};
  const cont=document.getElementById('filtros'); cont.innerHTML='<button class="tab active" onclick="filtrar(\'todos\',this)">Todos</button>'+RUBROS.map(r=>`<button class="tab" onclick="filtrar('${r}',this)">${r}</button>`).join('');
  document.getElementById('c_rubro').innerHTML='<option value="">Rubro *</option>'+RUBROS.map(r=>`<option value="${r}">${r}</option>`).join('');
  document.getElementById('diasSel').innerHTML=["lunes","martes","miercoles","jueves","viernes","sabado","domingo"].map(d=>`<div class="day on" id="day_${d}" onclick="toggleDia('${d}')">${d}</div>`).join('');
@@ -105,121 +195,107 @@ function initFiltros(){
 function toggleDia(d){document.getElementById('day_'+d).classList.toggle('on'); if(diasElegidos.includes(d)) diasElegidos=diasElegidos.filter(x=>x!==d); else diasElegidos.push(d)}
 async function cargar(){const r=await fetch('/api/comercios'); const j=await r.json(); comercios=j.data||[]; render(comercios); return comercios}
 function render(lista){
- if(!lista.length){document.getElementById('grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#666">Sin comercios aun</div>'; return}
+ if(!lista.length){document.getElementById('grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#666">Sin comercios aun - Se el primero en sumar tu comercio con 5 por ciento minimo</div>'; return}
  document.getElementById('grid').innerHTML=lista.map(c=>{
-   const b=c.banner_url||c.imagen_url||BANNER; const l=c.logo_url||LOGO;
-   return `<div class="card" onclick='abrir(${JSON.stringify(c).replace(/'/g,"&#39;")})'><img class="card-banner" src="${b}" onerror="this.src='${BANNER}'"><div class="card-body"><div style="display:flex;gap:8px;align-items:center"><img src="${l}" style="width:38px;height:38px;border-radius:8px;background:#fff;object-fit:cover"><b style="font-size:14px">${c.nombre_fantasias||c.nombre}</b></div><p style="color:#888;font-size:11px;margin:6px 0;height:32px;overflow:hidden">${(c.descripcion||'Promo MaxShop').slice(0,80)}</p><div style="display:flex;justify-content:space-between"><span class="badge">${c.porcentaje_descuento||5} por ciento OFF</span><small style="color:#666;font-size:10px">${c.rubro||''} ID ${c.id}</small></div><button class="btn" style="margin-top:8px;font-size:12px">Ver info + descuento + QR</button></div></div>`
+   const b=c.banner_url||c.imagen_url||BANNER_URL; const l=c.logo_url||LOGO_URL;
+   const img1=c.imagen1_url?'':'';
+   return `<div class="card" onclick='abrir(${JSON.stringify(c).replace(/'/g,"&#39;")})'><img class="card-banner" src="${b}" onerror="this.src='${BANNER_URL}'"><div class="card-body"><div style="display:flex;gap:8px;align-items:center"><img src="${l}" style="width:38px;height:38px;border-radius:8px;background:#fff;object-fit:cover" onerror="this.src='${LOGO_URL}'"><b style="font-size:14px">${c.nombre_fantasias||c.nombre}</b></div><p style="color:#888;font-size:11px;margin:6px 0;height:32px;overflow:hidden">${(c.descripcion||'Promo MaxShop Descuento de Locos').slice(0,80)}</p><div style="display:flex;justify-content:space-between"><span class="badge">${c.porcentaje_descuento||5} por ciento OFF</span><small style="color:#666;font-size:10px">${c.rubro||''} ID ${c.id}</small></div><button class="btn" style="margin-top:8px;font-size:12px">Ver info + QR unico comercio</button></div></div>`
  }).join('')
 }
 function filtrar(cat,el){document.querySelectorAll('#filtros.tab').forEach(t=>t.classList.remove('active')); if(el) el.classList.add('active'); if(cat==='todos') render(comercios); else render(comercios.filter(c=>(c.rubro||'').toLowerCase()===cat))}
 function abrir(c){
  if(typeof c==='string') c=JSON.parse(c); comActual=c;
- document.getElementById('dBan').src=c.banner_url||c.imagen_url||BANNER;
- document.getElementById('dLogo').src=c.logo_url||LOGO;
+ document.getElementById('dBan').src=c.banner_url||c.imagen_url||BANNER_URL;
+ document.getElementById('dLogo').src=c.logo_url||LOGO_URL;
  document.getElementById('dNom').innerText=c.nombre_fantasias||c.nombre;
- document.getElementById('dBadge').innerText=(c.porcentaje_descuento||5)+' por ciento OFF publicado';
+ document.getElementById('dBadge').innerText=(c.porcentaje_descuento||5)+' por ciento OFF publicado - Clausula 5% no acumulable';
  document.getElementById('dDesc').innerText=c.descripcion||'';
  document.getElementById('dDir').innerText=c.direccion||'-';
  document.getElementById('dTel').innerText=c.telefono||c.whatsapp||'-';
  document.getElementById('dRub').innerText=c.rubro||'';
  document.getElementById('dPct').innerText=(c.porcentaje_descuento||5)+' por ciento OFF';
  document.getElementById('dDias').innerText=(c.dias_descuento||[]).join(', ');
- document.getElementById('dDias2').innerText=(c.dias_descuento||[]).join(', ')||'Todos los dias';
+ document.getElementById('dDias2').innerText=(c.dias_descuento||[]).join(', ')||'Todos los dias - 5% minimo clausula';
  document.getElementById('dMitad').innerText=((c.porcentaje_descuento||5)*0.5)+' por ciento';
  document.getElementById('dFull').innerText=(c.porcentaje_descuento||5)+' por ciento';
+ const gal=document.getElementById('dGaleria'); gal.innerHTML='';
+ [c.imagen1_url,c.imagen2_url,c.imagen3_url].forEach(u=>{ if(u){const im=document.createElement('img'); im.src=u; im.style.width='100%'; im.style.height='80px'; im.style.objectFit='cover'; im.style.borderRadius='8px'; gal.appendChild(im)}});
  const tel=(c.whatsapp||c.telefono||'').replace(/[^0-9]/g,'');
- document.getElementById('dWsp').href=tel?`https://wa.me/${tel}?text=Hola! Vi su promo de ${c.porcentaje_descuento} por ciento en MaxShop - Soy cliente ID ${usuario?.correo||''}`:'#';
+ document.getElementById('dWsp').href=tel?`https://wa.me/${tel}?text=Hola! Vi su promo de ${c.porcentaje_descuento} por ciento en MaxShop Descuento de Locos`:'#';
  document.getElementById('dMap').href=c.direccion?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.direccion)}`:'#';
  document.getElementById('boxCons').style.display=usuario?'block':'none';
- document.getElementById('qrContainer').style.display='none';
- document.getElementById('qrcode').innerHTML='';
  document.getElementById('mDet').classList.add('active');
  if(usuario){
    fetch('/api/qr-scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({comercio_id:c.id,nombre_comercio:c.nombre_fantasias||c.nombre,correo_usuario:usuario.correo})});
  }
 }
-function generarQR(){
- const cont=document.getElementById('qrcode'); cont.innerHTML=''; document.getElementById('qrContainer').style.display='block';
- const base = window.location.origin + window.location.pathname;
- const url = `${base}?qr=${comActual.id}&c=${encodeURIComponent(comActual.nombre_fantasias||comActual.nombre)}`;
- new QRCode(cont, {text: url, width:200, height:200, correctLevel: QRCode.CorrectLevel.H});
- const info=document.createElement('div');
- info.innerHTML=`<div style="margin-top:10px;color:#000;text-align:center;font-weight:900"><div style="font-size:15px">${comActual.nombre_fantasias||comActual.nombre}</div><div style="font-size:12px">ID ${comActual.id} - ${comActual.porcentaje_descuento} por ciento OFF</div><div style="font-size:10px;color:#666">QR unico - Control de ventas</div></div>`;
- cont.appendChild(info);
-}
-function imprimirQR(){
- const w=window.open('','','width=500,height=650');
- w.document.write(`<html><body style="text-align:center;font-family:sans-serif"><h2>${comActual.nombre_fantasias}</h2><div style="display:flex;justify-content:center">${document.getElementById('qrcode').innerHTML}</div><p>Escanea este QR para aplicar ${comActual.porcentaje_descuento} por ciento de descuento<br>MaxShop Enterprise<br>Comercio ID ${comActual.id}</p><p style="font-size:11px">Control de ventas por comercio</p></body></html>`);
- w.document.close(); w.print();
-}
 async function subir(f){if(!f) return null; const fd=new FormData(); fd.append('file',f); const r=await fetch('/api/upload',{method:'POST',body:fd}); const j=await r.json(); if(!j.success) throw new Error(j.error); return j.url}
 async function guardarCom(){
  const b=document.getElementById('btnGC'); b.innerText='Subiendo imagenes...'; b.disabled=true
  try{
-   let l=null, bn=null
+   let l=null, bn=null, i1=null, i2=null, i3=null
    if(document.getElementById('c_logo').files[0]) l=await subir(document.getElementById('c_logo').files[0])
    if(document.getElementById('c_banner').files[0]) bn=await subir(document.getElementById('c_banner').files[0])
-   const pct=parseFloat(document.getElementById('c_pct').value||0); if(pct<5) throw new Error('Minimo 5 por ciento obligatorio')
-   const data={nombre_fantasias:document.getElementById('c_nom').value,rubro:document.getElementById('c_rubro').value.toLowerCase(),direccion:document.getElementById('c_dir').value,telefono:document.getElementById('c_tel').value,whatsapp:document.getElementById('c_tel').value,porcentaje_descuento:pct,dias_descuento:diasElegidos,descripcion:document.getElementById('c_desc').value,logo_url:l,banner_url:bn,imagen_url:bn}
-   if(!data.nombre_fantasias||!data.rubro||!data.direccion||!data.telefono) throw new Error('Completa todos los campos obligatorios')
+   if(document.getElementById('c_img1').files[0]) i1=await subir(document.getElementById('c_img1').files[0])
+   if(document.getElementById('c_img2').files[0]) i2=await subir(document.getElementById('c_img2').files[0])
+   if(document.getElementById('c_img3').files[0]) i3=await subir(document.getElementById('c_img3').files[0])
+   const pct=parseFloat(document.getElementById('c_pct').value||5); if(pct<5) throw new Error('Minimo 5 por ciento obligatorio por clausula')
+   const data={nombre_fantasias:document.getElementById('c_nom').value,rubro:document.getElementById('c_rubro').value.toLowerCase(),direccion:document.getElementById('c_dir').value,telefono:document.getElementById('c_tel').value,whatsapp:document.getElementById('c_tel').value,correo:document.getElementById('c_correo').value,password:document.getElementById('c_pass').value,porcentaje_descuento:pct,porcentaje_diario_fijo:5,dias_descuento:diasElegidos,descripcion:document.getElementById('c_desc').value,logo_url:l,banner_url:bn,imagen_url:bn,imagen1_url:i1,imagen2_url:i2,imagen3_url:i3,bloqueado_edicion:true}
+   if(!data.nombre_fantasias||!data.rubro||!data.direccion||!data.telefono||!data.correo||!data.password) throw new Error('Completa todos los campos obligatorios incluyendo correo y contraseña del comercio')
    const r=await fetch('/api/registrar-comercio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); const j=await r.json()
-   if(j.success){alert('Comercio publicado con '+pct+' por ciento y QR unico ID '+j.data[0].id); document.getElementById('mCom').classList.remove('active'); cargar()} else throw new Error('Error al publicar')
- }catch(e){alert(e.message)} b.innerText='Publicar comercio'; b.disabled=false
+   if(j.success){alert('Comercio publicado con ID '+j.data[0].id+' y QR unico. Clausula 5% aplicada.'); document.getElementById('mCom').classList.remove('active'); cargar()} else throw new Error(j.error||'Error')
+ }catch(e){alert(e.message)} b.innerText='Publicar comercio con QR unico'; b.disabled=false
 }
 async function registro(){
  const data={nombre_completo:document.getElementById('r_nom').value,dni:document.getElementById('r_dni').value,direccion:document.getElementById('r_dir').value,localidad:document.getElementById('r_loc').value,whatsapp:document.getElementById('r_wsp').value,correo:document.getElementById('r_mail').value,password:document.getElementById('r_pass').value}
  const r=await fetch('/api/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); const j=await r.json()
- if(j.success){alert('Cuenta creada con 50000 de credito y 50 por ciento de descuentos! Ingresa ahora'); showLog()} else alert(j.error)
+ if(j.success){alert('Cuenta creada con 50000 de credito y 50 por ciento de descuentos!'); showLog()} else alert(j.error)
 }
 async function login(){
  const data={correo:document.getElementById('l_mail').value,password:document.getElementById('l_pass').value}
  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); const j=await r.json()
  if(j.success){usuario=j.usuario; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser(); document.getElementById('mAuth').classList.remove('active')} else alert('Credenciales incorrectas')
 }
+async function loginComercio(){
+ const data={correo:document.getElementById('cl_mail').value,password:document.getElementById('cl_pass').value}
+ const r=await fetch('/api/login-comercio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); const j=await r.json()
+ if(j.success){comercioLogueado=j.comercio; document.getElementById('comLoginBox').style.display='none'; document.getElementById('comPanel').style.display='block'; document.getElementById('comPanelNom').innerText=j.comercio.nombre_fantasias; document.getElementById('comPanelInfo').innerText=`ID ${j.comercio.id} - ${j.comercio.porcentaje_descuento} por ciento OFF - ${j.comercio.direccion}`; generarQRComercio(j.comercio)} else alert(j.error)
+}
+function generarQRComercio(c){
+ const cont=document.getElementById('qrcodeCom'); cont.innerHTML='';
+ const base=window.location.origin+window.location.pathname;
+ const url=`${base}?qr=${c.id}&c=${encodeURIComponent(c.nombre_fantasias)}`;
+ new QRCode(cont,{text:url,width:200,height:200,correctLevel:QRCode.CorrectLevel.H});
+ const info=document.createElement('div'); info.innerHTML=`<div style="margin-top:10px;color:#000;text-align:center;font-weight:900"><div>${c.nombre_fantasias}</div><div style="font-size:12px">ID ${c.id} - ${c.porcentaje_descuento} por ciento OFF</div><div style="font-size:10px;color:#666">QR privado - Solo comercio ve esto</div></div>`; cont.appendChild(info);
+}
+function imprimirQRCom(){const w=window.open('','','width=500,height=650'); w.document.write(`<html><body style="text-align:center;font-family:sans-serif"><h2>${comercioLogueado.nombre_fantasias} - MaxShop Descuento de Locos</h2><div style="display:flex;justify-content:center">${document.getElementById('qrcodeCom').innerHTML}</div><p>Escanea para ${comercioLogueado.porcentaje_descuento} por ciento descuento<br>ID ${comercioLogueado.id}</p></body></html>`); w.document.close(); w.print();}
 async function consumir(){
  if(!usuario) return openAuth()
  const monto=document.getElementById('monto').value; if(!monto) return alert('Ingresa el monto de la compra')
  const r=await fetch('/api/consumir-credito',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo_usuario:usuario.correo,nombre_comercio:comActual.nombre_fantasias||comActual.nombre,monto_compra:monto})})
  const j=await r.json()
- if(j.success){
-   document.getElementById('resCons').innerText=`Ahorraste ${Number(j.ahorro_aplicado).toFixed(0)} pesos con ${j.porcentaje_aplicado} por ciento aplicado! ${j.nuevo_credito==='ILIMITADO'?'Credito ILIMITADO PRO':`Te quedan ${Number(j.nuevo_credito).toLocaleString('es-AR')} de credito`}`;
-   if(j.nuevo_credito!=='ILIMITADO'){usuario.credito_descuento_disponible=j.nuevo_credito; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser()}
- } else alert(j.error)
+ if(j.success){document.getElementById('resCons').innerText=`Ahorraste ${Number(j.ahorro_aplicado).toFixed(0)} pesos con ${j.porcentaje_aplicado} por ciento! ${j.nuevo_credito==='ILIMITADO'?'Credito ILIMITADO PRO':`Te quedan ${Number(j.nuevo_credito).toLocaleString('es-AR')} de credito`}`; if(j.nuevo_credito!=='ILIMITADO'){usuario.credito_descuento_disponible=j.nuevo_credito; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser()}} else alert(j.error)
 }
-async function recarga(){
- const r=await fetch('/api/crear-pago-recarga',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:usuario.correo})}); const j=await r.json()
- if(j.init_point) window.location.href=j.init_point
- else {document.getElementById('resCred').innerText='Recargado! Nuevo credito: '+Number(j.nuevo_credito).toLocaleString('es-AR'); usuario.credito_descuento_disponible=j.nuevo_credito; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser()}
-}
-async function activarPro(){
- const r=await fetch('/api/crear-pago-pro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:usuario.correo})}); const j=await r.json()
- if(j.init_point) window.location.href=j.init_point
- else {alert('PRO activado! Ahora credito ilimitado y 100 por ciento descuentos'); usuario.es_pro=true; usuario.credito_ilimitado=true; usuario.credito_descuento_disponible=999999999; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser(); document.getElementById('resCred').innerText='PRO ACTIVO - ILIMITADO'}
-}
-function logout(){localStorage.removeItem('maxshop_user'); usuario=null; renderUser()}
+async function recarga(){if(!usuario) return openAuth(); const r=await fetch('/api/crear-pago-recarga',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:usuario.correo})}); const j=await r.json(); if(j.init_point) window.location.href=j.init_point; else {document.getElementById('resCred').innerText='Recargado! Nuevo credito: '+Number(j.nuevo_credito).toLocaleString('es-AR'); usuario.credito_descuento_disponible=j.nuevo_credito; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser()}}
+async function activarPro(){if(!usuario) return openAuth(); const r=await fetch('/api/crear-pago-pro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:usuario.correo})}); const j=await r.json(); if(j.init_point) window.location.href=j.init_point; else {alert('PRO activado! Credito ilimitado y 100 por ciento descuentos'); usuario.es_pro=true; usuario.credito_ilimitado=true; usuario.credito_descuento_disponible=999999999; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser(); document.getElementById('resCred').innerText='PRO ACTIVO - ILIMITADO'}}
+function logout(){localStorage.removeItem('maxshop_user'); usuario=null; renderUser(); updateMenuUser()}
+async function adminLogin(){const key=document.getElementById('adminKey').value; const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key})}); const j=await r.json(); if(j.success){ADMIN_KEY_STORAGE=key; document.getElementById('adminAuth').style.display='none'; document.getElementById('adminContent').style.display='block'; loadAdmin()} else alert('Clave incorrecta')}
 async function loadAdmin(){
- const r=await fetch('/api/admin/datos'); const j=await r.json()
+ const r=await fetch('/api/admin/datos?key='+encodeURIComponent(ADMIN_KEY_STORAGE)); const j=await r.json(); if(!j.success){alert('No autorizado'); return}
  document.getElementById('adminCom').innerHTML=j.comercios.map(c=>{
-   const ventas=j.ventas_por_comercio?.[c.nombre_fantasias]||0;
-   const scans=(j.scans||[]).filter(s=>s.comercio_id==c.id || s.nombre_comercio==c.nombre_fantasias).length;
-   return `<div style="background:#111;border:1px solid #222;padding:10px;border-radius:10px;margin:6px 0;display:flex;justify-content:space-between"><div><b>${c.nombre_fantasias}</b> - ID ${c.id} - ${c.porcentaje_descuento} por ciento - ${c.rubro}<br><small style="color:#facc15">Ventas: ${Number(ventas).toLocaleString('es-AR')} pesos | QR escaneos: ${scans} | Dias: ${(c.dias_descuento||[]).join(',')}</small><br><small>${c.direccion}</small></div><button class="tab" onclick="delCom(${c.id})">Eliminar</button></div>`
+   const ventas=j.ventas_por_comercio?.[c.nombre_fantasias]||0; const scans=(j.scans||[]).filter(s=>s.comercio_id==c.id).length;
+   return `<div style="background:#111;border:1px solid #222;padding:10px;border-radius:10px;margin:6px 0"><div><b>${c.nombre_fantasias}</b> ID ${c.id} - ${c.porcentaje_descuento} por ciento - ${c.rubro}<br><small style="color:#facc15">Ventas: ${Number(ventas).toLocaleString('es-AR')} pesos | QR escaneos: ${scans} | Bloqueado: ${c.bloqueado_edicion}</small><br><small>${c.direccion} - ${c.correo}</small><div style="display:flex;gap:4px;margin-top:6px"><input id="edit_pct_${c.id}" type="number" value="${c.porcentaje_descuento}" style="width:80px;background:#222;color:#fff;border:1px solid #333;border-radius:6px;padding:4px"><button class="tab" onclick="adminEditar(${c.id})">Cambiar % (solo admin)</button><button class="tab" onclick="adminToggleBloqueo(${c.id},${!c.bloqueado_edicion})">${c.bloqueado_edicion?'Desbloquear':'Bloquear'}</button><button class="tab" onclick="delCom(${c.id})">Eliminar</button></div></div></div>`
  }).join('');
- document.getElementById('adminUsu').innerHTML=j.usuarios.map(u=>`<div style="background:#111;border:1px solid #222;padding:10px;border-radius:10px;margin:6px 0;display:flex;justify-content:space-between"><div>${u.nombre_completo} - ${u.correo} - ${Number(u.credito_descuento_disponible||0).toLocaleString('es-AR')} credito - ${u.es_pro?'PRO ILIMITADO':''}</div><button class="tab" onclick="delUsu('${u.correo}')">Eliminar</button></div>`).join('');
- document.getElementById('adminAcc').innerHTML=`<h4 style="color:#facc15">Total ahorrado por clientes: ${Number(j.total_ahorro||0).toLocaleString('es-AR')} pesos</h4><h4 style="margin-top:10px">Ventas por comercio (control QR):</h4>${Object.entries(j.ventas_por_comercio||{}).map(([nom,monto])=>`<div style="background:#111;padding:8px;border-radius:8px;margin:4px 0"><b>${nom}</b>: ${Number(monto).toLocaleString('es-AR')} pesos vendidos</div>`).join('')}<hr style="margin:12px 0;border-color:#222"><h4>Ultimos QR escaneados (control por comercio ID):</h4>`+ (j.scans||[]).map(s=>`<div style="background:#111;border:1px solid #222;padding:8px;border-radius:8px;margin:4px 0;font-size:12px">🟡 Comercio ID ${s.comercio_id} - ${s.nombre_comercio} | Cliente: ${s.correo_usuario||'anonimo'} | ${s.fecha||''}</div>`).join('') + `<hr style="margin:12px 0"><h4>Consumos:</h4>` + j.acciones.map(a=>`<div style="background:#111;border:1px solid #222;padding:8px;border-radius:8px;margin:4px 0;font-size:12px">${a.correo_usuario} -> ${a.nombre_comercio} compra ${a.monto_compra} ahorro ${a.ahorro_aplicado} (${a.porcentaje_aplicado} por ciento)</div>`).join('');
+ document.getElementById('adminUsu').innerHTML=j.usuarios.map(u=>`<div style="background:#111;border:1px solid #222;padding:10px;border-radius:10px;margin:6px 0;display:flex;justify-content:space-between"><div>${u.nombre_completo} - ${u.correo} - ${Number(u.credito_descuento_disponible||0).toLocaleString('es-AR')} credito - ${u.es_pro?'PRO':''}</div><button class="tab" onclick="delUsu('${u.correo}')">Eliminar</button></div>`).join('');
+ document.getElementById('adminAcc').innerHTML=`<h4 style="color:#facc15">Total ahorrado: ${Number(j.total_ahorro||0).toLocaleString('es-AR')} pesos</h4>${Object.entries(j.ventas_por_comercio||{}).map(([n,m])=>`<div style="background:#111;padding:8px;border-radius:8px;margin:4px 0"><b>${n}</b>: ${Number(m).toLocaleString('es-AR')} pesos vendidos</div>`).join('')}<hr style="margin:12px 0;border-color:#222"><h4>QR Scans por comercio ID:</h4>`+(j.scans||[]).map(s=>`<div style="background:#111;border:1px solid #222;padding:8px;border-radius:8px;margin:4px 0;font-size:12px">ID ${s.comercio_id} - ${s.nombre_comercio} | Cliente ${s.correo_usuario||'anonimo'} | ${s.fecha||''}</div>`).join('')+`<hr><h4>Consumos:</h4>`+j.acciones.map(a=>`<div style="background:#111;border:1px solid #222;padding:8px;border-radius:8px;margin:4px 0;font-size:12px">${a.correo_usuario} -> ${a.nombre_comercio} compra ${a.monto_compra} ahorro ${a.ahorro_aplicado}</div>`).join('');
 }
+async function adminEditar(id){const pct=document.getElementById('edit_pct_'+id).value; const r=await fetch('/api/admin/editar-comercio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({admin_key:ADMIN_KEY_STORAGE,id,porcentaje_descuento:parseFloat(pct)})}); const j=await r.json(); if(j.success){alert('Porcentaje actualizado por admin'); loadAdmin(); cargar()} else alert('Error')}
+async function adminToggleBloqueo(id,val){const r=await fetch('/api/admin/editar-comercio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({admin_key:ADMIN_KEY_STORAGE,id,bloqueado_edicion:val})}); const j=await r.json(); if(j.success) loadAdmin()}
 function tabAdmin(t){document.getElementById('adminCom').style.display=t==='com'?'block':'none'; document.getElementById('adminUsu').style.display=t==='usu'?'block':'none'; document.getElementById('adminAcc').style.display=t==='acc'?'block':'none'}
-async function delCom(id){if(!confirm('Eliminar comercio ID '+id+'?')) return; await fetch('/api/admin/comercio/'+id,{method:'DELETE'}); loadAdmin(); cargar()}
-async function delUsu(correo){if(!confirm('Eliminar usuario '+correo+'?')) return; await fetch('/api/admin/usuario/'+correo,{method:'DELETE'}); loadAdmin()}
-async function checkQR(){
- const params=new URLSearchParams(window.location.search);
- const qrId=params.get('qr');
- if(qrId){
-   const lista=await cargar();
-   const c=lista.find(x=>String(x.id)===String(qrId));
-   if(c){ setTimeout(()=>abrir(c),800); }
- } else { cargar(); }
-}
+async function delCom(id){if(!confirm('Eliminar comercio ID '+id+'?')) return; await fetch('/api/admin/comercio/'+id+'?key='+encodeURIComponent(ADMIN_KEY_STORAGE),{method:'DELETE'}); loadAdmin(); cargar()}
+async function delUsu(correo){if(!confirm('Eliminar usuario?')) return; await fetch('/api/admin/usuario/'+correo+'?key='+encodeURIComponent(ADMIN_KEY_STORAGE),{method:'DELETE'}); loadAdmin()}
+function consultarWsp(tipo){let nom='', det=''; if(tipo==='prestamo'){nom=document.getElementById('pre_nom').value; det=document.getElementById('pre_monto').value} else {nom=document.getElementById('seg_nom').value; det=document.getElementById('seg_tipo').value} const msg=`Hola MaxShop! Soy ${nom}. Consulta por ${tipo}: ${det}. Vengo de la app Descuento de Locos.`; window.open(`https://wa.me/5493834000000?text=${encodeURIComponent(msg)}`,'_blank')}
+async function checkQR(){const params=new URLSearchParams(window.location.search); const qrId=params.get('qr'); if(qrId){const lista=await cargar(); const c=lista.find(x=>String(x.id)===String(qrId)); if(c) setTimeout(()=>abrir(c),800)} else cargar()}
 (function(){try{usuario=JSON.parse(localStorage.getItem('maxshop_user')); renderUser()}catch(e){}})();
 initFiltros(); checkQR();
-const urlParams=new URLSearchParams(window.location.search); if(urlParams.get('pago')==='ok') alert('Pago de recarga aprobado! 10000 de credito acreditados'); if(urlParams.get('pro')==='ok') alert('Pago PRO aprobado! Credito ilimitado activado');
 </script></body></html>
