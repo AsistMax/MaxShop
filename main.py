@@ -5,10 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import os, uuid
 from datetime import datetime
 
-app = FastAPI(title="MaxShop Enterprise")
+app = FastAPI(title="MaxShop Descuento de Locos")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"], allow_credentials=True)
 templates = Jinja2Templates(directory="templates")
 
+ADMIN_KEY = os.getenv("ADMIN_KEY", "MaxShop2026!Admin") # Cambiala en Render Environment
 RUBROS = ["gastronomia","indumentaria","supermercado","farmacia","ferreteria","estetica","gimnasio","tecnologia","hogar","construccion","automotriz","libreria","jugueteria","calzado","servicios","salud","mascotas","otros"]
 
 _supabase = None
@@ -32,13 +33,9 @@ def get_mp():
         return mercadopago.SDK(token)
     except: return None
 
-@app.get("/health")
-def health():
-    return {"status":"ok","supabase":get_supabase() is not None,"mp":get_mp() is not None}
-
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return templates.TemplateResponse(request, "index.html", {})
+    return templates.TemplateResponse(request, "index.html", {"admin_key_exists": bool(ADMIN_KEY)})
 
 @app.post("/api/upload")
 async def upload(file: UploadFile = File(...)):
@@ -82,13 +79,23 @@ async def login(req: Request):
     if not r.data: return JSONResponse({"success": False, "error":"Credenciales"},401)
     return {"success": True, "usuario": r.data}
 
+@app.post("/api/login-comercio")
+async def login_comercio(req: Request):
+    sb = get_supabase(); d = await req.json()
+    r = sb.table("comercios").select("*").eq("correo", d['correo']).eq("password", d['password']).single().execute()
+    if not r.data: return JSONResponse({"success": False, "error":"Credenciales comercio incorrectas"},401)
+    return {"success": True, "comercio": r.data}
+
 @app.post("/api/registrar-comercio")
 async def reg_com(req: Request):
     sb = get_supabase(); d = await req.json()
-    pct = float(d.get('porcentaje_descuento') or 0)
-    if pct < 5: return JSONResponse({"success": False, "error":"Minimo 5 por ciento obligatorio"},400)
-    d['dias_descuento'] = d.get('dias_descuento') or ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"]
+    pct = float(d.get('porcentaje_descuento') or 5)
+    if pct < 5: return JSONResponse({"success": False, "error":"Minimo 5 por ciento obligatorio por clausula"},400)
+    d['porcentaje_diario_fijo'] = 5
+    d['bloqueado_edicion'] = True
     d['fecha_alta'] = datetime.now().isoformat()
+    if not d.get('correo') or not d.get('password'):
+        return JSONResponse({"success": False, "error":"El comercio debe tener correo y contraseña para su panel privado"},400)
     r = sb.table("comercios").insert(d).execute()
     return {"success": True, "data": r.data}
 
@@ -110,8 +117,7 @@ async def crear_pago_recarga(req: Request):
         "payer": {"email": d['correo']},
         "external_reference": f"recarga_{d['correo']}_{uuid.uuid4()}",
         "back_urls": {"success": f"{os.getenv('BASE_URL','')}/?pago=ok", "failure": f"{os.getenv('BASE_URL','')}/?pago=fail"},
-        "auto_return": "approved",
-        "metadata": {"tipo":"recarga","correo":d['correo']}
+        "auto_return": "approved"
     }
     res = mp.preference().create(pref)
     return {"success": True, "init_point": res["response"]["init_point"]}
@@ -129,34 +135,10 @@ async def crear_pago_pro(req: Request):
         "payer": {"email": d['correo']},
         "external_reference": f"pro_{d['correo']}_{uuid.uuid4()}",
         "back_urls": {"success": f"{os.getenv('BASE_URL','')}/?pro=ok", "failure": f"{os.getenv('BASE_URL','')}/?pro=fail"},
-        "auto_return": "approved",
-        "metadata": {"tipo":"pro","correo":d['correo']}
+        "auto_return": "approved"
     }
     res = mp.preference().create(pref)
     return {"success": True, "init_point": res["response"]["init_point"]}
-
-@app.post("/api/webhook-mp")
-async def webhook_mp(req: Request):
-    sb = get_supabase()
-    try:
-        data = await req.json()
-        if data.get('type')=='payment':
-            mp = get_mp()
-            if mp:
-                payment = mp.payment().get(data['data']['id'])
-                if payment["status"]==200 and payment["response"]["status"]=="approved":
-                    ext = payment["response"].get('external_reference','')
-                    correo = ext.split('_')[1] if '_' in ext else None
-                    if correo and 'recarga' in ext:
-                        u = sb.table("usuarios").select("*").eq("correo", correo).single().execute()
-                        if u.data and not u.data.get('credito_ilimitado'):
-                            nuevo = float(u.data.get('credito_descuento_disponible') or 0)+10000
-                            total = float(u.data.get('credito_descuento_total') or 0)+10000
-                            sb.table("usuarios").update({"credito_descuento_disponible": nuevo, "credito_descuento_total": total}).eq("correo", correo).execute()
-                    elif correo and 'pro' in ext:
-                        sb.table("usuarios").update({"es_pro": True, "suscripcion_activa": True, "credito_ilimitado": True, "credito_descuento_disponible": 999999999}).eq("correo", correo).execute()
-    except: pass
-    return {"success": True}
 
 @app.post("/api/consumir-credito")
 async def consumir(req: Request):
@@ -166,8 +148,10 @@ async def consumir(req: Request):
     if not usu.data or not com.data: return JSONResponse({"success": False, "error":"No encontrado"},404)
     monto = float(d['monto_compra'])
     pct_com = float(com.data.get('porcentaje_descuento') or 5)
+    # Clausula: 5% fijo diario no suma al descuento programado
+    pct_final = pct_com
     es_pro = usu.data.get('es_pro') or usu.data.get('credito_ilimitado')
-    pct_real = pct_com if es_pro else pct_com*0.5
+    pct_real = pct_final if es_pro else pct_final*0.5
     ahorro = monto*(pct_real/100)
     if es_pro and usu.data.get('credito_ilimitado'):
         nuevo = "ILIMITADO"
@@ -193,8 +177,17 @@ async def qr_scan(req: Request):
     except: pass
     return {"success": True}
 
+@app.post("/api/admin/login")
+async def admin_login(req: Request):
+    d = await req.json()
+    if d.get('key')!= ADMIN_KEY:
+        return JSONResponse({"success": False, "error":"Clave admin incorrecta"},401)
+    return {"success": True}
+
 @app.get("/api/admin/datos")
-def admin():
+def admin_datos(key: str = ""):
+    if key!= ADMIN_KEY:
+        return JSONResponse({"success": False, "error":"No autorizado"},401)
     sb = get_supabase()
     rc = sb.table("comercios").select("*").order("id", desc=True).execute()
     ru = sb.table("usuarios").select("*").order("id", desc=True).execute()
@@ -207,11 +200,24 @@ def admin():
     for a in acc:
         nombre = a.get('nombre_comercio')
         ventas_por_comercio[nombre] = ventas_por_comercio.get(nombre, 0) + float(a.get('monto_compra') or 0)
-    return {"success": True, "comercios": rc.data or [], "usuarios": ru.data or [], "acciones": acc, "scans": scans, "total_ahorro": total_ahorro, "ventas_por_comercio": ventas_por_comercio, "rubros": RUBROS}
+    return {"success": True, "comercios": rc.data or [], "usuarios": ru.data or [], "acciones": acc, "scans": scans, "total_ahorro": total_ahorro, "ventas_por_comercio": ventas_por_comercio}
+
+@app.post("/api/admin/editar-comercio")
+async def editar_comercio(req: Request):
+    d = await req.json()
+    if d.get('admin_key')!= ADMIN_KEY:
+        return JSONResponse({"success": False, "error":"No autorizado"},401)
+    sb = get_supabase()
+    cid = d.get('id')
+    update_data = {k: v for k, v in d.items() if k in ['porcentaje_descuento','descripcion','bloqueado_edicion','direccion','telefono']}
+    sb.table("comercios").update(update_data).eq("id", cid).execute()
+    return {"success": True}
 
 @app.delete("/api/admin/comercio/{id}")
-def del_com(id: int):
+def del_com(id: int, key: str = ""):
+    if key!= ADMIN_KEY: return JSONResponse({"success": False},401)
     sb = get_supabase(); sb.table("comercios").delete().eq("id", id).execute(); return {"success": True}
 @app.delete("/api/admin/usuario/{correo}")
-def del_usu(correo: str):
+def del_usu(correo: str, key: str = ""):
+    if key!= ADMIN_KEY: return JSONResponse({"success": False},401)
     sb = get_supabase(); sb.table("usuarios").delete().eq("correo", correo).execute(); return {"success": True}
