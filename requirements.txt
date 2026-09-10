@@ -1,8 +1,7 @@
 fastapi
-uvicorn[standard]
-supabase>=2.10.0
+uvicorn
+supabase
 python-multipart
 jinja2
 python-dotenv
 mercadopago
-passlib[bcrypt]
