@@ -111,7 +111,6 @@ input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3
 <h3>MaxShop PRO - $5000</h3>
 <p>20% OFF ilimitado + ruleta ilimitada + sorteos</p>
 <button class="btn btn-yellow" style="width:100%;margin-top:10px" onclick="serPro()">Comprar PRO con MercadoPago</button>
-<button class="btn btn-dark" style="width:100%;margin-top:8px;border:1px dashed #ffcc00" onclick="window.open('https://wa.me/543834607740?text='+encodeURIComponent('Hola MaxShop transferi $5000 alias ASISTMAX365 correo: '+USER.correo))">💸 Pagar por Transferencia - Alias ASISTMAX365</button>
 </div>
 </div>
 
@@ -144,7 +143,7 @@ input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3
 <script>
 let USER = JSON.parse(localStorage.getItem('maxshop_user')||'null');
 let COMERCIO = JSON.parse(localStorage.getItem('maxshop_comercio')||'null');
-function normalizarWhatsapp(num){let n=num.toString().replace(/\D/g,"").replace(/^0+/,"");if(n.startsWith("549"))return n;if(n.startsWith("54"))return "549"+n.substring(2);return "549"+n.slice(-10);}
+
 function showTab(t){
 document.querySelectorAll('[id^="tab-"]').forEach(e=>e.classList.add('hidden'));
 document.getElementById('tab-'+t).classList.remove('hidden');
@@ -179,7 +178,7 @@ document.getElementById('btnLogout').style.display='none';
 }
 }
 async function doRegistro(){
-const body={nombre_completo:document.getElementById('rNombre').value,dni:document.getElementById('rDni').value,direccion:document.getElementById('rDir').value,localidad:document.getElementById('rLoc').value,whatsapp:normalizarWhatsapp(document.getElementById('rWsp').value),correo:document.getElementById('rCorreo').value,password:document.getElementById('rPass').value,codigo_referido_usado:document.getElementById('rRef').value};
+const body={nombre_completo:document.getElementById('rNombre').value,dni:document.getElementById('rDni').value,direccion:document.getElementById('rDir').value,localidad:document.getElementById('rLoc').value,whatsapp:document.getElementById('rWsp').value,correo:document.getElementById('rCorreo').value,password:document.getElementById('rPass').value,codigo_referido_usado:document.getElementById('rRef').value};
 const r=await fetch('/api/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const j=await r.json();
 if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;alert('¡Cuenta creada! $20.000 acreditados');showTab('dashboard')}else alert(j.error||'Error');
