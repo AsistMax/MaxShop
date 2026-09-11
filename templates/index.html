@@ -101,10 +101,10 @@ input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3
 <h3>MaxShop PRO - $5000</h3>
 <p>20% OFF ilimitado + ruleta ilimitada + sorteos</p>
 <button class="btn btn-yellow" style="width:100%;margin-top:10px" onclick="serPro()">Comprar PRO con MercadoPago</button>
-<button class="btn btn-dark" style="width:100%;margin-top:8px;border:1px dashed #ffcc00" onclick="pagarTransferencia()">💸 Pagar por Transferencia - Alias ASISTMAX365</button>
-<div id="datosTransfer" class="hidden" style="background:#12121a;padding:12px;border-radius:12px;margin-top:10px;text-align:left">
-<b>Alias: <span style="color:#ffcc00">ASISTMAX365</span></b><br><br>1- Transferí $5000<br>2- Sacá captura<br>3- Tocá para enviar comprobante<br>
-<button class="btn btn-yellow" style="width:100%;margin-top:10px" onclick="enviarComprobante()">Enviar comprobante por WhatsApp</button>
+<!-- SOLO ESTO NUEVO - ALIAS -->
+<button class="btn btn-dark" style="width:100%;margin-top:8px;border:1px dashed #ffcc00" onclick="document.getElementById('datosTransfer').classList.toggle('hidden')">💸 Pagar por Transferencia - Alias ASISTMAX365</button>
+<div id="datosTransfer" class="hidden" style="background:#12121a;padding:12px;border-radius:12px;margin-top:10px">
+<b>Alias: <span style="color:#ffcc00">ASISTMAX365</span></b><br><br>1- Transferí $5000<br>2- Sacá captura<br><button class="btn btn-yellow" style="width:100%;margin-top:10px" onclick="window.open('https://wa.me/543834607740?text='+encodeURIComponent('Hola! Transferí PRO $5000 alias ASISTMAX365 mi correo es '+USER.correo))">Enviar comprobante</button>
 </div>
 </div>
 </div>
@@ -131,6 +131,7 @@ input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3
 <script>
 let USER = JSON.parse(localStorage.getItem('maxshop_user')||'null');
 let COMERCIO = JSON.parse(localStorage.getItem('maxshop_comercio')||'null');
+// FIX WHATSAPP 549 - SOLO ESTA FUNCION NUEVA
 function normalizarWhatsapp(num){
   if(!num) return "";
   let n=num.toString().replace(/\D/g,"").replace(/^0+/,"");
@@ -174,10 +175,10 @@ document.getElementById('btnLogout').style.display='none';
 async function doRegistro(){
 let wspRaw=document.getElementById('rWsp').value;
 let wspNorm=normalizarWhatsapp(wspRaw);
-const body={nombre_completo:document.getElementById('rNombre').value,dni:document.getElementById('rDni').value,direccion:document.getElementById('rDir').value,localidad:document.getElementById('rLoc').value,whatsapp:wspNorm,whatsapp_original:wspRaw,correo:document.getElementById('rCorreo').value,password:document.getElementById('rPass').value,codigo_referido_usado:document.getElementById('rRef').value};
+const body={nombre_completo:document.getElementById('rNombre').value,dni:document.getElementById('rDni').value,direccion:document.getElementById('rDir').value,localidad:document.getElementById('rLoc').value,whatsapp:wspNorm,correo:document.getElementById('rCorreo').value,password:document.getElementById('rPass').value,codigo_referido_usado:document.getElementById('rRef').value};
 const r=await fetch('/api/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const j=await r.json();
-if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;alert('¡Cuenta creada! $20.000 acreditados. WhatsApp: '+wspNorm);showTab('dashboard')}else alert(j.error||'Error');
+if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;alert('¡Cuenta creada! $20.000 acreditados');showTab('dashboard')}else alert(j.error||'Error');
 }
 async function doLogin(){
 const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:document.getElementById('loginCorreo').value,password:document.getElementById('loginPass').value})});
@@ -198,51 +199,4 @@ grid.innerHTML=(j.data||[]).map(c=>`<div class="card"><img class="comercio-img" 
 async function girar(){
 const r=await fetch('/api/ruleta/girar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:USER.correo})});
 const j=await r.json();
-if(j.success){document.getElementById('msgRuleta').innerText=`¡Ganaste $${j.premio}! Racha: ${j.racha} dias`;setTimeout(()=>location.reload(),1500)}else document.getElementById('msgRuleta').innerText=j.error;
-}
-async function canjear(){
-const r=await fetch('/api/ruleta/canjear',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:USER.correo})});
-const j=await r.json();
-if(j.success){alert(`¡Ganaste $${j.premio} con 100 coins!`);location.reload()}else alert(j.error);
-}
-async function pagarRuleta(){
-const r=await fetch('/api/crear-pago-recarga',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:USER.correo})});
-const j=await r.json();
-if(j.init_point) window.location=j.init_point; else alert(j.error);
-}
-async function serPro(){
-const r=await fetch('/api/crear-pago-pro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:USER.correo})});
-const j=await r.json();
-if(j.init_point) window.location=j.init_point; else alert(j.error);
-}
-async function consumir(){
-const r=await fetch('/api/consumir-credito',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo_usuario:USER.correo,nombre_comercio:document.getElementById('cNombreComercio').value,monto_compra:document.getElementById('cMonto').value})});
-const j=await r.json();
-if(j.success){document.getElementById('msgConsumo').innerText=`Ahorraste $${j.ahorro_aplicado}. Nuevo crédito: ${j.nuevo_credito}`;USER.credito_descuento_disponible=j.nuevo_credito;updateUI();}else document.getElementById('msgConsumo').innerText=j.error;
-}
-async function validarCompra(){
-const r=await fetch('/api/consumir-credito',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo_usuario:document.getElementById('cliCorreo').value,nombre_comercio:COMERCIO.nombre||COMERCIO.nombre_comercio,monto_compra:document.getElementById('cliMonto').value})});
-const j=await r.json();
-document.getElementById('msgComercio').innerText=j.success?`OK Ahorro $${j.ahorro_aplicado} aplicado` : j.error;
-}
-async function loadAdmin(){
-const key=document.getElementById('adminKey').value;
-const r=await fetch(`/api/admin/datos?key=${key}`);
-const j=await r.json();
-if(!j.success){alert(j.error);return;}
-document.getElementById('adminData').innerHTML=`<div class="card" style="background:#12121a;margin-top:12px"><p>Usuarios: ${j.usuarios.length} | Comercios: ${j.comercios.length} | Ahorro total: $${j.total_ahorro}</p><pre style="max-height:300px;overflow:auto;font-size:11px">${JSON.stringify(j.usuarios.slice(0,20),null,2)}</pre></div>`;
-}
-function pagarTransferencia(){
- document.getElementById('datosTransfer').classList.remove('hidden');
-}
-function enviarComprobante(){
- const numero="543834607740";
- const msg=`Hola MaxShop! Transferi $5000 por PRO. Alias ASISTMAX365. Mi correo es ${USER.correo}. Te envio comprobante.`;
- window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`,'_blank');
-}
-if(USER) showTab('dashboard');
-else if(COMERCIO) showTab('comercio');
-else showTab('login');
-</script>
-</body>
-                                </html>
+if(j.success){document.getElementById('msgRuleta').innerText
