@@ -1,122 +1,244 @@
-import os
-import random
-import hashlib
-from datetime import datetime
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, HTMLResponse
-from fastapi.templating import Jinja2Templates
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MaxShop - Ahorrá en Catamarca</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif}
+body{background:#0f0f13;color:#fff;min-height:100vh}
+header{background:#1a1a22;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2a2a35;position:sticky;top:0;z-index:10}
+.logo{font-weight:800;font-size:22px;color:#ffcc00}
+.logo span{color:#fff}
+.btn{padding:10px 18px;border-radius:12px;border:none;font-weight:600;cursor:pointer;transition:.2s}
+.btn-yellow{background:#ffcc00;color:#000}
+.btn-dark{background:#2a2a35;color:#fff}
+.btn:active{transform:scale(.97)}
+.container{max-width:1100px;margin:0 auto;padding:20px}
+.card{background:#1e1e29;border:1px solid #2a2a35;border-radius:18px;padding:18px;margin-bottom:18px}
+input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #333;background:#12121a;color:#fff;margin:6px 0 12px}
+.grid{Display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.badge{background:#ffcc00;color:#000;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:800}
+.credito{font-size:32px;font-weight:800;color:#ffcc00}
+.ruleta-box{text-align:center}
+#ruleta{width:220px;height:220px;border-radius:50%;margin:15px auto;background:conic-gradient(#ffcc00 0 60deg,#222 60deg 120deg,#ffcc00 120deg 180deg,#222 180deg 240deg,#ffcc00 240deg 300deg,#222 300deg 360deg);border:8px solid #2a2a35;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;position:relative}
+.hidden{display:none!important}
+.tabs{display:flex;gap:8px;margin:15px 0;overflow:auto}
+.tab{padding:10px 16px;border-radius:30px;background:#1e1e29;border:1px solid #2a2a35;cursor:pointer;white-space:nowrap}
+.tab.active{background:#ffcc00;color:#000;font-weight:700}
+.comercio-img{width:100%;height:140px;object-fit:cover;border-radius:12px;background:#111}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">MAX<span>SHOP</span></div>
+<div>
+<button class="btn btn-dark" onclick="showTab('login')" id="btnLogin">Entrar</button>
+<button class="btn btn-yellow" onclick="logout()" id="btnLogout" style="display:none">Salir</button>
+</div>
+</header>
 
-app = FastAPI(title="MaxShop API")
-templates = Jinja2Templates(directory="templates")
+<div class="container">
+<!-- LOGIN -->
+<div id="tab-login" class="card">
+<h2>Ingresá a MaxShop</h2>
+<p style="opacity:.7;margin:8px 0">Catamarca - Descuentos reales</p>
+<input id="loginCorreo" placeholder="Correo">
+<input id="loginPass" type="password" placeholder="Contraseña">
+<button class="btn btn-yellow" style="width:100%" onclick="doLogin()">Entrar</button>
+<p style="margin-top:12px;text-align:center">¿No tenés cuenta? <b style="color:#ffcc00;cursor:pointer" onclick="showTab('registro')">Registrate y ganá $20.000</b></p>
+<hr style="margin:18px 0;border:0;border-top:1px solid #2a2a35">
+<h3>Ingreso Comercios</h3>
+<input id="comercioCorreo" placeholder="Correo comercio">
+<input id="comercioPass" type="password" placeholder="Clave comercio">
+<button class="btn btn-dark" style="width:100%" onclick="doLoginComercio()">Entrar como Comercio</button>
+</div>
 
-# Variables Render
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-ADMIN_KEY = os.getenv("ADMIN_KEY", "maxshop2024")
-BASE_URL = os.getenv("BASE_URL", "https://maxshop-api.onrender.com")
-MP_TOKEN = os.getenv("MP_ACCESS_TOKEN", "")
+<!-- REGISTRO -->
+<div id="tab-registro" class="card hidden">
+<h2>Crear cuenta - $20.000 de regalo</h2>
+<input id="rNombre" placeholder="Nombre completo">
+<input id="rDni" placeholder="DNI">
+<input id="rDir" placeholder="Dirección">
+<input id="rLoc" placeholder="Localidad" value="San Fernando del Valle de Catamarca">
+<input id="rWsp" placeholder="WhatsApp">
+<input id="rCorreo" placeholder="Correo">
+<input id="rPass" type="password" placeholder="Contraseña">
+<input id="rRef" placeholder="Código de referido (opcional)">
+<button class="btn btn-yellow" style="width:100%" onclick="doRegistro()">Registrarme</button>
+<p style="text-align:center;margin-top:10px"><span style="color:#ffcc00;cursor:pointer" onclick="showTab('login')">Ya tengo cuenta</span></p>
+</div>
 
-# Supabase client
-supabase = None
-if SUPABASE_URL and SUPABASE_KEY:
-    try:
-        from supabase import create_client
-        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        print("Supabase conectado OK")
-    except Exception as e:
-        print(f"Error conectando Supabase: {e}")
-else:
-    print("FALTA SUPABASE_URL o SUPABASE_KEY en Environment")
+<!-- DASHBOARD USUARIO -->
+<div id="tab-dashboard" class="hidden">
+<div class="card ruleta-box">
+<div style="display:flex;justify-content:space-between">
+<div><small>CRÉDITO</small><div class="credito" id="creditoTxt">$0</div></div>
+<div style="text-align:right"><small>MAXCOINS</small><div style="font-size:22px;font-weight:800" id="coinsTxt">0</div><small>RACHA: <span id="rachaTxt">0</span> días</small></div>
+</div>
+<div id="ruleta"><span id="premioTxt">GIRAR</span></div>
+<button class="btn btn-yellow" style="width:100%;font-size:18px" onclick="girar()">🎰 GIRAR RULETA GRATIS</button>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button class="btn btn-dark" style="flex:1" onclick="canjear()">Canjear 100 Coins</button>
+<button class="btn btn-dark" style="flex:1" onclick="pagarRuleta()">Girar x $500</button>
+</div>
+<p id="msgRuleta" style="margin-top:10px;color:#ffcc00"></p>
+<div style="margin-top:12px;background:#12121a;padding:10px;border-radius:12px">
+<small>Tu código referido: <b id="miCodigo" style="color:#ffcc00"></b></small>
+</div>
+</div>
 
-def gen_codigo(correo: str):
-    base = f"{correo}{random.randint(1000,9999)}{datetime.utcnow().isoformat()}"
-    return hashlib.md5(base.encode()).hexdigest()[:6].upper()
+<div class="tabs">
+<div class="tab active" onclick="showSubTab('comercios')">Comercios</div>
+<div class="tab" onclick="showSubTab('consumir')">Usar Descuento</div>
+<div class="tab" onclick="showSubTab('pro')">Ser PRO</div>
+</div>
 
-def calcular_racha(usuario):
-    ultima = usuario.get("ultima_ruleta")
-    racha_actual = usuario.get("racha_dias") or 0
-    if not ultima:
-        return 1
-    try:
-        ult = datetime.fromisoformat(str(ultima).replace("Z","").split(".")[0])
-        diff = (datetime.utcnow().date() - ult.date()).days
-        if diff == 1:
-            return racha_actual + 1
-        elif diff == 0:
-            return racha_actual
-        else:
-            return 1
-    except:
-        return 1
+<div id="sub-comercios">
+<div class="grid" id="gridComercios"></div>
+</div>
 
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse(request=request, name="index.html")
+<div id="sub-consumir" class="card hidden">
+<h3>Usar mi descuento en comercio</h3>
+<input id="cNombreComercio" placeholder="Nombre del comercio">
+<input id="cMonto" type="number" placeholder="Monto de compra Ej: 10000">
+<button class="btn btn-yellow" style="width:100%" onclick="consumir()">Aplicar descuento 10%</button>
+<p id="msgConsumo" style="margin-top:10px"></p>
+</div>
 
-@app.get("/api/comercios")
-async def get_comercios():
-    try:
-        if not supabase:
-            return {"data": []}
-        res = supabase.table("comercios").select("*").order("id", desc=True).execute()
-        return {"data": res.data or []}
-    except Exception as e:
-        print("Error comercios:", e)
-        return {"data": []}
+<div id="sub-pro" class="card hidden">
+<h3>MaxShop PRO - $5000</h3>
+<p>20% OFF ilimitado + ruleta ilimitada + sorteos</p>
+<button class="btn btn-yellow" style="width:100%;margin-top:10px" onclick="serPro()">Comprar PRO con MercadoPago</button>
+</div>
+</div>
 
-@app.post("/api/registro")
-async def registro(request: Request):
-    try:
-        body = await request.json()
-        correo = body.get("correo","").lower().strip()
-        if not correo:
-            return JSONResponse({"error":"Correo requerido"}, status_code=400)
-        if supabase:
-            existe = supabase.table("usuarios").select("correo").eq("correo", correo).execute()
-            if existe.data:
-                return JSONResponse({"error":"Ya existe cuenta", "code":"EXISTE"}, status_code=400)
-        codigo = gen_codigo(correo)
-        nuevo_usuario = {
-            "nombre_completo": body.get("nombre_completo"),
-            "dni": body.get("dni"),
-            "direccion": body.get("direccion"),
-            "localidad": body.get("localidad"),
-            "whatsapp": body.get("whatsapp"),
-            "correo": correo,
-            "password": body.get("password"),
-            "credito_descuento_disponible": 20000,
-            "codigo_referido": codigo,
-            "codigo_referido_usado": body.get("codigo_referido_usado") or None,
-            "maxcoins": 0,
-            "racha_dias": 0,
-            "es_pro": False,
-            "credito_ilimitado": False
-        }
-        if supabase and body.get("codigo_referido_usado"):
-            try:
-                supabase.table("referidos").insert({
-                    "correo_invitador": body.get("codigo_referido_usado").upper().strip(),
-                    "correo_invitado": correo,
-                    "validado": False
-                }).execute()
-            except Exception as er:
-                print("Error referido:", er)
-        if supabase:
-            ins = supabase.table("usuarios").insert(nuevo_usuario).execute()
-            usuario = ins.data[0] if ins.data else nuevo_usuario
-        else:
-            usuario = nuevo_usuario
-        return {"success": True, "usuario": usuario}
-    except Exception as e:
-        print("ERROR REGISTRO:", e)
-        return JSONResponse({"error": str(e)}, status_code=500)
+<!-- DASHBOARD COMERCIO -->
+<div id="tab-comercio" class="card hidden">
+<h2 id="comercioNombreTxt">Panel Comercio</h2>
+<div class="card" style="background:#12121a">
+<h3>Validar compra cliente</h3>
+<input id="cliCorreo" placeholder="Correo del cliente">
+<input id="cliMonto" type="number" placeholder="Monto">
+<button class="btn btn-yellow" style="width:100%" onclick="validarCompra()">Validar y aplicar ahorro</button>
+<p id="msgComercio"></p>
+</div>
+</div>
 
-@app.post("/api/login")
-async def login(request: Request):
-    try:
-        body = await request.json()
-        correo = body.get("correo","").lower().strip()
-        password = body.get("password","")
-        if not supabase:
-            return JSONResponse({"success": False, "error":"DB no conectada"}, status_code=500)
-        res = supabase.table("usuarios").select("*").eq("correo", correo
+<!-- ADMIN -->
+<div id="tab-admin" class="card hidden">
+<h2>Admin MaxShop</h2>
+<input id="adminKey" type="password" placeholder="Admin Key">
+<button class="btn btn-yellow" onclick="loadAdmin()">Entrar Admin</button>
+<div id="adminData"></div>
+</div>
+
+<div style="text-align:center;margin:20px;opacity:.5">
+<small onclick="showTab('admin')" style="cursor:pointer">Admin</small> | MaxShop Catamarca 2026
+</div>
+
+</div>
+
+<script>
+let USER = JSON.parse(localStorage.getItem('maxshop_user')||'null');
+let COMERCIO = JSON.parse(localStorage.getItem('maxshop_comercio')||'null');
+
+function showTab(t){
+document.querySelectorAll('[id^="tab-"]').forEach(e=>e.classList.add('hidden'));
+document.getElementById('tab-'+t).classList.remove('hidden');
+if(t==='dashboard') loadComercios();
+updateUI();
+}
+function showSubTab(t){
+document.getElementById('sub-comercios').classList.add('hidden');
+document.getElementById('sub-consumir').classList.add('hidden');
+document.getElementById('sub-pro').classList.add('hidden');
+document.getElementById('sub-'+t).classList.remove('hidden');
+document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+event.target.classList.add('active');
+}
+function updateUI(){
+if(USER){
+document.getElementById('btnLogin').style.display='none';
+document.getElementById('btnLogout').style.display='inline-block';
+document.getElementById('creditoTxt').innerText= USER.credito_ilimitado||USER.es_pro ? 'ILIMITADO' : '$'+(USER.credito_descuento_disponible||0);
+document.getElementById('coinsTxt').innerText= USER.maxcoins||0;
+document.getElementById('rachaTxt').innerText= USER.racha_dias||0;
+document.getElementById('miCodigo').innerText= USER.codigo_referido||'';
+if(!document.getElementById('tab-dashboard').classList.contains('hidden')){} else {showTab('dashboard')}
+}else if(COMERCIO){
+showTab('comercio');
+document.getElementById('comercioNombreTxt').innerText= COMERCIO.nombre||COMERCIO.correo;
+document.getElementById('btnLogin').style.display='none';
+document.getElementById('btnLogout').style.display='inline-block';
+}else{
+document.getElementById('btnLogin').style.display='inline-block';
+document.getElementById('btnLogout').style.display='none';
+}
+}
+async function doRegistro(){
+const body={nombre_completo:document.getElementById('rNombre').value,dni:document.getElementById('rDni').value,direccion:document.getElementById('rDir').value,localidad:document.getElementById('rLoc').value,whatsapp:document.getElementById('rWsp').value,correo:document.getElementById('rCorreo').value,password:document.getElementById('rPass').value,codigo_referido_usado:document.getElementById('rRef').value};
+const r=await fetch('/api/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+const j=await r.json();
+if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;alert('¡Cuenta creada! $20.000 acreditados');showTab('dashboard')}else alert(j.error||'Error');
+}
+async function doLogin(){
+const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:document.getElementById('loginCorreo').value,password:document.getElementById('loginPass').value})});
+const j=await r.json();
+if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;showTab('dashboard')}else alert(j.error);
+}
+async function doLoginComercio(){
+const r=await fetch('/api/login-comercio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:document.getElementById('comercioCorreo').value,password:document.getElementById('comercioPass').value})});
+const j=await r.json();
+if(j.success){localStorage.setItem('maxshop_comercio',JSON.stringify(j.comercio));COMERCIO=j.comercio;showTab('comercio')}else alert(j.error);
+}
+function logout(){localStorage.clear();USER=null;COMERCIO=null;location.reload();}
+async function loadComercios(){
+const r=await fetch('/api/comercios');const j=await r.json();
+const grid=document.getElementById('gridComercios');
+grid.innerHTML=(j.data||[]).map(c=>`<div class="card"><img class="comercio-img" src="${c.imagen_url||c.logo_url||'https://via.placeholder.com/300'}" onerror="this.src='https://via.placeholder.com/300'"><h3 style="margin-top:8px">${c.nombre||c.nombre_comercio}</h3><p style="opacity:.7;font-size:13px">${c.direccion||''} - ${c.rubro||''}</p><span class="badge">${c.descuento||'10% OFF'}</span></div>`).join('')||'<p>No hay comercios aún</p>';
+}
+async function girar(){
+const r=await fetch('/api/ruleta/girar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:USER.correo})});
+const j=await r.json();
+if(j.success){document.getElementById('msgRuleta').innerText=`¡Ganaste $${j.premio}! Racha: ${j.racha} dias`;setTimeout(()=>location.reload(),1500)}else document.getElementById('msgRuleta').innerText=j.error;
+}
+async function canjear(){
+const r=await fetch('/api/ruleta/canjear',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:USER.correo})});
+const j=await r.json();
+if(j.success){alert(`¡Ganaste $${j.premio} con 100 coins!`);location.reload()}else alert(j.error);
+}
+async function pagarRuleta(){
+const r=await fetch('/api/crear-pago-recarga',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:USER.correo})});
+const j=await r.json();
+if(j.init_point) window.location=j.init_point; else alert(j.error);
+}
+async function serPro(){
+const r=await fetch('/api/crear-pago-pro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:USER.correo})});
+const j=await r.json();
+if(j.init_point) window.location=j.init_point; else alert(j.error);
+}
+async function consumir(){
+const r=await fetch('/api/consumir-credito',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo_usuario:USER.correo,nombre_comercio:document.getElementById('cNombreComercio').value,monto_compra:document.getElementById('cMonto').value})});
+const j=await r.json();
+if(j.success){document.getElementById('msgConsumo').innerText=`Ahorraste $${j.ahorro_aplicado}. Nuevo crédito: ${j.nuevo_credito}`;USER.credito_descuento_disponible=j.nuevo_credito;updateUI();}else document.getElementById('msgConsumo').innerText=j.error;
+}
+async function validarCompra(){
+const r=await fetch('/api/consumir-credito',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo_usuario:document.getElementById('cliCorreo').value,nombre_comercio:COMERCIO.nombre||COMERCIO.nombre_comercio,monto_compra:document.getElementById('cliMonto').value})});
+const j=await r.json();
+document.getElementById('msgComercio').innerText=j.success?`OK Ahorro $${j.ahorro_aplicado} aplicado` : j.error;
+}
+async function loadAdmin(){
+const key=document.getElementById('adminKey').value;
+const r=await fetch(`/api/admin/datos?key=${key}`);
+const j=await r.json();
+if(!j.success){alert(j.error);return;}
+document.getElementById('adminData').innerHTML=`<div class="card" style="background:#12121a;margin-top:12px"><p>Usuarios: ${j.usuarios.length} | Comercios: ${j.comercios.length} | Ahorro total: $${j.total_ahorro}</p><pre style="max-height:300px;overflow:auto;font-size:11px">${JSON.stringify(j.usuarios.slice(0,20),null,2)}</pre></div>`;
+}
+if(USER) showTab('dashboard');
+else if(COMERCIO) showTab('comercio');
+else showTab('login');
+</script>
+</body>
+    </html>
