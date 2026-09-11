@@ -60,8 +60,9 @@ table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}th,td{bo
 <button class="btn btn-pro" onclick="pagarRuleta()">💰 Girar Ruleta $500 - Premios 1500 a 8000 - Paga con MP</button>
 <p id="resRuleta" style="color:#facc15;margin-top:8px;font-weight:800"></p>
 <div id="refBox" style="margin-top:12px;background:#111;border:1px dashed #facc15;padding:10px;border-radius:12px;display:none">
-<p style="font-size:12px">Tu código: <b id="miCodigo" style="color:#facc15"></b> <button class="tab" onclick="copiarCodigo()">Copiar</button></p>
-<p style="font-size:11px;color:#aaa">Invita amigos: cuando hagan su 1ra compra real, ganas 10000 crédito + 50 MaxCoins. Anti-fraude validado solo con compra real.</p>
+<p style="font-size:13px">Tu código referido: <b id="miCodigo" style="color:#facc15;font-size:16px;letter-spacing:1px"></b></p>
+<div style="display:flex;gap:6px;margin-top:8px"><button class="tab" onclick="copiarCodigo()" style="flex:1;background:#facc15;color:#000;font-weight:900">📋 Copiar código</button><button class="tab" onclick="compartirWhatsApp()" style="flex:1;background:#25D366;color:#fff;font-weight:900">📲 Compartir por WhatsApp</button></div>
+<p style="font-size:11px;color:#aaa;margin-top:8px">Invita amigos: cuando hagan su 1ra compra real, ganas 10000 crédito + 50 MaxCoins. Anti-fraude validado solo con compra real.</p>
 </div>
 </div>
 
@@ -72,7 +73,6 @@ table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}th,td{bo
 
 <div class="container"><div id="filtros" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"></div><div id="grid" class="grid"></div></div>
 
-<!-- SECCIONES RESTAURADAS DE ABAJO -->
 <div class="section-bottom">
 <div style="max-width:1240px;margin:auto">
 <h2>💰 Préstamos, Seguros y Servicios Financieros</h2>
@@ -85,43 +85,27 @@ table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}th,td{bo
 <h2 style="margin-top:40px">ℹ️ Información Completa MaxShop Descuento de Locos</h2>
 <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px;color:#334155;line-height:1.7;font-size:14px">
 <h3 style="color:#f59e0b">¿Qué es MaxShop?</h3>
-<p>MaxShop es una plataforma de beneficios y ahorro para Catamarca. Somos intermediación publicitaria entre comercios locales y consumidores. El comercio es el único responsable de la venta, garantía y entrega. Nosotros facilitamos el descuento.</p>
+<p>MaxShop es una plataforma de beneficios y ahorro para Catamarca. Somos intermediación publicitaria entre comercios locales y consumidores. El comercio es el único responsable de la venta, garantía y entrega.</p>
 <h3 style="color:#f59e0b;margin-top:16px">¿Cómo funciona el Crédito Gratis 20000?</h3>
-<p>Al registrarte recibís 20000 de crédito bonificado para usar como descuento. Ejemplo: si un comercio ofrece 20% OFF y sos usuario gratis, aplicás la mitad (10%). Si tu compra es de $10.000, ahorrás $1.000 y ese ahorro se descuenta de tu crédito 20000. Con Plan PRO $5000 tenés crédito ilimitado y aplicás el 100% del descuento.</p>
+<p>Al registrarte recibís 20000 de crédito bonificado. Ejemplo: comercio ofrece 20% OFF, usuario gratis aplica 10%. Compra $10.000, ahorrás $1.000 que se descuenta de tu crédito 20000. PRO $5000 ilimitado aplica 100% del descuento.</p>
 <h3 style="color:#f59e0b;margin-top:16px">🎡 Ruleta, MaxCoins, Racha y Referidos</h3>
-<p><b>Ruleta diaria:</b> 1 giro gratis por día, premios de 500 a 3000 crédito + 5 MaxCoins. Racha de 7 días seguidos = 3000 bonus extra.<br>
-<b>MaxCoins:</b> Cada compra real en comercio = 10 MaxCoins. 100 MaxCoins (10 compras) = 1 giro extra gratis. Así premiamos al que compra de verdad.<br>
-<b>Ruleta $500:</b> Reemplaza la recarga. Pagás $500 por Mercado Pago y girás una ruleta con premios de 1500 a 8000 crédito. Siempre ganás más de lo que pagás. Podés jugar las veces que quieras.<br>
-<b>Referidos anti-fraude:</b> Cada usuario tiene un código único. Si invitás un amigo, solo cuando tu amigo haga su primera compra REAL en un comercio, vos ganás 10000 crédito + 50 MaxCoins. Así evitamos cuentas falsas.</p>
-<h3 style="color:#f59e0b;margin-top:16px">Marco Legal</h3>
-<p>Intermediación publicitaria Ley 24.240 art 40. Ley 25.065 Tarjetas de Crédito. Ley 22.802 Lealtad Comercial. Ley 25.326 Protección de Datos. Jurisdicción: San Fernando del Valle de Catamarca. Pagos procesados por Mercado Pago. Crédito bonificado no reembolsable.</p>
-</div>
-
-<h2 style="margin-top:40px">📄 Políticas y Términos</h2>
-<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:20px;color:#334155;line-height:1.7;font-size:13px">
-<p><b>1. Descuentos:</b> Cada comercio define su % mínimo 5%. Usuarios gratis aplican 50% de ese %, usuarios PRO aplican 100%.<br>
-<b>2. Crédito:</b> Gratis 20000 no reembolsable, no transferible, no canjeable por dinero. PRO ilimitado por $5000 mensuales.<br>
-<b>3. MaxCoins:</b> 10 por compra real validada con QR o consumo. 100 = 1 giro extra. No canjeable por dinero.<br>
-<b>4. Ruleta:</b> 1 gratis diaria por usuario. Ruleta $500 paga premios en crédito bonificado 1500-8000.<br>
-<b>5. Referidos:</b> Validados solo con compra real en comercio. Sistema anti-fraude.<br>
-<b>6. Responsabilidad:</b> MaxShop no vende productos, solo publicita descuentos. Cada comercio es responsable.<br>
-<b>7. Privacidad:</b> Datos protegidos Ley 25.326. No vendemos datos.<br>
-<b>8. Jurisdicción:</b> Catamarca, Argentina.</p>
+<p><b>Ruleta diaria:</b> 1 giro gratis por día 500-3000 + 5 MaxCoins. Racha 7 días = 3000 bonus.<br>
+<b>MaxCoins:</b> 10 por compra real. 100 MaxCoins (10 compras) = 1 giro extra.<br>
+<b>Ruleta $500:</b> Pagás $500 por MP y girás con premios 1500-8000 crédito. Siempre ganás más.<br>
+<b>Referidos:</b> Solo cuando tu amigo hace 1ra compra REAL, vos ganás 10000 + 50 MaxCoins.</p>
 </div>
 </div>
 </div>
 
 <div class="footer">
 <p style="font-weight:900;color:#fff">MaxShop Descuento de Locos - Catamarca</p>
-<p style="margin-top:6px">Ahorra hasta 90% en tu ciudad | Gratis 20000 crédito | Ruleta diaria | MaxCoins | Referidos | PRO ilimitado $5000</p>
+<p style="margin-top:6px">Gratis 20000 | Ruleta diaria | MaxCoins 10 compras = 1 giro | Referidos | PRO $5000</p>
 <p style="margin-top:10px"><span onclick="openInfo()" style="color:#facc15;cursor:pointer;text-decoration:underline">Información</span> | <span onclick="openLegal()" style="color:#facc15;cursor:pointer;text-decoration:underline">Políticas</span> | <span onclick="handleMenu('comercio')" style="color:#facc15;cursor:pointer;text-decoration:underline">Sumar Comercio</span> | <span onclick="handleMenu('admin')" style="color:#facc15;cursor:pointer;text-decoration:underline">Admin</span></p>
-<p style="margin-top:8px;color:#555">Pagos por Mercado Pago - Jurisdicción Catamarca - Ley 24.240</p>
 </div>
 
-<!-- MODALES -->
 <div id="sideMenu" class="side-menu"><div class="side-panel"><div style="display:flex;justify-content:space-between"><h2>Menu</h2><button class="tab" onclick="openMenu(false)">✕</button></div><div style="margin-top:16px"><div class="menu-item" onclick="handleMenu('registro')"><b>👤 Registro Gratis 20000</b></div><div class="menu-item" onclick="handleMenu('recarga')"><b>🎡 Girar Ruleta $500</b></div><div class="menu-item" onclick="handleMenu('pro')"><b>⭐ Plan PRO 5000</b></div><div class="menu-item" onclick="handleMenu('comercio')"><b>🏪 Sumar Comercio</b></div><div class="menu-item" onclick="handleMenu('panel')"><b>🔐 Panel Comercio</b></div><div class="menu-item" onclick="handleMenu('info')"><b>ℹ️ Información</b></div><div class="menu-item" onclick="handleMenu('legal')"><b>📄 Políticas</b></div><div class="menu-item" onclick="handleMenu('admin')"><b>🛠️ Admin</b></div></div><div id="menuUser" style="margin-top:20px;padding:10px;background:#000;border-radius:12px"></div></div></div>
 
-<div id="mAuth" class="modal"><div class="modal-box" style="padding:18px"><h2 id="tAuth">Registro</h2><div id="bLogin"><input id="l_mail" class="input" placeholder="Correo"><input id="l_pass" type="password" class="input" placeholder="Clave"><button class="btn" onclick="login()">Ingresar</button></div><div id="bReg" style="display:none"><input id="r_nom" class="input" placeholder="Nombre completo *"><input id="r_dni" class="input" placeholder="DNI *"><input id="r_dir" class="input" placeholder="Direccion"><input id="r_loc" class="input" placeholder="Localidad"><input id="r_wsp" class="input" placeholder="WhatsApp *"><input id="r_mail" class="input" placeholder="Correo *"><input id="r_pass" type="password" class="input" placeholder="Clave *"><input id="r_ref" class="input" placeholder="Código referido amigo (opcional)"><button class="btn" onclick="registro()">Crear cuenta Gratis 20000</button><p id="resReg" style="color:#facc15;font-size:12px"></p></div><div id="bRegPro" style="display:none"><h3 style="color:#facc15">⭐ Plan PRO</h3><input id="rp_nom" class="input" placeholder="Nombre *"><input id="rp_dni" class="input" placeholder="DNI *"><input id="rp_dir" class="input" placeholder="Direccion"><input id="rp_loc" class="input" placeholder="Localidad"><input id="rp_wsp" class="input" placeholder="WhatsApp *"><input id="rp_mail" class="input" placeholder="Correo *"><input id="rp_pass" type="password" class="input" placeholder="Clave *"><button class="btn btn-pro" onclick="registroPro()">Pagar PRO 5000 con MP</button><p id="resPro" style="color:#facc15;font-size:12px"></p></div><div id="bCred" style="display:none"><h3 style="color:#facc15">🎡 Girar Ruleta $500 - Premios 1500 a 8000</h3><p style="font-size:11px;color:#aaa">Pagas $500 por Mercado Pago y giras con premios grandes. Jugá las veces que quieras.</p><button class="btn" onclick="pagarRuleta()">💰 Pagar $500 y Girar Ruleta con MP</button><button class="btn btn-pro" style="margin-top:6px" onclick="activarPro()">⭐ Pagar PRO 5000 ilimitado</button><p id="resCred" style="color:#facc15;font-size:12px"></p></div><button onclick="closeModal('mAuth')" class="btn btn-dark">Volver</button></div></div>
+<div id="mAuth" class="modal"><div class="modal-box" style="padding:18px"><h2 id="tAuth">Registro</h2><div id="bLogin"><input id="l_mail" class="input" placeholder="Correo"><input id="l_pass" type="password" class="input" placeholder="Clave"><button class="btn" onclick="login()">Ingresar</button></div><div id="bReg" style="display:none"><input id="r_nom" class="input" placeholder="Nombre completo *"><input id="r_dni" class="input" placeholder="DNI *"><input id="r_dir" class="input" placeholder="Direccion"><input id="r_loc" class="input" placeholder="Localidad"><input id="r_wsp" class="input" placeholder="WhatsApp *"><input id="r_mail" class="input" placeholder="Correo *"><input id="r_pass" type="password" class="input" placeholder="Clave *"><input id="r_ref" class="input" placeholder="Código referido amigo (opcional)"><button class="btn" onclick="registro()">Crear cuenta Gratis 20000</button><p id="resReg" style="color:#facc15;font-size:12px"></p></div><div id="bRegPro" style="display:none"><h3 style="color:#facc15">⭐ Plan PRO</h3><input id="rp_nom" class="input" placeholder="Nombre *"><input id="rp_dni" class="input" placeholder="DNI *"><input id="rp_dir" class="input" placeholder="Direccion"><input id="rp_loc" class="input" placeholder="Localidad"><input id="rp_wsp" class="input" placeholder="WhatsApp *"><input id="rp_mail" class="input" placeholder="Correo *"><input id="rp_pass" type="password" class="input" placeholder="Clave *"><button class="btn btn-pro" onclick="registroPro()">Pagar PRO 5000 con MP</button><p id="resPro" style="color:#facc15;font-size:12px"></p></div><div id="bCred" style="display:none"><h3 style="color:#facc15">🎡 Girar Ruleta $500 - Premios 1500 a 8000</h3><p style="font-size:11px;color:#aaa">Pagas $500 por MP y giras con premios grandes.</p><button class="btn" onclick="pagarRuleta()">💰 Pagar $500 y Girar Ruleta con MP</button><button class="btn btn-pro" style="margin-top:6px" onclick="activarPro()">⭐ Pagar PRO 5000 ilimitado</button><p id="resCred" style="color:#facc15;font-size:12px"></p></div><button onclick="closeModal('mAuth')" class="btn btn-dark">Volver</button></div></div>
 
 <div id="mNotifs" class="modal"><div class="modal-box" style="padding:16px"><h2>🔔 Notificaciones</h2><div id="notifsList" style="max-height:70vh;overflow:auto"></div><button onclick="closeModal('mNotifs')" class="btn btn-dark">Cerrar</button></div></div>
 <div id="mNotifDet" class="modal"><div class="modal-box" style="padding:0;overflow:hidden"><img id="notifImg" src="" style="width:100%;max-height:300px;object-fit:cover;display:none"><div style="padding:16px"><h2 id="notifTit" style="color:#facc15"></h2><p id="notifMsg" style="color:#ddd;white-space:pre-wrap;margin-top:10px;line-height:1.6"></p><p id="notifFecha" style="color:#666;font-size:11px;margin-top:10px"></p><button onclick="closeModal('mNotifDet')" class="btn btn-dark">Volver</button></div></div></div>
@@ -132,21 +116,13 @@ table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}th,td{bo
 <div id="mScan" class="modal"><div class="modal-box" style="padding:18px"><h2>📷 Escanear QR</h2><div id="reader"></div><div id="scanCompra" style="display:none"><h4>Compra en <span id="scanComNom" style="color:#facc15"></span></h4><input id="scanMonto" type="number" class="input" placeholder="Monto"><button class="btn" onclick="confirmarCompraQR()">Confirmar compra</button><p id="scanRes" style="color:#facc15"></p></div><button onclick="closeModal('mScan')" class="btn btn-dark">Cerrar</button></div></div>
 
 <div id="mAdmin" class="modal"><div class="modal-box" style="padding:16px"><h2>Panel Admin</h2><div id="adminAuth"><input id="adminKey" type="password" class="input" placeholder="Clave admin"><button class="btn" onclick="adminLogin()">Ingresar</button></div><div id="adminContent" style="display:none">
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin:12px 0"><button class="tab active" onclick="tabAdmin('com')">Comercios</button><button class="tab" onclick="tabAdmin('usu')">Gratis 20000</button><button class="tab" onclick="tabAdmin('pro')">PRO</button><button class="tab" onclick="tabAdmin('acc')">Transacciones</button><button class="tab" onclick="tabAdmin('ref')">Referidos</button><button class="tab" onclick="tabAdmin('broad')" style="background:#facc15;color:#000">📢 Broadcast</button></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin:12px 0"><button class="tab active" onclick="tabAdmin('com')">Comercios</button><button class="tab" onclick="tabAdmin('usu')">Gratis</button><button class="tab" onclick="tabAdmin('pro')">PRO</button><button class="tab" onclick="tabAdmin('acc')">Transacciones</button><button class="tab" onclick="tabAdmin('ref')">Referidos</button><button class="tab" onclick="tabAdmin('broad')" style="background:#facc15;color:#000">📢 Broadcast</button></div>
 <div id="adminCom"></div><div id="adminUsu" style="display:none"></div><div id="adminPro" style="display:none"></div><div id="adminAcc" style="display:none"></div><div id="adminRef" style="display:none"></div>
-<div id="adminBroad" style="display:none">
-<h3 style="color:#facc15">📢 Enviar Notificación Profesional con Imagen</h3>
-<input id="broadTit" class="input" placeholder="Título">
-<textarea id="broadMsg" class="input" placeholder="Mensaje profesional..."></textarea>
-<input id="broadImg" type="file" class="input" accept="image/*" onchange="prev(this,'pBroad')"><img id="pBroad" class="preview">
-<select id="broadDest" class="input"><option value="todos">Todos</option><option value="gratis">Solo Gratis</option><option value="pro">Solo PRO</option></select>
-<button class="btn" onclick="enviarBroadcast()">📢 Enviar a Campanita</button>
-<p id="resBroad" style="color:#facc15"></p>
-</div>
+<div id="adminBroad" style="display:none"><h3 style="color:#facc15">📢 Enviar Notificación con Imagen</h3><input id="broadTit" class="input" placeholder="Título"><textarea id="broadMsg" class="input" placeholder="Mensaje..."></textarea><input id="broadImg" type="file" class="input" accept="image/*" onchange="prev(this,'pBroad')"><img id="pBroad" class="preview"><select id="broadDest" class="input"><option value="todos">Todos</option><option value="gratis">Solo Gratis</option><option value="pro">Solo PRO</option></select><button class="btn" onclick="enviarBroadcast()">📢 Enviar a Campanita</button><p id="resBroad" style="color:#facc15"></p></div>
 </div><button onclick="closeModal('mAdmin')" class="btn btn-dark">Volver</button></div></div>
 
-<div id="mInfo" class="modal"><div class="modal-box" style="padding:18px"><div class="legal"><h2>ℹ️ Información Completa</h2><p>Plataforma de beneficios. Gratis 20000 + Ruleta diaria + 100 MaxCoins (10 compras) = 1 giro extra + Ruleta $500 premios 1500-8000 + Referidos validados con compra real + PRO $5000 ilimitado. Intermediación Ley 24.240. Pagos Mercado Pago. Jurisdicción Catamarca.</p></div><button onclick="closeModal('mInfo')" class="btn btn-dark">Volver</button></div></div>
-<div id="mLegal" class="modal"><div class="modal-box" style="padding:18px"><div class="legal"><h2>📄 Políticas</h2><p>Crédito no reembolsable. 5% mínimo. MaxCoins 10 por compra real. 100 = 1 giro. Ruleta gratis 1 por día. Ruleta $500 premios 1500-8000. Referidos solo con compra real. Jurisdicción Catamarca.</p></div><button onclick="closeModal('mLegal')" class="btn btn-dark">Volver</button></div></div>
+<div id="mInfo" class="modal"><div class="modal-box" style="padding:18px"><div class="legal"><h2>ℹ️ Información Completa</h2><p>MaxShop 20000 gratis + Ruleta diaria + 100 MaxCoins (10 compras) = 1 giro extra + Ruleta $500 + Referidos validados con compra + PRO ilimitado. Ley 24.240. MP. Catamarca.</p></div><button onclick="closeModal('mInfo')" class="btn btn-dark">Volver</button></div></div>
+<div id="mLegal" class="modal"><div class="modal-box" style="padding:18px"><div class="legal"><h2>📄 Políticas</h2><p>Crédito no reembolsable. 5% mínimo. MaxCoins 10 por compra. 100 = 1 giro. Ruleta gratis 1/día. Ruleta $500 premios 1500-8000. Referidos con compra real. Catamarca.</p></div><button onclick="closeModal('mLegal')" class="btn btn-dark">Volver</button></div></div>
 
 <script>
 const LOGO_URL="https://drive.google.com/thumbnail?id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib&sz=w200";
@@ -194,7 +170,39 @@ async function girarRuleta(){ if(!usuario) return openAuth(); document.getElemen
 async function canjearMaxCoins(){ if(!usuario) return openAuth(); document.getElementById('resRuleta').innerText='Canjeando 100 MaxCoins...'; try{ const r=await fetch('/api/ruleta/canjear',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:usuario.correo})}); const j=await r.json(); if(!r.ok) throw new Error(j.error); document.getElementById('resRuleta').innerText=`💎 Canjeaste 100 MaxCoins! Ganaste ${j.premio} crédito - 10 compras = 1 giro extra`; usuario.maxcoins-=100; if(!usuario.es_pro &&!usuario.credito_ilimitado) usuario.credito_descuento_disponible = parseFloat(usuario.credito_descuento_disponible||0)+j.premio; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser(); }catch(e){ document.getElementById('resRuleta').innerText='❌ '+e.message; } }
 async function girarPagaReal(){ if(!usuario) return openAuth(); document.getElementById('resRuleta').innerText='Girando ruleta paga $500...'; try{ const r=await fetch('/api/ruleta/girar-paga',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:usuario.correo})}); const j=await r.json(); if(!r.ok) throw new Error(j.error); document.getElementById('resRuleta').innerText=`💰 Ruleta $500: Ganaste ${j.premio} crédito! (Premios 1500-8000)`; if(!usuario.es_pro) usuario.credito_descuento_disponible = parseFloat(usuario.credito_descuento_disponible||0)+j.premio; localStorage.setItem('maxshop_user',JSON.stringify(usuario)); renderUser(); }catch(e){ document.getElementById('resRuleta').innerText='❌ '+e.message; } }
 function checkPagoRuleta(){ const url=new URL(window.location.href); if(url.searchParams.get('pago')==='ruleta_ok'){ alert('¡Pago $500 recibido! Ahora girando ruleta paga...'); girarPagaReal(); window.history.replaceState({}, document.title, window.location.pathname); } }
-function copiarCodigo(){ navigator.clipboard.writeText(document.getElementById('miCodigo').innerText); alert('Código copiado: '+document.getElementById('miCodigo').innerText); }
+// --- FIX DEFINITIVO COPIAR Y COMPARTIR ---
+function copiarCodigo(){
+  const el = document.getElementById('miCodigo');
+  const codigo = (el.innerText||'').trim();
+  if(!codigo){ alert('No tenes código aún, registrate'); return; }
+  const temp = document.createElement('textarea');
+  temp.value = codigo;
+  temp.setAttribute('readonly','');
+  temp.style.position='absolute'; temp.style.left='-9999px';
+  document.body.appendChild(temp);
+  temp.select();
+  temp.setSelectionRange(0, 99999);
+  let copiado = false;
+  try{ copiado = document.execCommand('copy'); }catch(e){ copiado=false; }
+  document.body.removeChild(temp);
+  if(copiado){
+    alert('✅ Código copiado: '+codigo);
+  } else {
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(codigo).then(()=>alert('✅ Código copiado: '+codigo)).catch(()=>prompt('Copia manualmente tu código:', codigo));
+    } else {
+      prompt('Copia manualmente tu código:', codigo);
+    }
+  }
+}
+function compartirWhatsApp(){
+  const el = document.getElementById('miCodigo');
+  const codigo = (el.innerText||'').trim();
+  if(!codigo){ alert('No tenes código aún'); return; }
+  const link = window.location.origin + window.location.pathname;
+  const texto = `🔥 Descargate MaxShop Descuento de Locos y ganate $20000 gratis! Usa mi código referido: *${codigo}* y giramos la ruleta juntos. 10 compras = 1 giro extra! 👉 ${link}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+}
 async function cargarNotifs(){ if(!usuario) return; const r=await fetch('/api/notificaciones/'+usuario.correo); const j=await r.json(); notifsCache=j.data||[]; const dot=document.getElementById('notifDot'); const unread=notifsCache.filter(n=>!n.leida).length; dot.style.display=unread>0?'block':'none'; }
 function openNotifs(){ if(!usuario){ openAuth(); return; } document.getElementById('mNotifs').classList.add('active'); const list=document.getElementById('notifsList'); if(!notifsCache.length) list.innerHTML='<p style="color:#666">Sin notificaciones</p>'; else list.innerHTML=notifsCache.map(n=>`<div class="notif-item ${!n.leida?'unread':''}" onclick="abrirNotif(${n.id})"><b style="color:#facc15">${n.titulo}</b><br><small style="color:#aaa">${(n.mensaje||'').slice(0,80)}...</small><br><small style="color:#666">${(n.fecha||'').slice(0,16)}</small></div>`).join(''); pushModal('mNotifs'); }
 function abrirNotif(id){ const n=notifsCache.find(x=>x.id===id); if(!n) return; document.getElementById('notifTit').innerText=n.titulo; document.getElementById('notifMsg').innerText=n.mensaje; document.getElementById('notifFecha').innerText=n.fecha||''; const img=document.getElementById('notifImg'); if(n.imagen_url){ img.src=n.imagen_url; img.style.display='block'; } else img.style.display='none'; document.getElementById('mNotifDet').classList.add('active'); pushModal('mNotifDet'); fetch('/api/notificaciones/leer/'+id,{method:'POST'}); n.leida=true; cargarNotifs(); }
