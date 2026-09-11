@@ -261,4 +261,110 @@ async def consumir_credito(request: Request):
         es_pro = usuario.get("es_pro") or usuario.get("credito_ilimitado")
         ahorro = monto * (0.20 if es_pro else 0.10)
         nuevo_credito = float(usuario.get("credito_descuento_disponible") or 0)
-        if not es
+        if not es_pro:
+            nuevo_credito = max(0, nuevo_credito - ahorro)
+        supabase.table("usuarios").update({
+            "credito_descuento_disponible": nuevo_credito,
+            "maxcoins": (usuario.get("maxcoins") or 0) + 10
+        }).eq("correo", correo).execute()
+        try:
+            supabase.table("acciones").insert({
+                "correo_usuario": correo,
+                "nombre_comercio": nombre_comercio,
+                "monto_compra": monto,
+                "ahorro_aplicado": ahorro,
+                "fecha": datetime.utcnow().isoformat()
+            }).execute()
+        except Exception as e:
+            print("Error accion:", e)
+        return {"success": True, "ahorro_aplicado": ahorro, "nuevo_credito": nuevo_credito if not es_pro else "ILIMITADO"}
+    except Exception as e:
+        print("ERROR CONSUMIR:", e)
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.post("/api/qr-scan")
+async def qr_scan(request: Request):
+    return {"success": True}
+
+@app.get("/api/notificaciones/{correo}")
+async def get_notificaciones(correo: str):
+    try:
+        res = supabase.table("notificaciones").select("*").order("fecha", desc=True).limit(20).execute()
+        return {"data": res.data or []}
+    except:
+        return {"data": []}
+
+@app.post("/api/notificaciones/leer/{id}")
+async def leer_notif(id: int):
+    return {"success": True}
+
+@app.post("/api/registrar-comercio")
+async def registrar_comercio(request: Request):
+    try:
+        body = await request.json()
+        ins = supabase.table("comercios").insert(body).execute()
+        return {"success": True, "data": ins.data}
+    except Exception as e:
+        print("ERROR COMERCIO:", e)
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.post("/api/login-comercio")
+async def login_comercio(request: Request):
+    try:
+        body = await request.json()
+        res = supabase.table("comercios").select("*").eq("correo", body.get("correo")).eq("password", body.get("password")).execute()
+        if res.data:
+            return {"success": True, "comercio": res.data[0]}
+        return JSONResponse({"success": False, "error":"Credenciales comercio incorrectas"}, status_code=401)
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+@app.post("/api/upload")
+async def upload_file(request: Request):
+    return JSONResponse({"success": False, "error":"Upload no configurado, usa URL directa"}, status_code=400)
+
+@app.post("/api/admin/login")
+async def admin_login(request: Request):
+    body = await request.json()
+    if body.get("key") == ADMIN_KEY:
+        return {"success": True}
+    return JSONResponse({"success": False, "error":"Clave incorrecta"}, status_code=401)
+
+@app.get("/api/admin/datos")
+async def admin_datos(key: str):
+    if key!= ADMIN_KEY:
+        return JSONResponse({"success": False, "error":"No autorizado"}, status_code=401)
+    try:
+        comercios = supabase.table("comercios").select("*").order("id", desc=True).execute().data or []
+        usuarios = supabase.table("usuarios").select("*").order("id", desc=True).execute().data or []
+        try:
+            acciones = supabase.table("acciones").select("*").order("fecha", desc=True).limit(200).execute().data or []
+        except:
+            acciones = []
+        try:
+            referidos = supabase.table("referidos").select("*").order("fecha", desc=True).limit(200).execute().data or []
+        except:
+            referidos = []
+        total = sum([float(a.get("ahorro_aplicado") or 0) for a in acciones])
+        return {"success": True, "comercios": comercios, "usuarios": usuarios, "acciones": acciones, "referidos": referidos, "total_ahorro": total}
+    except Exception as e:
+        print("ERROR ADMIN:", e)
+        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+@app.post("/api/admin/broadcast")
+async def admin_broadcast(request: Request):
+    try:
+        body = await request.json()
+        if body.get("admin_key")!= ADMIN_KEY:
+            return JSONResponse({"success": False, "error":"No autorizado"}, status_code=401)
+        supabase.table("notificaciones").insert({
+            "titulo": body.get("titulo"),
+            "mensaje": body.get("mensaje"),
+            "imagen_url": body.get("imagen_url"),
+            "destino": body.get("destino","todos"),
+            "fecha": datetime.utcnow().isoformat()
+        }).execute()
+        return {"success": True}
+    except Exception as e:
+        print("ERROR BROADCAST:", e)
+        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
