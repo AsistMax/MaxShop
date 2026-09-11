@@ -18,7 +18,7 @@ header{background:#1a1a22;padding:15px 20px;display:flex;justify-content:space-b
 .container{max-width:1100px;margin:0 auto;padding:20px}
 .card{background:#1e1e29;border:1px solid #2a2a35;border-radius:18px;padding:18px;margin-bottom:18px}
 input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #333;background:#12121a;color:#fff;margin:6px 0 12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.grid{Display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .badge{background:#ffcc00;color:#000;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:800}
 .credito{font-size:32px;font-weight:800;color:#ffcc00}
 .ruleta-box{text-align:center}
@@ -62,7 +62,7 @@ input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3
 <input id="rDni" placeholder="DNI">
 <input id="rDir" placeholder="Dirección">
 <input id="rLoc" placeholder="Localidad" value="San Fernando del Valle de Catamarca">
-<input id="rWsp" placeholder="WhatsApp Ej: 3834607740">
+<input id="rWsp" placeholder="WhatsApp">
 <input id="rCorreo" placeholder="Correo">
 <input id="rPass" type="password" placeholder="Contraseña">
 <input id="rRef" placeholder="Código de referido (opcional)">
@@ -111,30 +111,6 @@ input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3
 <h3>MaxShop PRO - $5000</h3>
 <p>20% OFF ilimitado + ruleta ilimitada + sorteos</p>
 <button class="btn btn-yellow" style="width:100%;margin-top:10px" onclick="serPro()">Comprar PRO con MercadoPago</button>
-<button class="btn btn-dark" style="width:100%;margin-top:8px;border:1px dashed #ffcc00" onclick="pagarTransferencia('PRO')">💸 Pagar por Transferencia - $5000</button>
-<div id="datosTransfer" class="hidden" style="background:#12121a;padding:12px;border-radius:12px;margin-top:10px;text-align:left">
-<p style="font-size:13px;line-height:1.5">
-<b>Alias:</b> <span style="color:#ffcc00">ASISTMAX365</span><br>
-<b>Titular:</b> MaxShop Catamarca<br><br>
-1- Transferí $5000 al alias<br>
-2- Sacá captura del comprobante<br>
-3- Tocá el botón de abajo
-</p>
-<button class="btn btn-yellow" style="width:100%;margin-top:8px" onclick="enviarComprobante('PRO')">Enviar comprobante por WhatsApp</button>
-<p style="font-size:11px;opacity:.6;margin-top:8px">Activación manual en menos de 2hs</p>
-</div>
-<hr style="margin:15px 0;border:0;border-top:1px solid #2a2a35">
-<h4>Recarga Ruleta $500</h4>
-<button class="btn btn-dark" style="width:100%;margin-top:8px" onclick="pagarTransferencia('R500')">💸 Pagar Recarga $500 por Transferencia</button>
-<div id="datosTransfer500" class="hidden" style="background:#12121a;padding:12px;border-radius:12px;margin-top:10px;text-align:left">
-<p style="font-size:13px;line-height:1.5">
-<b>Alias:</b> <span style="color:#ffcc00">ASISTMAX365</span><br>
-1- Transferí $500<br>
-2- Sacá captura<br>
-3- Enviá comprobante
-</p>
-<button class="btn btn-yellow" style="width:100%;margin-top:8px" onclick="enviarComprobante('R500')">Enviar comprobante $500</button>
-</div>
 </div>
 </div>
 
@@ -168,20 +144,6 @@ input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3
 let USER = JSON.parse(localStorage.getItem('maxshop_user')||'null');
 let COMERCIO = JSON.parse(localStorage.getItem('maxshop_comercio')||'null');
 
-function normalizarWhatsapp(num){
-  if(!num) return "";
-  let n = num.toString().replace(/\D/g,"");
-  n = n.replace(/^0+/, "");
-  if(n.startsWith("54")){
-    if(!n.startsWith("549")){ n = n.replace(/^54/, "549"); }
-  } else {
-    if(n.length <= 10){ n = "549" + n; }
-    else { n = "54" + n; if(!n.startsWith("549")) n = n.replace(/^54/, "549"); }
-  }
-  if(n.startsWith("549549")) n = n.replace("549549","549");
-  return n;
-}
-
 function showTab(t){
 document.querySelectorAll('[id^="tab-"]').forEach(e=>e.classList.add('hidden'));
 document.getElementById('tab-'+t).classList.remove('hidden');
@@ -194,7 +156,7 @@ document.getElementById('sub-consumir').classList.add('hidden');
 document.getElementById('sub-pro').classList.add('hidden');
 document.getElementById('sub-'+t).classList.remove('hidden');
 document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-if(event && event.target) event.target.classList.add('active');
+event.target.classList.add('active');
 }
 function updateUI(){
 if(USER){
@@ -204,8 +166,9 @@ document.getElementById('creditoTxt').innerText= USER.credito_ilimitado||USER.es
 document.getElementById('coinsTxt').innerText= USER.maxcoins||0;
 document.getElementById('rachaTxt').innerText= USER.racha_dias||0;
 document.getElementById('miCodigo').innerText= USER.codigo_referido||'';
-if(document.getElementById('tab-dashboard').classList.contains('hidden') && !document.getElementById('tab-comercio') || USER){ /* keep dashboard */ }
+if(!document.getElementById('tab-dashboard').classList.contains('hidden')){} else {showTab('dashboard')}
 }else if(COMERCIO){
+showTab('comercio');
 document.getElementById('comercioNombreTxt').innerText= COMERCIO.nombre||COMERCIO.correo;
 document.getElementById('btnLogin').style.display='none';
 document.getElementById('btnLogout').style.display='inline-block';
@@ -215,22 +178,20 @@ document.getElementById('btnLogout').style.display='none';
 }
 }
 async function doRegistro(){
-let wspRaw = document.getElementById('rWsp').value;
-let wspNorm = normalizarWhatsapp(wspRaw);
-const body={nombre_completo:document.getElementById('rNombre').value,dni:document.getElementById('rDni').value,direccion:document.getElementById('rDir').value,localidad:document.getElementById('rLoc').value,whatsapp:wspNorm,whatsapp_original:wspRaw,correo:document.getElementById('rCorreo').value,password:document.getElementById('rPass').value,codigo_referido_usado:document.getElementById('rRef').value};
+const body={nombre_completo:document.getElementById('rNombre').value,dni:document.getElementById('rDni').value,direccion:document.getElementById('rDir').value,localidad:document.getElementById('rLoc').value,whatsapp:document.getElementById('rWsp').value,correo:document.getElementById('rCorreo').value,password:document.getElementById('rPass').value,codigo_referido_usado:document.getElementById('rRef').value};
 const r=await fetch('/api/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const j=await r.json();
-if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;alert('¡Cuenta creada! $20.000 acreditados');showTab('dashboard');location.reload();}else alert(j.error||'Error');
+if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;alert('¡Cuenta creada! $20.000 acreditados');showTab('dashboard')}else alert(j.error||'Error');
 }
 async function doLogin(){
 const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:document.getElementById('loginCorreo').value,password:document.getElementById('loginPass').value})});
 const j=await r.json();
-if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;showTab('dashboard');loadComercios();updateUI();}else alert(j.error);
+if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;showTab('dashboard')}else alert(j.error);
 }
 async function doLoginComercio(){
 const r=await fetch('/api/login-comercio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:document.getElementById('comercioCorreo').value,password:document.getElementById('comercioPass').value})});
 const j=await r.json();
-if(j.success){localStorage.setItem('maxshop_comercio',JSON.stringify(j.comercio));COMERCIO=j.comercio;showTab('comercio');updateUI();}else alert(j.error);
+if(j.success){localStorage.setItem('maxshop_comercio',JSON.stringify(j.comercio));COMERCIO=j.comercio;showTab('comercio')}else alert(j.error);
 }
 function logout(){localStorage.clear();USER=null;COMERCIO=null;location.reload();}
 async function loadComercios(){
@@ -275,26 +236,9 @@ const j=await r.json();
 if(!j.success){alert(j.error);return;}
 document.getElementById('adminData').innerHTML=`<div class="card" style="background:#12121a;margin-top:12px"><p>Usuarios: ${j.usuarios.length} | Comercios: ${j.comercios.length} | Ahorro total: $${j.total_ahorro}</p><pre style="max-height:300px;overflow:auto;font-size:11px">${JSON.stringify(j.usuarios.slice(0,20),null,2)}</pre></div>`;
 }
-function pagarTransferencia(tipo){
- if(tipo==='PRO'){
-   document.getElementById('datosTransfer').classList.remove('hidden');
-   document.getElementById('datosTransfer').scrollIntoView({behavior:'smooth'});
- } else {
-   document.getElementById('datosTransfer500').classList.remove('hidden');
-   document.getElementById('datosTransfer500').scrollIntoView({behavior:'smooth'});
- }
-}
-function enviarComprobante(tipo){
- const numeroAdmin = "543834607740";
- const monto = tipo==='PRO' ? '5000' : '500';
- const concepto = tipo==='PRO' ? 'MaxShop PRO' : 'Recarga Ruleta';
- const msg = `Hola MaxShop! 🚀%0A%0AAcabo de transferir $${monto} por ${concepto}.%0AAlias: ASISTMAX365%0AMi correo: ${USER.correo}%0AMi WhatsApp: ${USER.whatsapp||''}%0A%0ATe adjunto el comprobante.`;
- window.open(`https://wa.me/${numeroAdmin}?text=${msg}`,'_blank');
-}
-
-if(USER){ showTab('dashboard'); loadComercios(); updateUI(); }
-else if(COMERCIO){ showTab('comercio'); updateUI(); }
+if(USER) showTab('dashboard');
+else if(COMERCIO) showTab('comercio');
 else showTab('login');
 </script>
 </body>
-  </html>
+</html>
