@@ -43,13 +43,14 @@ table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}th,td{bo
 .section-bottom h2{color:#0a0a0a;font-weight:900;margin-bottom:16px}
 .card-serv{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:18px}
 .footer{background:#000;border-top:2px solid #facc15;padding:20px 14px;text-align:center;color:#888;font-size:12px}
-.alias-box{background:#000;border:1px dashed #facc15;padding:12px;border-radius:12px;text-align:center;margin:12px 0}
+.alias-box{background:#000;border:1px dashed #facc15;padding:12px;border-radius:12px;margin:10px 0;text-align:center}
 </style></head><body>
 <div class="header"><img id="logoMain" src="" class="logo-img"><div><div style="font-weight:900">MaxShop</div><div style="color:#facc15;font-weight:900;font-size:12px">DESCUENTO DE LOCOS</div></div>
 <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
 <button onclick="openNotifs()" style="position:relative;background:#222;border:1px solid #333;width:42px;height:42px;border-radius:10px;font-size:20px;cursor:pointer">🔔<span id="notifDot" class="notif-dot" style="display:none"></span></button>
 <button class="menu-btn" onclick="openMenu()">☰</button>
 </div></div>
+
 <div class="credit-bar">
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <span id="creditText" style="color:#aaa;font-size:13px">Inicia sesion - Gratis 20000</span>
@@ -65,6 +66,7 @@ table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}th,td{bo
     <button class="tab" onclick="openPro()" style="background:#fff;color:#000">⭐ PRO</button>
   </div>
 </div>
+
 <div id="ruletaSection" class="ruleta-box" style="display:none">
 <h3 style="color:#facc15">🎡 Ruleta Diaria - 1 Giro Gratis por Día</h3>
 <div class="wheel" id="wheel"><span style="background:#000;color:#facc15;padding:6px 10px;border-radius:20px;font-weight:900">MAX</span></div>
@@ -76,20 +78,21 @@ table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}th,td{bo
 <div id="refBox" style="margin-top:12px;background:#111;border:1px dashed #facc15;padding:10px;border-radius:12px;display:none">
 <p style="font-size:13px">Tu código referido: <b id="miCodigo" style="color:#facc15;font-size:18px;letter-spacing:1px"></b></p>
 <div style="display:flex;gap:6px;margin-top:8px"><button class="tab" onclick="copiarCodigo()" style="flex:1;background:#facc15;color:#000;font-weight:900;padding:10px">📋 Copiar código</button><button class="tab" onclick="compartirWhatsApp()" style="flex:1;background:#25D366;color:#fff;font-weight:900;padding:10px">📲 Compartir WhatsApp</button></div>
-<p style="font-size:11px;color:#aaa;margin-top:8px">Invita amigos: cuando hagan su 1ra compra real, ganas 10000 crédito + 50 MaxCoins.</p>
+<p style="font-size:11px;color:#aaa;margin-top:8px">Invita amigos: cuando hagan su 1ra compra real, ganas 10000 crédito + 50 MaxCoins. Anti-fraude validado solo con compra real.</p>
 </div>
 </div>
+
 <div class="banner-wrap"><img id="bannerMain" src="" class="banner"></div>
 <div class="hero-section"><div class="logo-big-wrap"><img id="logoBig" src="" class="logo-big"></div><div style="color:#0a0a0a;font-weight:900;font-size:36px">AHORRA <span style="color:#2563eb">HASTA 90%</span> EN TU CIUDAD</div><div class="servicios"><div class="serv-item">🛍️ Descuentos</div><div class="serv-item">💰 Préstamos</div><div class="serv-item">🛡️ Seguros</div><div class="serv-item">🏦 Financiero</div><div class="serv-item">🔧 Servicios</div></div>
 <div class="flash-wrap"><div class="flash-track"><div class="flash-item">🔥 50% OFF Farmacia</div><div class="flash-item">🍔 40% OFF Gastronomia</div><div class="flash-item">👕 30% OFF Indumentaria</div><div class="flash-item">🛒 Super 25% OFF</div><div class="flash-item">🔥 50% OFF Farmacia</div><div class="flash-item">🍔 40% OFF Gastronomia</div><div class="flash-item">👕 30% OFF Indumentaria</div><div class="flash-item">🛒 Super 25% OFF</div></div></div>
 </div>
+
 <div class="container"><div id="filtros" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"></div><div id="grid" class="grid"></div></div>
+
 <div class="section-bottom">
 <div style="max-width:1240px;margin:auto">
 <h2>💰 Préstamos, Seguros y Servicios Financieros</h2>
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
-<div class="card-serv"><h3 style="color:#2563eb">💰 Préstamos Personales</h3><p style="font-size:13px;color:#444;margin:8px 0">Solicitá tu préstamo 100% online con las mejores tasas de Catamarca. Aprobación en 24hs.</p><input id="pre_nombre" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Nombre completo"><input id="pre_dni" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="DNI"><input id="pre_monto" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Monto que necesitas"><button class="btn" onclick="consultarWsp('prestamo')">Consultar Préstamo por WhatsApp</button></div>
-<div class="card-serv"><h3 style="color:#16a34a">🛡️ Seguros</h3><p style="font-size:13px;color:#444;margin:8px 0">Seguro de auto, moto, hogar y vida. Cotización inmediata.</p><input id="seg_nombre" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Nombre completo"><input id="seg_tipo" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Tipo: Auto, Moto, Hogar"><button class="btn" style="background:#16a34a;color:#fff" onclick="consultarWsp('seguro')">Cotizar Seguro por WhatsApp</button></div>
-<div class="card-serv"><h3 style="color:#f59e0b">🏦 Asistencia Financiera</h3><p style="font-size:13px;color:#444;margin:8px 0">Te ayudamos con tus finanzas, refinanciación, tarjetas y deudas.</p><input id="fin_nombre" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Nombre completo"><input id="fin_tel" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="WhatsApp"><button class="btn" style="background:#f59e0b" onclick="consultarWsp('financiero')">Consultar por WhatsApp</button></div>
-</div>
-<h2
+<div class="card-serv"><h3 style="color:#2563eb">💰 Préstamos Personales</h3><p style="font-size:13px;color:#444;margin:8px 0">Solicitá tu préstamo 100% online con las mejores tasas de Catamarca. Aprobación en 24hs. Trabajamos con bancos y financieras locales.</p><input id="pre_nombre" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Nombre completo"><input id="pre_dni" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="DNI"><input id="pre_monto" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Monto que necesitas"><button class="btn" onclick="consultarWsp('prestamo')">Consultar Préstamo por WhatsApp</button></div>
+<div class="card-serv"><h3 style="color:#16a34a">🛡️ Seguros</h3><p style="font-size:13px;color:#444;margin:8px 0">Seguro de auto, moto, hogar y vida. Cotización inmediata con asesor de Catamarca. Cobertura total y responsabilidad civil.</p><input id="seg_nombre" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Nombre completo"><input id="seg_tipo" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Tipo: Auto, Moto, Hogar"><button class="btn" style="background:#16a34a;color:#fff" onclick="consultarWsp('seguro')">Cotizar Seguro por WhatsApp</button></div>
+<div class="card-serv"><h3 style="color:#f59e0b">🏦 Asistencia Financiera</h3><p style="font-size:13px;color:#444;margin:8px 0">Te ayudamos con tus finanzas, refinanciación, tarjetas y deudas. Asesoramiento gratuito en tu ciudad.</p><input id="fin_nombre" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Nombre completo"><input id="fin_tel" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="WhatsApp"><button class="btn" style="background:#f59e0b" onclick="consultarWsp('financiero')">Consultar por WhatsApp</
