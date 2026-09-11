@@ -1,65 +1,29 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAXSHOP - Panel</title>
-<style>
-body{margin:0;background:#0a0a0a;color:white;font-family:Arial}
-header{background:#111;border-bottom:3px solid #FFD700;padding:20px;text-align:center}
-.logo{color:#FFD700;font-size:32px;font-weight:900}
-.container{max-width:900px;margin:20px auto;padding:20px}
-.card{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:20px;margin-bottom:20px}
-label{color:#aaa;font-size:13px}
-input{width:100%;padding:12px;border-radius:8px;border:1px solid #333;background:#222;color:white;margin:8px 0 15px;box-sizing:border-box}
-.btn{background:#FFD700;color:black;border:none;padding:14px;border-radius:8px;font-weight:bold;width:100%;cursor:pointer}
-.alias-box{background:#111;border:1px dashed #FFD700;padding:12px;border-radius:8px;text-align:center;margin-bottom:15px}
-.alias-box b{color:#FFD700;font-size:18px}
-small{color:#888}
-</style>
-</head>
-<body>
-<header><div class="logo">MAXSHOP</div></header>
-<div class="container">
-
-<div class="card">
-<h3 style="color:#FFD700;margin-top:0;">Datos de cobro</h3>
-<div class="alias-box">
-Alias para transferencias<br>
-<b>Asistmax365</b>
-</div>
-<small>Copialo para que te transfieran. Este alias ya queda fijo en la pagina.</small>
-</div>
-
-<div class="card">
-<h3 style="color:#FFD700;margin-top:0;">Registrar comercio</h3>
-<label>Nombre del comercio</label>
-<input id="nombre" placeholder="Ej: Kiosco Max">
-<label>WhatsApp (se guarda automatico con 549)</label>
-<input id="wsp" placeholder="Ej: 3834 123456" onblur="formatearWsp()">
-<small id="preview" style="color:#FFD700;"></small>
-<label style="margin-top:15px;display:block;">Email</label>
-<input id="email" placeholder="Ej: contacto@maxshop.com">
-<button class="btn" onclick="guardar()">GUARDAR COMERCIO</button>
-</div>
-
-</div>
-<script>
-function formatearWsp(){
-  let input = document.getElementById('wsp');
-  let val = input.value.replace(/\D/g,'');
-  if(val.startsWith('549')){ /* ya esta bien */ }
-  else if(val.startsWith('54')){ val = '549' + val.substring(2); }
-  else if(val.startsWith('0')){ val = '549' + val.substring(1); }
-  else { val = '549' + val; }
-  input.value = val;
-  document.getElementById('preview').innerText = 'Se guardará como: ' + val;
-}
-function guardar(){
-  formatearWsp();
-  alert('Guardado: ' + document.getElementById('wsp').value + '\nAlias: Asistmax365');
-  // aca va tu fetch al backend si tenes
-}
-</script>
-</body>
-  </html>
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MaxShop Descuento de Locos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}body{background:#0a0a0a;color:#fff}
+.header{position:sticky;top:0;z-index:300;background:#000;border-bottom:2px solid #facc15;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.logo-img{width:54px;height:54px;border-radius:12px;background:#fff;object-fit:contain;border:2px solid #facc15;padding:2px}
+.menu-btn{margin-left:auto;background:#facc15;color:#000;border:none;width:42px;height:42px;border-radius:10px;font-size:22px;font-weight:900;cursor:pointer}
+.credit-bar{background:#18181b;border-bottom:1px solid #333;padding:10px 14px;display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:center}
+.credit-pill{background:#facc15;color:#000;padding:8px 14px;border-radius:20px;font-weight:900;font-size:12px}
+.banner-wrap{height:300px;background:#111;overflow:hidden}.banner{width:100%;height:100%;object-fit:cover}
+.hero-section{background:#fff;padding:0 0 20px 0;text-align:center;border-bottom:3px solid #facc15}
+.logo-big-wrap{background:#fff;width:100%;padding:24px 10px;display:flex;justify-content:center}
+.logo-big{width:92%;max-width:700px;height:160px;object-fit:contain;display:block;animation:flashPulse 1.8s infinite}
+@keyframes flashPulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+.flash-wrap{overflow:hidden;white-space:nowrap;margin:16px 10px 0 10px;border-radius:12px;background:#f1f5f9;padding:10px;border:1px solid #ddd}
+.flash-track{display:inline-flex;animation:scroll 20s linear infinite;gap:12px}@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.flash-item{min-width:150px;height:60px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0f172a;border:1px solid #ddd;font-size:12px}
+.servicios{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 10px 0 10px}
+.serv-item{background:#111;color:#fff;border:1px solid #facc15;padding:10px 14px;border-radius:12px;font-size:12px;font-weight:700}
+.container{max-width:1240px;margin:auto;padding:14px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{background:#18181b;border:1px solid #27272a;border-radius:16px;overflow:hidden;cursor:pointer}.card-banner{width:100%;height:160px;object-fit:cover;background:#222}.card-body{padding:12px}
+.badge{background:#facc15;color:#000;padding:4px 10px;border-radius:20px;font-weight:900;font-size:11px}
+.btn{width:100%;background:#facc15;color:#000;border:none;padding:12px;border-radius:12px;font-weight:900;cursor:pointer;margin-top:6px}
+.btn-pro{background:linear-gradient(135deg,#fff,#facc15)}.btn-dark{background:#222;color:#fff}.input{width:100%;background:#111;border:1px solid #333;color:#fff;padding:12px;border-radius:10px;margin:5px 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:500;padding:10px}.modal.active{display:flex}
+.modal-box{background:#18181b;border:1px solid #333;border-radius:18px;max-width:980px;width:100%;max-height:96vh;overflow:auto}
+.m-banner{width:100%;height:200px;object-fit:cover;background:#222}.tab{padding:8px 12px;border-radius:10px;background:#222;border:none;color:#fff;cursor:pointer;font-size:12px}.tab.active{background:#facc15;color:#000}
+.preview{width:100%;height:90px;object-fit:cover;border-radius:8px;display:none;background:#222;margin:4px 
