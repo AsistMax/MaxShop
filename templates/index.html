@@ -26,4 +26,70 @@
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:500;padding:10px}.modal.active{display:flex}
 .modal-box{background:#18181b;border:1px solid #333;border-radius:18px;max-width:980px;width:100%;max-height:96vh;overflow:auto}
 .m-banner{width:100%;height:200px;object-fit:cover;background:#222}.tab{padding:8px 12px;border-radius:10px;background:#222;border:none;color:#fff;cursor:pointer;font-size:12px}.tab.active{background:#facc15;color:#000}
-.preview{width:100%;height:90px;object-fit:cover;border-radius:8px;display:none;background:#222;margin:4px 
+.preview{width:100%;height:90px;object-fit:cover;border-radius:8px;display:none;background:#222;margin:4px 0}.days{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.day{padding:6px 10px;border-radius:8px;background:#222;border:1px solid #333;cursor:pointer;font-size:12px}.day.on{background:#facc15;color:#000}
+.qr-box{background:#fff;padding:16px;border-radius:12px;display:flex;flex-direction:column;align-items:center;margin:10px 0}
+.side-menu{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:400;display:none}.side-menu.active{display:block}
+.side-panel{position:absolute;right:0;top:0;width:360px;max-width:85%;height:100%;background:#111;border-left:2px solid #facc15;padding:18px;overflow:auto}
+.menu-item{padding:14px;background:#18181b;border:1px solid #27272a;border-radius:12px;margin:8px 0;cursor:pointer}
+.legal{font-size:13px;color:#ccc;line-height:1.7;padding:14px}.legal h2{color:#facc15;margin-bottom:12px;font-size:22px}.legal h3{color:#facc15;margin:18px 0 8px;font-size:16px}.legal p{margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}th,td{border:1px solid #333;padding:6px;text-align:left}th{background:#facc15;color:#000}
+.ruleta-box{background:linear-gradient(135deg,#1a1a1a,#000);border:2px solid #facc15;border-radius:18px;padding:16px;margin:16px 10px;text-align:center}
+.wheel{width:160px;height:160px;border-radius:50%;background:conic-gradient(#facc15 0 60deg,#fff 60deg 120deg,#facc15 120deg 180deg,#111 180deg 240deg,#facc15 240deg 300deg,#fff 300deg 360deg);margin:12px auto;border:4px solid #fff;display:flex;align-items:center;justify-content:center;animation:spinSlow 4s linear infinite}
+@keyframes spinSlow{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+.notif-dot{position:absolute;top:-4px;right:-4px;width:12px;height:12px;background:#ef4444;border-radius:50%;border:2px solid #000}
+.notif-item{background:#111;border:1px solid #333;border-radius:12px;padding:12px;margin:8px 0;cursor:pointer}
+.notif-item.unread{border-color:#facc15;background:#1a1a0a}
+.section-bottom{background:#fff;color:#0a0a0a;padding:40px 14px;margin-top:30px;border-top:4px solid #facc15}
+.section-bottom h2{color:#0a0a0a;font-weight:900;margin-bottom:16px}
+.card-serv{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:18px}
+.footer{background:#000;border-top:2px solid #facc15;padding:20px 14px;text-align:center;color:#888;font-size:12px}
+.alias-box{background:#000;border:1px dashed #facc15;padding:12px;border-radius:12px;text-align:center;margin:12px 0}
+</style></head><body>
+<div class="header"><img id="logoMain" src="" class="logo-img"><div><div style="font-weight:900">MaxShop</div><div style="color:#facc15;font-weight:900;font-size:12px">DESCUENTO DE LOCOS</div></div>
+<div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+<button onclick="openNotifs()" style="position:relative;background:#222;border:1px solid #333;width:42px;height:42px;border-radius:10px;font-size:20px;cursor:pointer">🔔<span id="notifDot" class="notif-dot" style="display:none"></span></button>
+<button class="menu-btn" onclick="openMenu()">☰</button>
+</div></div>
+<div class="credit-bar">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <span id="creditText" style="color:#aaa;font-size:13px">Inicia sesion - Gratis 20000</span>
+    <span id="creditPill" class="credit-pill" style="display:none"></span>
+    <span id="maxcoinsPill" class="credit-pill" style="display:none;background:#fff"></span>
+    <span id="rachaPill" class="credit-pill" style="display:none;background:#111;color:#facc15;border:1px solid #facc15"></span>
+  </div>
+  <div id="authButtons" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+    <button class="tab" id="btnLogin" onclick="openLogin()" style="background:#fff;color:#000;font-weight:900">🔐 Ingresar</button>
+    <button class="tab" id="btnRegistro" onclick="openAuth()" style="background:#facc15;color:#000;font-weight:900">👤 Registro Gratis 20000</button>
+    <button class="tab" onclick="openScanner()" style="background:#222;color:#fff;border:1px solid #333">📷 QR</button>
+    <button class="tab" id="btnRecarga" onclick="openRecarga()" style="background:#facc15;color:#000">🎡 Ruleta $500</button>
+    <button class="tab" onclick="openPro()" style="background:#fff;color:#000">⭐ PRO</button>
+  </div>
+</div>
+<div id="ruletaSection" class="ruleta-box" style="display:none">
+<h3 style="color:#facc15">🎡 Ruleta Diaria - 1 Giro Gratis por Día</h3>
+<div class="wheel" id="wheel"><span style="background:#000;color:#facc15;padding:6px 10px;border-radius:20px;font-weight:900">MAX</span></div>
+<p style="font-size:12px;color:#aaa">Gratis: 500 a 3000 crédito. Racha 7 días = 3000 bonus. 10 compras = 100 MaxCoins = 1 giro extra</p>
+<button class="btn" id="btnRuleta" onclick="girarRuleta()">🎡 GIRAR GRATIS HOY</button>
+<button class="btn btn-dark" onclick="canjearMaxCoins()">💎 Canjear 100 MaxCoins = 1 Giro Extra (10 compras)</button>
+<button class="btn btn-pro" onclick="pagarRuleta()">💰 Girar Ruleta $500 - Premios 1500 a 8000 - Paga con MP</button>
+<p id="resRuleta" style="color:#facc15;margin-top:8px;font-weight:800"></p>
+<div id="refBox" style="margin-top:12px;background:#111;border:1px dashed #facc15;padding:10px;border-radius:12px;display:none">
+<p style="font-size:13px">Tu código referido: <b id="miCodigo" style="color:#facc15;font-size:18px;letter-spacing:1px"></b></p>
+<div style="display:flex;gap:6px;margin-top:8px"><button class="tab" onclick="copiarCodigo()" style="flex:1;background:#facc15;color:#000;font-weight:900;padding:10px">📋 Copiar código</button><button class="tab" onclick="compartirWhatsApp()" style="flex:1;background:#25D366;color:#fff;font-weight:900;padding:10px">📲 Compartir WhatsApp</button></div>
+<p style="font-size:11px;color:#aaa;margin-top:8px">Invita amigos: cuando hagan su 1ra compra real, ganas 10000 crédito + 50 MaxCoins.</p>
+</div>
+</div>
+<div class="banner-wrap"><img id="bannerMain" src="" class="banner"></div>
+<div class="hero-section"><div class="logo-big-wrap"><img id="logoBig" src="" class="logo-big"></div><div style="color:#0a0a0a;font-weight:900;font-size:36px">AHORRA <span style="color:#2563eb">HASTA 90%</span> EN TU CIUDAD</div><div class="servicios"><div class="serv-item">🛍️ Descuentos</div><div class="serv-item">💰 Préstamos</div><div class="serv-item">🛡️ Seguros</div><div class="serv-item">🏦 Financiero</div><div class="serv-item">🔧 Servicios</div></div>
+<div class="flash-wrap"><div class="flash-track"><div class="flash-item">🔥 50% OFF Farmacia</div><div class="flash-item">🍔 40% OFF Gastronomia</div><div class="flash-item">👕 30% OFF Indumentaria</div><div class="flash-item">🛒 Super 25% OFF</div><div class="flash-item">🔥 50% OFF Farmacia</div><div class="flash-item">🍔 40% OFF Gastronomia</div><div class="flash-item">👕 30% OFF Indumentaria</div><div class="flash-item">🛒 Super 25% OFF</div></div></div>
+</div>
+<div class="container"><div id="filtros" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"></div><div id="grid" class="grid"></div></div>
+<div class="section-bottom">
+<div style="max-width:1240px;margin:auto">
+<h2>💰 Préstamos, Seguros y Servicios Financieros</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
+<div class="card-serv"><h3 style="color:#2563eb">💰 Préstamos Personales</h3><p style="font-size:13px;color:#444;margin:8px 0">Solicitá tu préstamo 100% online con las mejores tasas de Catamarca. Aprobación en 24hs.</p><input id="pre_nombre" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Nombre completo"><input id="pre_dni" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="DNI"><input id="pre_monto" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Monto que necesitas"><button class="btn" onclick="consultarWsp('prestamo')">Consultar Préstamo por WhatsApp</button></div>
+<div class="card-serv"><h3 style="color:#16a34a">🛡️ Seguros</h3><p style="font-size:13px;color:#444;margin:8px 0">Seguro de auto, moto, hogar y vida. Cotización inmediata.</p><input id="seg_nombre" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Nombre completo"><input id="seg_tipo" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Tipo: Auto, Moto, Hogar"><button class="btn" style="background:#16a34a;color:#fff" onclick="consultarWsp('seguro')">Cotizar Seguro por WhatsApp</button></div>
+<div class="card-serv"><h3 style="color:#f59e0b">🏦 Asistencia Financiera</h3><p style="font-size:13px;color:#444;margin:8px 0">Te ayudamos con tus finanzas, refinanciación, tarjetas y deudas.</p><input id="fin_nombre" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="Nombre completo"><input id="fin_tel" class="input" style="background:#fff;color:#000;border:1px solid #ccc" placeholder="WhatsApp"><button class="btn" style="background:#f59e0b" onclick="consultarWsp('financiero')">Consultar por WhatsApp</button></div>
+</div>
+<h2
