@@ -1,23 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>MAXSHOP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAXSHOP - Panel</title>
 <style>
-body{background:#0a0a0a;color:white;font-family:Arial;margin:0}
-header{background:#111;border-bottom:3px solid gold;padding:20px;text-align:center}
-.logo{color:gold;font-size:30px;font-weight:bold}
-.box{max-width:800px;margin:20px auto;padding:20px}
-.card{background:#1a1a1a;border:1px solid #333;padding:20px;border-radius:10px}
+body{margin:0;background:#0a0a0a;color:white;font-family:Arial}
+header{background:#111;border-bottom:3px solid #FFD700;padding:20px;text-align:center}
+.logo{color:#FFD700;font-size:32px;font-weight:900}
+.container{max-width:900px;margin:20px auto;padding:20px}
+.card{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:20px;margin-bottom:20px}
+label{color:#aaa;font-size:13px}
+input{width:100%;padding:12px;border-radius:8px;border:1px solid #333;background:#222;color:white;margin:8px 0 15px;box-sizing:border-box}
+.btn{background:#FFD700;color:black;border:none;padding:14px;border-radius:8px;font-weight:bold;width:100%;cursor:pointer}
+.alias-box{background:#111;border:1px dashed #FFD700;padding:12px;border-radius:8px;text-align:center;margin-bottom:15px}
+.alias-box b{color:#FFD700;font-size:18px}
+small{color:#888}
 </style>
 </head>
 <body>
 <header><div class="logo">MAXSHOP</div></header>
-<div class="box">
+<div class="container">
+
 <div class="card">
-<h2 style="color:gold">SI VES ESTO, YA ANDA</h2>
-<p>Tu pagina volvio a funcionar. Este es el diseño base original.</p>
+<h3 style="color:#FFD700;margin-top:0;">Datos de cobro</h3>
+<div class="alias-box">
+Alias para transferencias<br>
+<b>Asistmax365</b>
 </div>
+<small>Copialo para que te transfieran. Este alias ya queda fijo en la pagina.</small>
 </div>
+
+<div class="card">
+<h3 style="color:#FFD700;margin-top:0;">Registrar comercio</h3>
+<label>Nombre del comercio</label>
+<input id="nombre" placeholder="Ej: Kiosco Max">
+<label>WhatsApp (se guarda automatico con 549)</label>
+<input id="wsp" placeholder="Ej: 3834 123456" onblur="formatearWsp()">
+<small id="preview" style="color:#FFD700;"></small>
+<label style="margin-top:15px;display:block;">Email</label>
+<input id="email" placeholder="Ej: contacto@maxshop.com">
+<button class="btn" onclick="guardar()">GUARDAR COMERCIO</button>
+</div>
+
+</div>
+<script>
+function formatearWsp(){
+  let input = document.getElementById('wsp');
+  let val = input.value.replace(/\D/g,'');
+  if(val.startsWith('549')){ /* ya esta bien */ }
+  else if(val.startsWith('54')){ val = '549' + val.substring(2); }
+  else if(val.startsWith('0')){ val = '549' + val.substring(1); }
+  else { val = '549' + val; }
+  input.value = val;
+  document.getElementById('preview').innerText = 'Se guardará como: ' + val;
+}
+function guardar(){
+  formatearWsp();
+  alert('Guardado: ' + document.getElementById('wsp').value + '\nAlias: Asistmax365');
+  // aca va tu fetch al backend si tenes
+}
+</script>
 </body>
-</html>
+  </html>
