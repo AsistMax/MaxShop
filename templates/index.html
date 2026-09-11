@@ -8,21 +8,19 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif}
 body{background:#0f0f13;color:#fff;min-height:100vh}
-header{background:#1a1a22;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2a2a35;position:sticky;top:0;z-index:10}
+header{background:#1a1a22;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2a2a35;position:sticky;top:0;z-index:20}
 .logo{font-weight:800;font-size:22px;color:#ffcc00}
 .logo span{color:#fff}
-.btn{padding:10px 18px;border-radius:12px;border:none;font-weight:600;cursor:pointer;transition:.2s}
+.btn{padding:12px 18px;border-radius:12px;border:none;font-weight:700;cursor:pointer}
 .btn-yellow{background:#ffcc00;color:#000}
 .btn-dark{background:#2a2a35;color:#fff}
-.btn:active{transform:scale(.97)}
 .container{max-width:1100px;margin:0 auto;padding:20px}
-.card{background:#1e1e29;border:1px solid #2a2a35;border-radius:18px;padding:18px;margin-bottom:18px}
-input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #333;background:#12121a;color:#fff;margin:6px 0 12px}
-.grid{Display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{background:#1e1e29;border:1px solid #2a2a35;border-radius:18px;padding:18px;margin-bottom:16px}
+input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #333;background:#12121a;color:#fff;margin:6px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
 .badge{background:#ffcc00;color:#000;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:800}
-.credito{font-size:32px;font-weight:800;color:#ffcc00}
-.ruleta-box{text-align:center}
-#ruleta{width:220px;height:220px;border-radius:50%;margin:15px auto;background:conic-gradient(#ffcc00 0 60deg,#222 60deg 120deg,#ffcc00 120deg 180deg,#222 180deg 240deg,#ffcc00 240deg 300deg,#222 300deg 360deg);border:8px solid #2a2a35;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;position:relative}
+.credito{font-size:34px;font-weight:800;color:#ffcc00}
+#ruleta{width:210px;height:210px;border-radius:50%;margin:15px auto;background:conic-gradient(#ffcc00 0 60deg,#222 60deg 120deg,#ffcc00 120deg 180deg,#222 180deg 240deg,#ffcc00 240deg 300deg,#222 300deg 360deg);border:8px solid #2a2a35;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px}
 .hidden{display:none!important}
 .tabs{display:flex;gap:8px;margin:15px 0;overflow:auto}
 .tab{padding:10px 16px;border-radius:30px;background:#1e1e29;border:1px solid #2a2a35;cursor:pointer;white-space:nowrap}
@@ -34,142 +32,146 @@ input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3
 <header>
 <div class="logo">MAX<span>SHOP</span></div>
 <div>
-<button class="btn btn-dark" onclick="showTab('login')" id="btnLogin">Entrar</button>
-<button class="btn btn-yellow" onclick="logout()" id="btnLogout" style="display:none">Salir</button>
+<button class="btn btn-dark" id="btnLogin" onclick="showTab('login')">Entrar</button>
+<button class="btn btn-yellow" id="btnLogout" style="display:none" onclick="logout()">Salir</button>
 </div>
 </header>
-
 <div class="container">
-<!-- LOGIN -->
+
 <div id="tab-login" class="card">
 <h2>Ingresá a MaxShop</h2>
-<p style="opacity:.7;margin:8px 0">Catamarca - Descuentos reales</p>
 <input id="loginCorreo" placeholder="Correo">
 <input id="loginPass" type="password" placeholder="Contraseña">
 <button class="btn btn-yellow" style="width:100%" onclick="doLogin()">Entrar</button>
-<p style="margin-top:12px;text-align:center">¿No tenés cuenta? <b style="color:#ffcc00;cursor:pointer" onclick="showTab('registro')">Registrate y ganá $20.000</b></p>
+<p style="text-align:center;margin-top:12px">¿No tenés cuenta? <b style="color:#ffcc00;cursor:pointer" onclick="showTab('registro')">Registrate y ganá $20.000</b></p>
 <hr style="margin:18px 0;border:0;border-top:1px solid #2a2a35">
-<h3>Ingreso Comercios</h3>
+<h3>Acceso Comercios</h3>
 <input id="comercioCorreo" placeholder="Correo comercio">
 <input id="comercioPass" type="password" placeholder="Clave comercio">
 <button class="btn btn-dark" style="width:100%" onclick="doLoginComercio()">Entrar como Comercio</button>
 </div>
 
-<!-- REGISTRO -->
 <div id="tab-registro" class="card hidden">
 <h2>Crear cuenta - $20.000 de regalo</h2>
 <input id="rNombre" placeholder="Nombre completo">
 <input id="rDni" placeholder="DNI">
 <input id="rDir" placeholder="Dirección">
-<input id="rLoc" placeholder="Localidad" value="San Fernando del Valle de Catamarca">
-<input id="rWsp" placeholder="WhatsApp">
+<input id="rLoc" value="San Fernando del Valle de Catamarca">
+<input id="rWsp" placeholder="WhatsApp Ej: 3834607740">
 <input id="rCorreo" placeholder="Correo">
 <input id="rPass" type="password" placeholder="Contraseña">
-<input id="rRef" placeholder="Código de referido (opcional)">
+<input id="rRef" placeholder="Código referido (opcional)">
 <button class="btn btn-yellow" style="width:100%" onclick="doRegistro()">Registrarme</button>
 <p style="text-align:center;margin-top:10px"><span style="color:#ffcc00;cursor:pointer" onclick="showTab('login')">Ya tengo cuenta</span></p>
 </div>
 
-<!-- DASHBOARD USUARIO -->
 <div id="tab-dashboard" class="hidden">
-<div class="card ruleta-box">
-<div style="display:flex;justify-content:space-between">
+<div class="card" style="text-align:center">
+<div style="display:flex;justify-content:space-between;text-align:left">
 <div><small>CRÉDITO</small><div class="credito" id="creditoTxt">$0</div></div>
-<div style="text-align:right"><small>MAXCOINS</small><div style="font-size:22px;font-weight:800" id="coinsTxt">0</div><small>RACHA: <span id="rachaTxt">0</span> días</small></div>
+<div style="text-align:right"><small>MAXCOINS</small><div style="font-size:22px;font-weight:800" id="coinsTxt">0</div><small>RACHA <span id="rachaTxt">0</span></small></div>
 </div>
 <div id="ruleta"><span id="premioTxt">GIRAR</span></div>
-<button class="btn btn-yellow" style="width:100%;font-size:18px" onclick="girar()">🎰 GIRAR RULETA GRATIS</button>
+<button class="btn btn-yellow" style="width:100%;font-size:18px" onclick="girar()">🎰 GIRAR RULETA</button>
 <div style="display:flex;gap:8px;margin-top:10px">
 <button class="btn btn-dark" style="flex:1" onclick="canjear()">Canjear 100 Coins</button>
-<button class="btn btn-dark" style="flex:1" onclick="pagarRuleta()">Girar x $500</button>
+<button class="btn btn-dark" style="flex:1" onclick="pagarRuleta()">Recarga $500 MP</button>
 </div>
 <p id="msgRuleta" style="margin-top:10px;color:#ffcc00"></p>
-<div style="margin-top:12px;background:#12121a;padding:10px;border-radius:12px">
-<small>Tu código referido: <b id="miCodigo" style="color:#ffcc00"></b></small>
+<div style="margin-top:12px;background:#12121a;padding:10px;border-radius:12px;text-align:left">
+<small>Código referido: <b id="miCodigo" style="color:#ffcc00"></b></small>
 </div>
 </div>
 
 <div class="tabs">
-<div class="tab active" onclick="showSubTab('comercios')">Comercios</div>
-<div class="tab" onclick="showSubTab('consumir')">Usar Descuento</div>
-<div class="tab" onclick="showSubTab('pro')">Ser PRO</div>
+<div class="tab active" onclick="showSubTab('comercios',this)">Comercios</div>
+<div class="tab" onclick="showSubTab('consumir',this)">Usar Descuento</div>
+<div class="tab" onclick="showSubTab('pro',this)">Ser PRO</div>
 </div>
 
-<div id="sub-comercios">
-<div class="grid" id="gridComercios"></div>
-</div>
+<div id="sub-comercios"><div class="grid" id="gridComercios"></div></div>
 
 <div id="sub-consumir" class="card hidden">
-<h3>Usar mi descuento en comercio</h3>
-<input id="cNombreComercio" placeholder="Nombre del comercio">
-<input id="cMonto" type="number" placeholder="Monto de compra Ej: 10000">
-<button class="btn btn-yellow" style="width:100%" onclick="consumir()">Aplicar descuento 10%</button>
+<h3>Usar mi descuento</h3>
+<input id="cNombreComercio" placeholder="Nombre comercio">
+<input id="cMonto" type="number" placeholder="Monto compra">
+<button class="btn btn-yellow" style="width:100%" onclick="consumir()">Aplicar 10%</button>
 <p id="msgConsumo" style="margin-top:10px"></p>
 </div>
 
 <div id="sub-pro" class="card hidden">
 <h3>MaxShop PRO - $5000</h3>
-<p>20% OFF ilimitado + ruleta ilimitada + sorteos</p>
+<p>20% OFF ilimitado + Ruleta ilimitada</p>
 <button class="btn btn-yellow" style="width:100%;margin-top:10px" onclick="serPro()">Comprar PRO con MercadoPago</button>
+<button class="btn btn-dark" style="width:100%;margin-top:8px;border:1px dashed #ffcc00" onclick="pagarTransferencia('PRO')">💸 Pagar por Transferencia $5000 - Alias ASISTMAX365</button>
+<div id="datosTransfer" class="hidden" style="background:#12121a;padding:12px;border-radius:12px;margin-top:10px;text-align:left">
+<b>Alias: <span style="color:#ffcc00">ASISTMAX365</span></b><br><br>1- Transferí $5000<br>2- Sacá captura<br>3- Envianos comprobante<br>
+<button class="btn btn-yellow" style="width:100%;margin-top:10px" onclick="enviarComprobante('PRO')">Enviar comprobante por WhatsApp</button>
+</div>
+<hr style="margin:15px 0;border:0;border-top:1px solid #2a2a35">
+<h4>Recarga $500</h4>
+<button class="btn btn-dark" style="width:100%;margin-top:8px;border:1px dashed #ffcc00" onclick="pagarTransferencia('R500')">💸 Pagar Recarga $500 Transferencia</button>
+<div id="datosTransfer500" class="hidden" style="background:#12121a;padding:12px;border-radius:12px;margin-top:10px">
+<b>Alias: <span style="color:#ffcc00">ASISTMAX365</span></b><br>
+<button class="btn btn-yellow" style="width:100%;margin-top:10px" onclick="enviarComprobante('R500')">Enviar comprobante $500</button>
+</div>
 </div>
 </div>
 
-<!-- DASHBOARD COMERCIO -->
 <div id="tab-comercio" class="card hidden">
 <h2 id="comercioNombreTxt">Panel Comercio</h2>
-<div class="card" style="background:#12121a">
-<h3>Validar compra cliente</h3>
-<input id="cliCorreo" placeholder="Correo del cliente">
-<input id="cliMonto" type="number" placeholder="Monto">
-<button class="btn btn-yellow" style="width:100%" onclick="validarCompra()">Validar y aplicar ahorro</button>
+<div class="card" style="background:#12121a;margin-top:12px">
+<input id="cliCorreo" placeholder="Correo cliente">
+<input id="cliMonto" type="number" placeholder="Monto compra">
+<button class="btn btn-yellow" style="width:100%" onclick="validarCompra()">Validar compra</button>
 <p id="msgComercio"></p>
 </div>
 </div>
 
-<!-- ADMIN -->
 <div id="tab-admin" class="card hidden">
-<h2>Admin MaxShop</h2>
+<h2>Admin</h2>
 <input id="adminKey" type="password" placeholder="Admin Key">
-<button class="btn btn-yellow" onclick="loadAdmin()">Entrar Admin</button>
+<button class="btn btn-yellow" onclick="loadAdmin()">Entrar</button>
 <div id="adminData"></div>
 </div>
 
-<div style="text-align:center;margin:20px;opacity:.5">
-<small onclick="showTab('admin')" style="cursor:pointer">Admin</small> | MaxShop Catamarca 2026
-</div>
-
+<div style="text-align:center;margin:20px;opacity:.5"><small onclick="showTab('admin')">Admin</small> | MaxShop 2026 - ASISTMAX365</div>
 </div>
 
 <script>
-let USER = JSON.parse(localStorage.getItem('maxshop_user')||'null');
-let COMERCIO = JSON.parse(localStorage.getItem('maxshop_comercio')||'null');
-
+let USER=JSON.parse(localStorage.getItem('maxshop_user')||'null');
+let COMERCIO=JSON.parse(localStorage.getItem('maxshop_comercio')||'null');
+function normalizarWhatsapp(num){
+  if(!num) return "";
+  let n=num.toString().replace(/\D/g,"").replace(/^0+/,"");
+  if(n.startsWith("549")) return n;
+  if(n.startsWith("54")) return "549"+n.substring(2);
+  return "549"+n.slice(-10);
+}
 function showTab(t){
 document.querySelectorAll('[id^="tab-"]').forEach(e=>e.classList.add('hidden'));
 document.getElementById('tab-'+t).classList.remove('hidden');
 if(t==='dashboard') loadComercios();
 updateUI();
 }
-function showSubTab(t){
+function showSubTab(t,el){
 document.getElementById('sub-comercios').classList.add('hidden');
 document.getElementById('sub-consumir').classList.add('hidden');
 document.getElementById('sub-pro').classList.add('hidden');
 document.getElementById('sub-'+t).classList.remove('hidden');
-document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-event.target.classList.add('active');
+document.querySelectorAll('.tabs .tab').forEach(b=>b.classList.remove('active'));
+if(el) el.classList.add('active');
 }
 function updateUI(){
 if(USER){
 document.getElementById('btnLogin').style.display='none';
 document.getElementById('btnLogout').style.display='inline-block';
-document.getElementById('creditoTxt').innerText= USER.credito_ilimitado||USER.es_pro ? 'ILIMITADO' : '$'+(USER.credito_descuento_disponible||0);
-document.getElementById('coinsTxt').innerText= USER.maxcoins||0;
-document.getElementById('rachaTxt').innerText= USER.racha_dias||0;
-document.getElementById('miCodigo').innerText= USER.codigo_referido||'';
-if(!document.getElementById('tab-dashboard').classList.contains('hidden')){} else {showTab('dashboard')}
+document.getElementById('creditoTxt').innerText=USER.credito_ilimitado||USER.es_pro?'ILIMITADO':'$'+(USER.credito_descuento_disponible||0);
+document.getElementById('coinsTxt').innerText=USER.maxcoins||0;
+document.getElementById('rachaTxt').innerText=USER.racha_dias||0;
+document.getElementById('miCodigo').innerText=USER.codigo_referido||'';
 }else if(COMERCIO){
-showTab('comercio');
-document.getElementById('comercioNombreTxt').innerText= COMERCIO.nombre||COMERCIO.correo;
+document.getElementById('comercioNombreTxt').innerText=COMERCIO.nombre||COMERCIO.correo;
 document.getElementById('btnLogin').style.display='none';
 document.getElementById('btnLogout').style.display='inline-block';
 }else{
@@ -178,36 +180,38 @@ document.getElementById('btnLogout').style.display='none';
 }
 }
 async function doRegistro(){
-const body={nombre_completo:document.getElementById('rNombre').value,dni:document.getElementById('rDni').value,direccion:document.getElementById('rDir').value,localidad:document.getElementById('rLoc').value,whatsapp:document.getElementById('rWsp').value,correo:document.getElementById('rCorreo').value,password:document.getElementById('rPass').value,codigo_referido_usado:document.getElementById('rRef').value};
+let wspRaw=document.getElementById('rWsp').value;
+let wspNorm=normalizarWhatsapp(wspRaw);
+const body={nombre_completo:document.getElementById('rNombre').value,dni:document.getElementById('rDni').value,direccion:document.getElementById('rDir').value,localidad:document.getElementById('rLoc').value,whatsapp:wspNorm,whatsapp_original:wspRaw,correo:document.getElementById('rCorreo').value,password:document.getElementById('rPass').value,codigo_referido_usado:document.getElementById('rRef').value};
 const r=await fetch('/api/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const j=await r.json();
-if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;alert('¡Cuenta creada! $20.000 acreditados');showTab('dashboard')}else alert(j.error||'Error');
+if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;alert('Cuenta creada! WhatsApp guardado como '+wspNorm);showTab('dashboard');location.reload();}else alert(j.error||'Error');
 }
 async function doLogin(){
 const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:document.getElementById('loginCorreo').value,password:document.getElementById('loginPass').value})});
 const j=await r.json();
-if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;showTab('dashboard')}else alert(j.error);
+if(j.success){localStorage.setItem('maxshop_user',JSON.stringify(j.usuario));USER=j.usuario;showTab('dashboard');loadComercios();updateUI();}else alert(j.error);
 }
 async function doLoginComercio(){
 const r=await fetch('/api/login-comercio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:document.getElementById('comercioCorreo').value,password:document.getElementById('comercioPass').value})});
 const j=await r.json();
-if(j.success){localStorage.setItem('maxshop_comercio',JSON.stringify(j.comercio));COMERCIO=j.comercio;showTab('comercio')}else alert(j.error);
+if(j.success){localStorage.setItem('maxshop_comercio',JSON.stringify(j.comercio));COMERCIO=j.comercio;showTab('comercio');updateUI();}else alert(j.error);
 }
 function logout(){localStorage.clear();USER=null;COMERCIO=null;location.reload();}
 async function loadComercios(){
 const r=await fetch('/api/comercios');const j=await r.json();
 const grid=document.getElementById('gridComercios');
-grid.innerHTML=(j.data||[]).map(c=>`<div class="card"><img class="comercio-img" src="${c.imagen_url||c.logo_url||'https://via.placeholder.com/300'}" onerror="this.src='https://via.placeholder.com/300'"><h3 style="margin-top:8px">${c.nombre||c.nombre_comercio}</h3><p style="opacity:.7;font-size:13px">${c.direccion||''} - ${c.rubro||''}</p><span class="badge">${c.descuento||'10% OFF'}</span></div>`).join('')||'<p>No hay comercios aún</p>';
+grid.innerHTML=(j.data||[]).map(c=>`<div class="card"><img class="comercio-img" src="${c.imagen_url||c.logo_url||'https://via.placeholder.com/300'}" onerror="this.src='https://via.placeholder.com/300'"><h3 style="margin-top:8px">${c.nombre||c.nombre_comercio}</h3><p style="opacity:.7;font-size:13px">${c.direccion||''} - ${c.rubro||''}</p><span class="badge">${c.descuento||'10% OFF'}</span></div>`).join('')||'<p>No hay comercios</p>';
 }
 async function girar(){
 const r=await fetch('/api/ruleta/girar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:USER.correo})});
 const j=await r.json();
-if(j.success){document.getElementById('msgRuleta').innerText=`¡Ganaste $${j.premio}! Racha: ${j.racha} dias`;setTimeout(()=>location.reload(),1500)}else document.getElementById('msgRuleta').innerText=j.error;
+if(j.success){document.getElementById('msgRuleta').innerText=`Ganaste $${j.premio}!`;setTimeout(()=>location.reload(),1200)}else document.getElementById('msgRuleta').innerText=j.error;
 }
 async function canjear(){
 const r=await fetch('/api/ruleta/canjear',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:USER.correo})});
 const j=await r.json();
-if(j.success){alert(`¡Ganaste $${j.premio} con 100 coins!`);location.reload()}else alert(j.error);
+if(j.success){alert(`Ganaste $${j.premio}`);location.reload()}else alert(j.error);
 }
 async function pagarRuleta(){
 const r=await fetch('/api/crear-pago-recarga',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:USER.correo})});
@@ -222,23 +226,32 @@ if(j.init_point) window.location=j.init_point; else alert(j.error);
 async function consumir(){
 const r=await fetch('/api/consumir-credito',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo_usuario:USER.correo,nombre_comercio:document.getElementById('cNombreComercio').value,monto_compra:document.getElementById('cMonto').value})});
 const j=await r.json();
-if(j.success){document.getElementById('msgConsumo').innerText=`Ahorraste $${j.ahorro_aplicado}. Nuevo crédito: ${j.nuevo_credito}`;USER.credito_descuento_disponible=j.nuevo_credito;updateUI();}else document.getElementById('msgConsumo').innerText=j.error;
+if(j.success){document.getElementById('msgConsumo').innerText=`Ahorraste $${j.ahorro_aplicado}`;USER.credito_descuento_disponible=j.nuevo_credito;updateUI();}else document.getElementById('msgConsumo').innerText=j.error;
 }
 async function validarCompra(){
 const r=await fetch('/api/consumir-credito',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo_usuario:document.getElementById('cliCorreo').value,nombre_comercio:COMERCIO.nombre||COMERCIO.nombre_comercio,monto_compra:document.getElementById('cliMonto').value})});
 const j=await r.json();
-document.getElementById('msgComercio').innerText=j.success?`OK Ahorro $${j.ahorro_aplicado} aplicado` : j.error;
+document.getElementById('msgComercio').innerText=j.success?`OK $${j.ahorro_aplicado}`:j.error;
 }
 async function loadAdmin(){
 const key=document.getElementById('adminKey').value;
-const r=await fetch(`/api/admin/datos?key=${key}`);
-const j=await r.json();
+const r=await fetch(`/api/admin/datos?key=${key}`);const j=await r.json();
 if(!j.success){alert(j.error);return;}
-document.getElementById('adminData').innerHTML=`<div class="card" style="background:#12121a;margin-top:12px"><p>Usuarios: ${j.usuarios.length} | Comercios: ${j.comercios.length} | Ahorro total: $${j.total_ahorro}</p><pre style="max-height:300px;overflow:auto;font-size:11px">${JSON.stringify(j.usuarios.slice(0,20),null,2)}</pre></div>`;
+document.getElementById('adminData').innerHTML=`<div class="card" style="background:#12121a;margin-top:12px"><p>Usuarios ${j.usuarios.length}</p><pre style="max-height:300px;overflow:auto;font-size:11px">${JSON.stringify(j.usuarios.slice(0,20),null,2)}</pre></div>`;
 }
-if(USER) showTab('dashboard');
-else if(COMERCIO) showTab('comercio');
+function pagarTransferencia(tipo){
+ if(tipo==='PRO') document.getElementById('datosTransfer').classList.remove('hidden');
+ else document.getElementById('datosTransfer500').classList.remove('hidden');
+}
+function enviarComprobante(tipo){
+ const numero="543834607740";
+ const monto=tipo==='PRO'?'5000':'500';
+ const msg=`Hola MaxShop! Transferi $${monto} por ${tipo}. Alias ASISTMAX365. Correo: ${USER.correo}. Adjunto comprobante.`;
+ window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+if(USER){showTab('dashboard');loadComercios();updateUI();}
+else if(COMERCIO){showTab('comercio');updateUI();}
 else showTab('login');
 </script>
 </body>
-</html>
+  </html>
