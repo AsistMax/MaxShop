@@ -1,31 +1,32 @@
 import os
 import random
 import hashlib
+from datetime import datetime
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from datetime import datetime
 
-app = FastAPI()
+app = FastAPI(title="MaxShop API")
 templates = Jinja2Templates(directory="templates")
 
+# Variables Render
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 ADMIN_KEY = os.getenv("ADMIN_KEY", "maxshop2024")
-BASE_URL = os.getenv("BASE_URL", "https://maxshop.onrender.com")
+BASE_URL = os.getenv("BASE_URL", "https://maxshop-api.onrender.com")
 MP_TOKEN = os.getenv("MP_ACCESS_TOKEN", "")
 
+# Supabase client
 supabase = None
 if SUPABASE_URL and SUPABASE_KEY:
     try:
         from supabase import create_client
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        print("Supabase OK")
+        print("Supabase conectado OK")
     except Exception as e:
-        print("Error Supabase:", e)
-        supabase = None
+        print(f"Error conectando Supabase: {e}")
 else:
-    print("FALTAN VARIABLES SUPABASE EN RENDER")
+    print("FALTA SUPABASE_URL o SUPABASE_KEY en Environment")
 
 def gen_codigo(correo: str):
     base = f"{correo}{random.randint(1000,9999)}{datetime.utcnow().isoformat()}"
@@ -50,7 +51,7 @@ def calcular_racha(usuario):
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse(request, "index.html")
+    return templates.TemplateResponse(request=request, name="index.html")
 
 @app.get("/api/comercios")
 async def get_comercios():
@@ -70,9 +71,10 @@ async def registro(request: Request):
         correo = body.get("correo","").lower().strip()
         if not correo:
             return JSONResponse({"error":"Correo requerido"}, status_code=400)
-        existe = supabase.table("usuarios").select("correo").eq("correo", correo).execute()
-        if existe.data:
-            return JSONResponse({"error":"Ya existe cuenta", "code":"EXISTE"}, status_code=400)
+        if supabase:
+            existe = supabase.table("usuarios").select("correo").eq("correo", correo).execute()
+            if existe.data:
+                return JSONResponse({"error":"Ya existe cuenta", "code":"EXISTE"}, status_code=400)
         codigo = gen_codigo(correo)
         nuevo_usuario = {
             "nombre_completo": body.get("nombre_completo"),
@@ -90,7 +92,7 @@ async def registro(request: Request):
             "es_pro": False,
             "credito_ilimitado": False
         }
-        if body.get("codigo_referido_usado"):
+        if supabase and body.get("codigo_referido_usado"):
             try:
                 supabase.table("referidos").insert({
                     "correo_invitador": body.get("codigo_referido_usado").upper().strip(),
@@ -99,8 +101,11 @@ async def registro(request: Request):
                 }).execute()
             except Exception as er:
                 print("Error referido:", er)
-        ins = supabase.table("usuarios").insert(nuevo_usuario).execute()
-        usuario = ins.data[0] if ins.data else nuevo_usuario
+        if supabase:
+            ins = supabase.table("usuarios").insert(nuevo_usuario).execute()
+            usuario = ins.data[0] if ins.data else nuevo_usuario
+        else:
+            usuario = nuevo_usuario
         return {"success": True, "usuario": usuario}
     except Exception as e:
         print("ERROR REGISTRO:", e)
@@ -112,259 +117,6 @@ async def login(request: Request):
         body = await request.json()
         correo = body.get("correo","").lower().strip()
         password = body.get("password","")
-        res = supabase.table("usuarios").select("*").eq("correo", correo).eq("password", password).execute()
-        if not res.data:
-            return JSONResponse({"success": False, "error":"Correo o clave incorrectos"}, status_code=401)
-        usuario = res.data[0]
-        if not usuario.get("codigo_referido"):
-            nuevo_codigo = gen_codigo(correo)
-            try:
-                supabase.table("usuarios").update({"codigo_referido": nuevo_codigo}).eq("correo", correo).execute()
-                usuario["codigo_referido"] = nuevo_codigo
-            except:
-                usuario["codigo_referido"] = nuevo_codigo
-        return {"success": True, "usuario": usuario}
-    except Exception as e:
-        print("ERROR LOGIN:", e)
-        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
-
-@app.post("/api/ruleta/girar")
-async def girar_ruleta(request: Request):
-    try:
-        body = await request.json()
-        correo = body.get("correo","").lower().strip()
-        res = supabase.table("usuarios").select("*").eq("correo", correo).execute()
-        if not res.data:
-            return JSONResponse({"error":"Usuario no encontrado"}, status_code=404)
-        usuario = res.data[0]
-        ultima = usuario.get("ultima_ruleta")
-        if ultima:
-            try:
-                ult = datetime.fromisoformat(str(ultima).replace("Z","").split(".")[0])
-                if ult.date() == datetime.utcnow().date():
-                    return JSONResponse({"error":"Ya giraste hoy. Vuelve mañana o junta 100 MaxCoins"}, status_code=400)
-            except:
-                pass
-        premio = random.choice([500, 800, 1000, 1500, 2000, 3000])
-        racha = calcular_racha(usuario)
-        bonus = 3000 if racha >= 7 else 0
-        racha_final = 0 if racha >= 7 else racha
-        credito_actual = float(usuario.get("credito_descuento_disponible") or 0)
-        if not (usuario.get("es_pro") or usuario.get("credito_ilimitado")):
-            credito_actual = credito_actual + premio + bonus
-        supabase.table("usuarios").update({
-            "credito_descuento_disponible": credito_actual,
-            "racha_dias": racha_final,
-            "ultima_ruleta": datetime.utcnow().isoformat(),
-            "maxcoins": (usuario.get("maxcoins") or 0) + 5
-        }).eq("correo", correo).execute()
-        return {"success": True, "premio": premio, "racha": racha_final if racha < 7 else 7, "bonus_racha": bonus}
-    except Exception as e:
-        print("ERROR RULETA:", e)
-        return JSONResponse({"error": str(e)}, status_code=500)
-
-@app.post("/api/ruleta/canjear")
-async def canjear_ruleta(request: Request):
-    try:
-        body = await request.json()
-        correo = body.get("correo","").lower().strip()
-        res = supabase.table("usuarios").select("*").eq("correo", correo).execute()
-        if not res.data:
-            return JSONResponse({"error":"Usuario no encontrado"}, status_code=404)
-        usuario = res.data[0]
-        mc = usuario.get("maxcoins") or 0
-        if mc < 100:
-            return JSONResponse({"error": f"Necesitas 100 MaxCoins. Tenes {mc}"}, status_code=400)
-        premio = random.choice([500, 1000, 1500, 2000])
-        credito_actual = float(usuario.get("credito_descuento_disponible") or 0)
-        if not (usuario.get("es_pro") or usuario.get("credito_ilimitado")):
-            credito_actual += premio
-        supabase.table("usuarios").update({
-            "credito_descuento_disponible": credito_actual,
-            "maxcoins": mc - 100
-        }).eq("correo", correo).execute()
-        return {"success": True, "premio": premio}
-    except Exception as e:
-        print("ERROR CANJEAR:", e)
-        return JSONResponse({"error": str(e)}, status_code=500)
-
-@app.post("/api/ruleta/girar-paga")
-async def girar_paga(request: Request):
-    try:
-        body = await request.json()
-        correo = body.get("correo","").lower().strip()
-        res = supabase.table("usuarios").select("*").eq("correo", correo).execute()
-        if not res.data:
-            return JSONResponse({"error":"Usuario no encontrado"}, status_code=404)
-        premio = random.choice([1500, 2000, 3000, 5000, 8000])
-        credito_actual = float(res.data[0].get("credito_descuento_disponible") or 0) + premio
-        supabase.table("usuarios").update({
-            "credito_descuento_disponible": credito_actual
-        }).eq("correo", correo).execute()
-        return {"success": True, "premio": premio}
-    except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
-
-@app.post("/api/crear-pago-recarga")
-async def crear_pago_recarga(request: Request):
-    try:
-        import mercadopago
-        sdk = mercadopago.SDK(MP_TOKEN) if MP_TOKEN else None
-        if not sdk:
-            return JSONResponse({"error":"MP no configurado"}, status_code=500)
-        body = await request.json()
-        pref = {
-            "items": [{"title": "Ruleta MaxShop $500", "quantity": 1, "unit_price": 500}],
-            "payer": {"email": body.get("correo")},
-            "back_urls": {"success": f"{BASE_URL}/?pago=ruleta_ok", "failure": f"{BASE_URL}/?pago=error", "pending": f"{BASE_URL}/"},
-            "auto_return": "approved",
-            "metadata": {"correo": body.get("correo"), "tipo": "ruleta_500"}
-        }
-        result = sdk.preference().create(pref)
-        return {"init_point": result["response"]["init_point"]}
-    except Exception as e:
-        print("ERROR PAGO RECARGA:", e)
-        return JSONResponse({"error": str(e)}, status_code=500)
-
-@app.post("/api/crear-pago-pro")
-async def crear_pago_pro(request: Request):
-    try:
-        import mercadopago
-        sdk = mercadopago.SDK(MP_TOKEN) if MP_TOKEN else None
-        if not sdk:
-            return JSONResponse({"error":"MP no configurado"}, status_code=500)
-        body = await request.json()
-        pref = {
-            "items": [{"title": "MaxShop PRO $5000", "quantity": 1, "unit_price": 5000}],
-            "payer": {"email": body.get("correo")},
-            "back_urls": {"success": f"{BASE_URL}/?pago=pro_ok", "failure": f"{BASE_URL}/?pago=error", "pending": f"{BASE_URL}/"},
-            "auto_return": "approved",
-            "metadata": {"correo": body.get("correo"), "tipo": "pro"}
-        }
-        result = sdk.preference().create(pref)
-        return {"init_point": result["response"]["init_point"]}
-    except Exception as e:
-        print("ERROR PAGO PRO:", e)
-        return JSONResponse({"error": str(e)}, status_code=500)
-
-@app.post("/api/consumir-credito")
-async def consumir_credito(request: Request):
-    try:
-        body = await request.json()
-        correo = body.get("correo_usuario","").lower().strip()
-        nombre_comercio = body.get("nombre_comercio","")
-        monto = float(body.get("monto_compra") or 0)
-        res = supabase.table("usuarios").select("*").eq("correo", correo).execute()
-        if not res.data:
-            return JSONResponse({"error":"Usuario no encontrado"}, status_code=404)
-        usuario = res.data[0]
-        es_pro = usuario.get("es_pro") or usuario.get("credito_ilimitado")
-        ahorro = monto * (0.20 if es_pro else 0.10)
-        nuevo_credito = float(usuario.get("credito_descuento_disponible") or 0)
-        if not es_pro:
-            nuevo_credito = max(0, nuevo_credito - ahorro)
-        supabase.table("usuarios").update({
-            "credito_descuento_disponible": nuevo_credito,
-            "maxcoins": (usuario.get("maxcoins") or 0) + 10
-        }).eq("correo", correo).execute()
-        try:
-            supabase.table("acciones").insert({
-                "correo_usuario": correo,
-                "nombre_comercio": nombre_comercio,
-                "monto_compra": monto,
-                "ahorro_aplicado": ahorro,
-                "fecha": datetime.utcnow().isoformat()
-            }).execute()
-        except Exception as e:
-            print("Error accion:", e)
-        return {"success": True, "ahorro_aplicado": ahorro, "nuevo_credito": nuevo_credito if not es_pro else "ILIMITADO"}
-    except Exception as e:
-        print("ERROR CONSUMIR:", e)
-        return JSONResponse({"error": str(e)}, status_code=500)
-
-@app.post("/api/qr-scan")
-async def qr_scan(request: Request):
-    return {"success": True}
-
-@app.get("/api/notificaciones/{correo}")
-async def get_notificaciones(correo: str):
-    try:
-        res = supabase.table("notificaciones").select("*").order("fecha", desc=True).limit(20).execute()
-        return {"data": res.data or []}
-    except:
-        return {"data": []}
-
-@app.post("/api/notificaciones/leer/{id}")
-async def leer_notif(id: int):
-    return {"success": True}
-
-@app.post("/api/registrar-comercio")
-async def registrar_comercio(request: Request):
-    try:
-        body = await request.json()
-        ins = supabase.table("comercios").insert(body).execute()
-        return {"success": True, "data": ins.data}
-    except Exception as e:
-        print("ERROR COMERCIO:", e)
-        return JSONResponse({"error": str(e)}, status_code=500)
-
-@app.post("/api/login-comercio")
-async def login_comercio(request: Request):
-    try:
-        body = await request.json()
-        res = supabase.table("comercios").select("*").eq("correo", body.get("correo")).eq("password", body.get("password")).execute()
-        if res.data:
-            return {"success": True, "comercio": res.data[0]}
-        return JSONResponse({"success": False, "error":"Credenciales comercio incorrectas"}, status_code=401)
-    except Exception as e:
-        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
-
-@app.post("/api/upload")
-async def upload_file(request: Request):
-    return JSONResponse({"success": False, "error":"Upload no configurado, usa URL directa"}, status_code=400)
-
-@app.post("/api/admin/login")
-async def admin_login(request: Request):
-    body = await request.json()
-    if body.get("key") == ADMIN_KEY:
-        return {"success": True}
-    return JSONResponse({"success": False, "error":"Clave incorrecta"}, status_code=401)
-
-@app.get("/api/admin/datos")
-async def admin_datos(key: str):
-    if key!= ADMIN_KEY:
-        return JSONResponse({"success": False, "error":"No autorizado"}, status_code=401)
-    try:
-        comercios = supabase.table("comercios").select("*").order("id", desc=True).execute().data or []
-        usuarios = supabase.table("usuarios").select("*").order("id", desc=True).execute().data or []
-        try:
-            acciones = supabase.table("acciones").select("*").order("fecha", desc=True).limit(200).execute().data or []
-        except:
-            acciones = []
-        try:
-            referidos = supabase.table("referidos").select("*").order("fecha", desc=True).limit(200).execute().data or []
-        except:
-            referidos = []
-        total = sum([float(a.get("ahorro_aplicado") or 0) for a in acciones])
-        return {"success": True, "comercios": comercios, "usuarios": usuarios, "acciones": acciones, "referidos": referidos, "total_ahorro": total}
-    except Exception as e:
-        print("ERROR ADMIN:", e)
-        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
-
-@app.post("/api/admin/broadcast")
-async def admin_broadcast(request: Request):
-    try:
-        body = await request.json()
-        if body.get("admin_key")!= ADMIN_KEY:
-            return JSONResponse({"success": False, "error":"No autorizado"}, status_code=401)
-        supabase.table("notificaciones").insert({
-            "titulo": body.get("titulo"),
-            "mensaje": body.get("mensaje"),
-            "imagen_url": body.get("imagen_url"),
-            "destino": body.get("destino","todos"),
-            "fecha": datetime.utcnow().isoformat()
-        }).execute()
-        return {"success": True}
-    except Exception as e:
-        print("ERROR BROADCAST:", e)
-        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+        if not supabase:
+            return JSONResponse({"success": False, "error":"DB no conectada"}, status_code=500)
+        res = supabase.table("usuarios").select("*").eq("correo", correo
