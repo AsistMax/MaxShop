@@ -1,46 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MaxShop 365 - Firebase</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>MaxShop 365 - Oficial</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}body{background:#0a0a0a;color:#fff;font-family:sans-serif;margin:0}
-.header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#111;border-bottom:1px solid #222;position:sticky;top:0;z-index:100}
-.logo{height:40px}.credit-pill{background:#facc15;color:#000;padding:6px 12px;border-radius:20px;font-weight:bold;display:none}
-.tab{background:#222;color:#fff;border:0;padding:8px 14px;border-radius:20px;margin:4px;cursor:pointer}.tab.active{background:#facc15;color:#000}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
-.card{background:#1a1a1a;border:1px solid #222;border-radius:14px;padding:10px}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;align-items:center;justify-content:center;padding:10px;overflow-y:auto}
-.modal.active{display:flex}.modal-box{background:#1a1a1a;border:1px solid #facc15;border-radius:16px;width:100%;max-width:440px;padding:18px}
-.input{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #333;background:#000;color:#fff}
-.btn{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:0;background:#facc15;color:#000;font-weight:bold;cursor:pointer}
-.btn-dark{background:#222;color:#fff}
+:root{--y:#facc15;--bg:#080808;--card:#151515;--line:#222}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:'Outfit',sans-serif}
+.header{position:sticky;top:0;z-index:100;background:rgba(10,10,10,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:10px 14px}
+.logo{height:42px}.pill{background:var(--y);color:#000;padding:7px 14px;border-radius:20px;font-weight:800;display:none;font-size:13px}
+.hamb{background:#1a1a1a;border:1px solid var(--line);color:#fff;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700}
+.main{padding:14px;max-width:900px;margin:0 auto}
+.banner{width:100%;border-radius:18px;box-shadow:0 0 20px rgba(250,204,21,.15)}
+.filtros{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0}
+.tab{background:#1a1a1a;border:1px solid var(--line);color:#999;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600}
+.tab.active{background:var(--y);color:#000;border-color:var(--y)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(min-width:600px){.grid{grid-template-columns:1fr 1fr 1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:.2s;cursor:pointer}
+.card:hover{transform:translateY(-3px);border-color:var(--y)}
+.card-img{height:90px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px}
+.card-body{padding:12px}.card-body h4{margin:0 0 4px;font-size:14px}.card-body p{margin:0;color:#aaa;font-size:12px}
+.card-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.off{background:var(--y);color:#000;padding:4px 8px;border-radius:8px;font-weight:800;font-size:12px}
+.btn{width:100%;padding:13px;border-radius:12px;border:0;background:var(--y);color:#000;font-weight:800;cursor:pointer;font-size:14px}
+.btn-dark{background:#222;color:#fff;border:1px solid #333}
+.btn-sm{padding:8px 10px;font-size:12px;width:auto}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;padding:12px;overflow-y:auto}
+.modal.active{display:flex}.box{background:#141414;border:1px solid #2a2a2a;border-radius:18px;width:100%;max-width:420px;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.input{width:100%;padding:13px;margin:7px 0;border-radius:12px;border:1px solid #2a2a2a;background:#0a0a0a;color:#fff;font-size:14px;outline:none}
+.input:focus{border-color:var(--y)}
+.info{background:#111;border-left:3px solid var(--y);padding:12px;border-radius:10px;font-size:12px;color:#ccc;margin:12px 0;line-height:1.5}
 </style>
 </head>
 <body>
 <div class="header">
-<img id="logoMain" class="logo"><div><span id="creditPill" class="credit-pill"></span><button class="btn-dark" style="padding:8px 12px;border-radius:8px;border:0" onclick="document.getElementById('sideMenu').classList.add('active')">☰</button></div>
+<img id="logoMain" class="logo"><div style="display:flex;gap:8px;align-items:center"><span id="creditPill" class="pill"></span><button class="hamb" onclick="openSide()">MENU</button></div>
 </div>
-<div style="padding:10px;text-align:center"><img id="bannerMain" style="width:100%;border-radius:14px"><h2>MaxShop 365 - Oficial Firebase</h2><p id="creditText" style="color:#facc15">Ingresa para ver tu crédito</p>
-<div style="background:#111;border-left:4px solid #facc15;padding:12px;margin:12px 0;border-radius:8px;font-size:12px;text-align:left">✅ Ahora con Firebase: tu cuenta vale en PC, celu y tablet. Si olvidas clave, recuperas por mail oficial de Google + WhatsApp.</div>
-<div id="filtros" style="display:flex;flex-wrap:wrap;justify-content:center"><button class="tab active">TODOS</button></div>
+<div class="main">
+<div class="hero"><img id="bannerMain" class="banner"><h2 style="margin:12px 0 4px">Bienvenido a MaxShop 365</h2><p id="creditText" style="color:var(--y);font-weight:600">Ingresa para ver tu credito y beneficios</p><div class="info">Usa tu credito en comercios adheridos. Mostra tu DNI, el comercio valida con tu WhatsApp. 1 credito = $1 peso real. Cuenta gratuita $20000 + ruleta diaria. PRO $5000 con descuentos ilimitados siempre.</div></div>
+<div id="filtros" class="filtros"></div>
 <div id="grid" class="grid"></div>
-<div id="ruletaSection" style="display:none;text-align:center;padding:16px;background:#111;margin:10px;border-radius:14px"><h3 style="color:#facc15">Ruleta</h3><button class="btn" onclick="girarRuleta()">GIRAR</button><p id="resRuleta"></p></div>
+
+<div id="ruletaSection" style="display:none;margin-top:18px;background:linear-gradient(135deg,#1a1a1a,#111);border:1px solid var(--y);padding:16px;border-radius:16px;text-align:center"><h3 style="color:var(--y);margin:0">Ruleta Diaria Gratuita</h3><p id="ruletaInfo" style="font-size:12px;color:#999">Gira y gana credito extra</p><div id="ruletaCirculo" style="width:120px;height:120px;border-radius:50%;border:4px dashed var(--y);margin:12px auto;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px">MAX</div><button class="btn" id="btnRuleta" onclick="girarRuleta()">GIRAR AHORA</button><p id="resRuleta" style="color:var(--y);font-weight:700;margin-top:10px"></p></div>
+
 </div>
 
-<div id="sideMenu" class="modal" style="justify-content:flex-end;background:rgba(0,0,0,.6)"><div class="modal-box" style="height:100%;border-radius:0;max-width:280px"><h3>Menú</h3><button class="btn btn-dark" onclick="side('login')">Ingresar</button><button class="btn btn-dark" onclick="side('registro')">Registro Gratis $20000</button><button class="btn btn-dark" onclick="side('pro')">Ser PRO $5000</button><button class="btn btn-dark" onclick="side('recupero')">Recuperar clave</button><button class="btn" onclick="document.getElementById('sideMenu').classList.remove('active')">Cerrar</button></div></div>
+<div id="sideMenu" class="modal" style="justify-content:flex-end;background:rgba(0,0,0,.5)"><div class="box" style="height:100%;max-width:300px;border-radius:0"><h3 style="margin-top:0">MaxShop 365</h3><button class="btn btn-dark" onclick="openLogin()">Ingresar</button><button class="btn btn-dark" onclick="openRegistro()">Registro Gratis $20000</button><button class="btn btn-dark" onclick="openPro()">Ser PRO $5000</button><button class="btn btn-dark" onclick="openRecupero()">Recuperar Acceso</button><button class="btn btn-dark" onclick="openComercio()">Soy Comercio</button><hr style="border:0;border-top:1px solid #222;margin:12px 0"><button class="btn" onclick="closeM('sideMenu')">Cerrar</button></div></div>
 
-<div id="mAuth" class="modal"><div class="modal-box"><h2 id="tAuth">Auth</h2>
-<div id="bLogin"><input id="l_mail" class="input" placeholder="Correo"><input id="l_pass" type="password" class="input" placeholder="Clave"><button class="btn" onclick="loginFirebase()">Ingresar</button><p style="text-align:center"><a href="#" onclick="openRecupero()" style="color:#facc15">¿Olvidaste tu clave? Recuperar</a></p><button class="btn btn-dark" onclick="openRegistro()">Crear cuenta gratis</button><p id="resLogin"></p></div>
-<div id="bReg" style="display:none"><input id="r_nom" class="input" placeholder="Nombre *"><input id="r_dni" class="input" placeholder="DNI *"><input id="r_wsp" class="input" placeholder="WhatsApp 549... *"><input id="r_mail" class="input" placeholder="Correo *"><input id="r_pass" type="password" class="input" placeholder="Clave *"><button class="btn" onclick="registroFirebase()">Crear cuenta en Firebase</button><p id="resReg"></p></div>
-<button onclick="closeM('mAuth')" class="btn btn-dark">Volver</button></div></div>
+<div id="mAuth" class="modal"><div class="box"><h2 id="tAuth">Ingresar</h2>
+<div id="bLogin"><input id="l_mail" class="input" placeholder="Correo electronico"><input id="l_pass" type="password" class="input" placeholder="Contraseña"><button class="btn" onclick="loginFirebase()">Ingresar</button><p style="text-align:center;margin:10px 0"><a href="#" onclick="openRecupero();return false" style="color:var(--y);font-size:13px">Olvide mi clave</a></p><p id="resLogin" style="font-size:12px;color:var(--y)"></p></div>
+<div id="bReg" style="display:none"><input id="r_nom" class="input" placeholder="Nombre y Apellido *"><input id="r_dni" class="input" placeholder="DNI *"><input id="r_wsp" class="input" placeholder="WhatsApp 549... *"><input id="r_mail" class="input" placeholder="Correo *"><input id="r_pass" type="password" class="input" placeholder="Crea tu clave *"><button class="btn" onclick="registroFirebase()">Crear mi cuenta</button><p id="resReg" style="font-size:12px;color:var(--y)"></p></div>
+<button class="btn btn-dark" onclick="closeM('mAuth')">Volver</button></div></div>
 
-<div id="mRecupero" class="modal"><div class="modal-box"><h2>Recuperar 🔐</h2><input id="rec_mail" class="input" placeholder="Tu correo registrado"><button class="btn" onclick="recuperarFirebase()">Enviar mail de recupero + ver datos</button><div id="recResultado" style="display:none;background:#000;padding:12px;border-radius:12px;margin-top:10px;border:1px dashed #facc15"></div><button onclick="closeM('mRecupero')" class="btn btn-dark">Volver</button></div></div>
+<div id="mRecupero" class="modal"><div class="box"><h2>Recuperar</h2><input id="rec_mail" class="input" placeholder="Tu correo registrado"><button class="btn" onclick="recuperarFirebase()">Recuperar ahora</button><div id="recResultado" style="display:none" class="info"></div><button class="btn btn-dark" onclick="closeM('mRecupero')">Volver</button></div></div>
+
+<div id="mComercioDet" class="modal"><div class="box"><h2 id="comNom"></h2><p id="comDesc" style="color:#aaa;font-size:13px"></p><div id="comOff" style="margin:10px 0"></div><input id="montoUso" class="input" type="number" placeholder="Monto compra ej 5000"><button class="btn" onclick="simularUso()">Usar beneficio</button><p id="resUso" style="font-size:12px;color:var(--y)"></p><button class="btn btn-dark" onclick="closeM('mComercioDet')">Cerrar</button></div></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDQwyhq9ctYbE69ETD8szD7WTP-dBnA7Cs",
@@ -54,64 +74,112 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
 const LOGO_URL="https://drive.google.com/thumbnail?id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib&sz=w200";
 const BANNER_URL="https://drive.google.com/thumbnail?id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI&sz=w1000";
+document.getElementById('logoMain').src=LOGO_URL; document.getElementById('bannerMain').src=BANNER_URL;
 
-document.getElementById('logoMain').src=LOGO_URL;
-document.getElementById('bannerMain').src=BANNER_URL;
-document.getElementById('grid').innerHTML='<div class="card"><h3>Demo Comercio</h3><p>10% OFF</p></div>';
+const COMERCIOS=[
+{id:1,nombre:"Max Kiosco Centro",rubro:"Kiosco",desc:"Bebidas, snacks y mas",off:"10% OFF",color:"#facc15"},
+{id:2,nombre:"Farma365",rubro:"Farmacia",desc:"Perfumeria y farmacia",off:"15% OFF",color:"#4ade80"},
+{id:3,nombre:"Super Barato",rubro:"Supermercado",desc:"Almacen completo",off:"5% OFF",color:"#60a5fa"},
+{id:4,nombre:"Pizzeria La 10",rubro:"Gastronomia",desc:"Pizzas y empanadas",off:"20% OFF",color:"#f87171"},
+{id:5,nombre:"Estilo Urbano",rubro:"Indumentaria",desc:"Ropa y zapatillas",off:"25% OFF",color:"#c084fc"},
+{id:6,nombre:"TecnoCat",rubro:"Tecnologia",desc:"Celulares y accesorios",off:"10% OFF",color:"#2dd4bf"},
+];
+const RUBROS=["TODOS",...new Set(COMERCIOS.map(c=>c.rubro))];
+let comercioActivo=null; let userActual=null;
 
+function renderFiltros(){
+  const c=document.getElementById('filtros'); c.innerHTML='';
+  RUBROS.forEach(r=>{
+    let b=document.createElement('button'); b.className='tab'+(r==='TODOS'?' active':''); b.innerText=r;
+    b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderGrid(r)};
+    c.appendChild(b);
+  });
+}
+function renderGrid(filtro="TODOS"){
+  const g=document.getElementById('grid'); g.innerHTML='';
+  COMERCIOS.filter(c=>filtro==="TODOS"||c.rubro===filtro).forEach(com=>{
+    let d=document.createElement('div'); d.className='card';
+    d.innerHTML=`<div class="card-img" style="background:${com.color}22;color:${com.color}">${com.rubro[0]}</div><div class="card-body"><h4>${com.nombre}</h4><p>${com.desc}</p><div class="card-foot"><span class="off">${com.off}</span><button class="btn btn-sm">Ver</button></div></div>`;
+    d.onclick=()=>{comercioActivo=com; document.getElementById('comNom').innerText=com.nombre; document.getElementById('comDesc').innerText=com.desc+' - Rubro '+com.rubro; document.getElementById('comOff').innerHTML=`<span class="off">${com.off}</span>`; document.getElementById('mComercioDet').classList.add('active')};
+    g.appendChild(d);
+  });
+}
+renderFiltros(); renderGrid();
+
+window.openSide=()=>document.getElementById('sideMenu').classList.add('active');
 window.closeM=(id)=>document.getElementById(id).classList.remove('active');
-window.side=(a)=>{document.getElementById('sideMenu').classList.remove('active');setTimeout(()=>{if(a==='login'){document.getElementById('mAuth').classList.add('active');document.getElementById('bLogin').style.display='block';document.getElementById('bReg').style.display='none'} if(a==='registro'){openRegistro()} if(a==='recupero'){openRecupero()}},150)}
-window.openRegistro=()=>{document.getElementById('mAuth').classList.add('active');document.getElementById('bLogin').style.display='none';document.getElementById('bReg').style.display='block';}
-window.openRecupero=()=>{document.getElementById('mAuth').classList.remove('active');document.getElementById('sideMenu').classList.remove('active');document.getElementById('mRecupero').classList.add('active')}
+window.openLogin=()=>{closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='block'; document.getElementById('bReg').style.display='none'; document.getElementById('tAuth').innerText='Ingresar'};
+window.openRegistro=()=>{closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='none'; document.getElementById('bReg').style.display='block'; document.getElementById('tAuth').innerText='Registro Gratis'};
+window.openRecupero=()=>{closeM('sideMenu'); closeM('mAuth'); document.getElementById('mRecupero').classList.add('active')};
+window.openPro=()=>{closeM('sideMenu'); alert('PRO $5000: Transferi y envia comprobante al WhatsApp oficial. Te activamos PRO ilimitado en 5 min.');};
+window.openComercio=()=>{closeM('sideMenu'); alert('Panel Comercio: proximo paso.');};
 
 window.registroFirebase=async()=>{
-  const nombre=document.getElementById('r_nom').value, dni=document.getElementById('r_dni').value, wsp=document.getElementById('r_wsp').value, mail=document.getElementById('r_mail').value, pass=document.getElementById('r_pass').value;
-  if(!nombre||!dni||!mail||!pass){document.getElementById('resReg').innerText='Completa *';return}
+  const nombre=document.getElementById('r_nom').value.trim(), dni=document.getElementById('r_dni').value.trim(), wsp=document.getElementById('r_wsp').value.trim(), mail=document.getElementById('r_mail').value.trim().toLowerCase(), pass=document.getElementById('r_pass').value;
+  if(!nombre||!dni||!wsp||!mail||!pass){document.getElementById('resReg').innerText='Completa todos los *';return}
+  document.getElementById('resReg').innerText='Creando...';
   try{
     const cred=await createUserWithEmailAndPassword(auth, mail, pass);
-    await addDoc(collection(db, "usuarios"), { uid: cred.user.uid, nombre, dni, wsp, mail: mail.toLowerCase(), credito: 20000, plan: "FREE", creado: new Date() });
-    document.getElementById('resReg').innerText='✅ Creado en Firebase! Ya podes ingresar en cualquier dispositivo';
-    setTimeout(()=>{closeM('mAuth'); location.reload()},1200);
-  }catch(e){document.getElementById('resReg').innerText='Error: '+e.message}
+    await addDoc(collection(db,"usuarios"),{uid:cred.user.uid,nombre,dni,wsp,mail,credito:20000,plan:"FREE",creado:new Date()});
+    document.getElementById('resReg').innerText='Cuenta creada!'; setTimeout(()=>location.reload(),900);
+  }catch(e){document.getElementById('resReg').innerText=e.message}
 }
-
 window.loginFirebase=async()=>{
-  const mail=document.getElementById('l_mail').value, pass=document.getElementById('l_pass').value;
+  const mail=document.getElementById('l_mail').value.trim().toLowerCase(), pass=document.getElementById('l_pass').value;
+  document.getElementById('resLogin').innerText='Ingresando...';
   try{
     const cred=await signInWithEmailAndPassword(auth, mail, pass);
-    const q=query(collection(db, "usuarios"), where("uid", "==", cred.user.uid));
-    const snap=await getDocs(q);
-    if(!snap.empty){let u=snap.docs[0].data(); localStorage.setItem('maxshop_user', JSON.stringify(u)); document.getElementById('creditText').innerText=u.nombre+' - $'+u.credito; document.getElementById('creditPill').innerText='$'+u.credito; document.getElementById('creditPill').style.display='inline-block'; document.getElementById('ruletaSection').style.display='block';}
-    closeM('mAuth'); document.getElementById('resLogin').innerText='Ingresado!';
-  }catch(e){document.getElementById('resLogin').innerText='Clave mal o no existe. Usa Recuperar';}
+    const q=query(collection(db,"usuarios"),where("uid","==",cred.user.uid)); const snap=await getDocs(q);
+    if(!snap.empty){userActual=snap.docs[0].data(); applyUser(userActual)}
+    closeM('mAuth');
+  }catch(e){document.getElementById('resLogin').innerText='Correo o clave incorrecta.'}
 }
-
 window.recuperarFirebase=async()=>{
-  const mail=document.getElementById('rec_mail').value.toLowerCase().trim();
-  if(!mail){return}
-  const box=document.getElementById('recResultado'); box.style.display='block'; box.innerHTML='Buscando...';
+  const mail=document.getElementById('rec_mail').value.trim().toLowerCase(); const box=document.getElementById('recResultado');
+  if(!mail)return; box.style.display='block'; box.innerHTML='Verificando...';
   try{
-    // 1. Busca datos extra en firestore
-    const q=query(collection(db, "usuarios"), where("mail", "==", mail));
-    const snap=await getDocs(q);
-    if(snap.empty){box.innerHTML='❌ No existe ese correo en Firebase. Registrate de nuevo.'; return}
-    let u=snap.docs[0].data();
-    // 2. Envia mail oficial de Google
-    await sendPasswordResetEmail(auth, mail);
-    box.innerHTML=`✅ Cuenta encontrada:<br>Nombre: ${u.nombre}<br>DNI: ${u.dni}<br>WSP: ${u.wsp}<br>Mail: ${u.mail}<br><br>📧 <b>Te enviamos un mail oficial de Google para cambiar la clave</b> (revisa spam).<br><br><button class="btn" onclick="window.open('https://wa.me/${u.wsp.replace(/\\D/g,'')}?text=MaxShop:%20recuperaste%20tu%20cuenta%20${u.mail}','_blank')">Avisar por WhatsApp</button>`;
-  }catch(e){box.innerHTML='Error: '+e.message}
+    const q=query(collection(db,"usuarios"),where("mail","==",mail)); const snap=await getDocs(q);
+    if(snap.empty){box.innerHTML='No existe ese correo.';return}
+    let u=snap.docs[0].data(); await sendPasswordResetEmail(auth, mail);
+    box.innerHTML=`Cuenta: <b>${u.nombre}</b><br>DNI: ${u.dni}<br>Credito: $${u.credito}<br><br>Te enviamos mail para restablecer clave.`;
+  }catch(e){box.innerHTML=e.message}
 }
-
-window.girarRuleta=()=>{document.getElementById('resRuleta').innerText='Ganaste $500 demo';}
-
-// Auto-login si ya hay sesion firebase
+function applyUser(u){
+  document.getElementById('creditText').innerText=`${u.nombre} - Credito $${u.credito} - ${u.plan}`;
+  const pill=document.getElementById('creditPill'); pill.innerText=`$${u.credito}`; pill.style.display='inline-block';
+  const sec=document.getElementById('ruletaSection'); const info=document.getElementById('ruletaInfo'); const btn=document.getElementById('btnRuleta');
+  sec.style.display='block';
+  if(u.plan==='PRO'){
+    info.innerText='Sos PRO - Tenes descuento ilimitado siempre, no necesitas ruleta';
+    btn.style.display='none';
+    document.getElementById('ruletaCirculo').innerText='PRO';
+    document.getElementById('resRuleta').innerText='Beneficio PRO activo - 25% OFF en todos los comercios';
+  } else {
+    info.innerText='Cuenta gratuita - Gira 1 vez por dia para ganar credito extra';
+    btn.style.display='block';
+    document.getElementById('ruletaCirculo').innerText='MAX';
+    document.getElementById('resRuleta').innerText='';
+  }
+}
+window.simularUso=()=>{
+  if(!userActual){alert('Primero ingresa'); openLogin(); return}
+  let monto=parseInt(document.getElementById('montoUso').value); if(!monto){document.getElementById('resUso').innerText='Ingresa monto';return}
+  let desc=userActual.plan==='PRO'?25:10; let ahorro=Math.round(monto*desc/100); document.getElementById('resUso').innerText=`${userActual.plan} ${desc}% OFF - Ahorras $${ahorro} - Pagar $${monto-ahorro}`;
+}
+window.girarRuleta=()=>{
+  if(userActual && userActual.plan==='PRO'){alert('Sos PRO ilimitado, no necesitas ruleta');return}
+  const premios=[100,200,300,500,1000,0]; let g=premios[Math.floor(Math.random()*premios.length)];
+  if(g===0){document.getElementById('resRuleta').innerText='Hoy no tocó, proba mañana';}
+  else{document.getElementById('resRuleta').innerText='¡Ganaste $'+g+'! Se acreditará en tu credito (demo)';}
+  document.getElementById('ruletaCirculo').style.transform='rotate(720deg)'; document.getElementById('ruletaCirculo').style.transition='2s';
+}
 auth.onAuthStateChanged(async(user)=>{
   if(user){
-    const q=query(collection(db, "usuarios"), where("uid", "==", user.uid));
-    const snap=await getDocs(q);
-    if(!snap.empty){let u=snap.docs[0].data(); document.getElementById('creditText').innerText=u.nombre+' - $'+u.credito; document.getElementById('creditPill').innerText='$'+u.credito; document.getElementById('creditPill').style.display='inline-block'; document.getElementById('ruletaSection').style.display='block';}
+    const q=query(collection(db,"usuarios"),where("uid","==",user.uid)); const snap=await getDocs(q);
+    if(!snap.empty){userActual=snap.docs[0].data(); applyUser(userActual)}
   }
 });
 </script>
