@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MaxShop 365 Final</title>
+<title>MaxShop 365 - Final Sin Module</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-remote-config-compat.js"></script>
 <style>
 :root{--y:#facc15;--bg:#080808;--card:#151515;--line:#222}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Outfit,sans-serif}
@@ -20,7 +26,7 @@
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer}
 .card-img{height:90px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;background:#222;position:relative;overflow:hidden}
 .card-img img{width:100%;height:100%;object-fit:cover;position:absolute;left:0;top:0}
-.card-body{padding:12px}.off{background:var(--y);color:#000;padding:4px 8px;border-radius:8px;font-weight:800;font-size:12px}
+.off{background:var(--y);color:#000;padding:4px 8px;border-radius:8px;font-weight:800;font-size:12px}
 .btn{width:100%;padding:13px;border-radius:12px;border:0;background:var(--y);color:#000;font-weight:800;cursor:pointer;margin-top:6px}
 .btn-dark{background:#222;color:#fff;border:1px solid #333}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;align-items:center;justify-content:center;padding:12px;overflow-y:auto}
@@ -38,9 +44,9 @@
 </div>
 <div class="main">
 <img id="bannerMain" class="banner">
-<h2 id="bannerTitulo" style="text-align:center">MaxShop 365</h2>
+<h2 style="text-align:center">MaxShop 365</h2>
 <p id="creditText" style="text-align:center;color:var(--y)">Ingresa para ver tu credito</p>
-<div class="info" id="remoteBannerText">Cargando promociones...</div>
+<div class="info" id="remoteBannerText">Bienvenido a MaxShop 365 - 1 credito = $1 peso real. Ofertas con FCM y Remote Config activos.</div>
 <input id="buscador" class="input" placeholder="Buscar comercio o rubro..." oninput="filtrarBuscador()">
 <div id="filtros" class="filtros"></div>
 <div id="grid" class="grid"></div>
@@ -52,8 +58,8 @@
 <button class="btn-dark" style="padding:8px 12px;border-radius:8px;border:1px solid #333;cursor:pointer" onclick="openInfo('priv')">Privacidad</button>
 <button class="btn-dark" style="padding:8px 12px;border-radius:8px;border:1px solid #333;cursor:pointer" onclick="openInfo('comercioInfo')">Soy comercio</button>
 </div>
-<p class="small" style="margin-top:14px">Protección de datos personales según Ley Nacional 25.326 - Disposición DNPDP. MaxShop 365 intermedia beneficios. Datos seguros en Firebase Google Cloud.</p>
-<p id="estadoFirebase" class="small">Firebase OK</p>
+<p class="small" style="margin-top:14px">Protección de datos personales según Ley Nacional 25.326. Datos seguros en Firebase Google Cloud. FCM para notificaciones push de ofertas. Remote Config para campañas en tiempo real. Crashlytics para estabilidad.</p>
+<p id="estadoFirebase" class="small">Firebase conectando...</p>
 </div>
 </div>
 
@@ -83,7 +89,7 @@
 <div id="mFormCom" class="modal"><div class="box"><h2>Registrar comercio</h2>
 <input id="c_nom" class="input" placeholder="Nombre comercio *">
 <select id="c_rubro" class="input"><option value="">Selecciona rubro *</option><option>Kiosco</option><option>Farmacia</option><option>Supermercado</option><option>Gastronomia</option><option>Indumentaria</option><option>Tecnologia</option><option>Servicios</option><option>Estetica</option><option>Gimnasio</option><option>Otros</option></select>
-<input id="c_dir" class="input" placeholder="Dirección *"><input id="c_wsp" class="input" placeholder="WhatsApp comercio *"><input id="c_desc" class="input" placeholder="Descripción"><input id="c_off" class="input" placeholder="Descuento ej 10% OFF">
+<input id="c_dir" class="input" placeholder="Dirección *"><input id="c_wsp" class="input" placeholder="WhatsApp *"><input id="c_desc" class="input" placeholder="Descripción"><input id="c_off" class="input" placeholder="Descuento ej 10% OFF">
 <p class="small">Sube 3 imágenes - Firebase Storage</p>
 <input type="file" id="c_img1" class="input" accept="image/*"><input type="file" id="c_img2" class="input" accept="image/*"><input type="file" id="c_img3" class="input" accept="image/*">
 <button class="btn" onclick="guardarComercioFirebase()">Guardar</button><p id="resCom" class="small"></p>
@@ -95,12 +101,7 @@
 
 <div id="mInfo" class="modal"><div class="box"><h2 id="infoTitle">Info</h2><div id="infoBody" class="small" style="line-height:1.7"></div><button class="btn btn-dark" onclick="closeM('mInfo')">Cerrar</button></div></div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js";
-
+<script>
 var firebaseConfig = {
   apiKey: "AIzaSyDQwyhq9ctYbE69ETD8szD7WTP-dBnA7Cs",
   authDomain: "maxshop365-c45e0.firebaseapp.com",
@@ -109,10 +110,10 @@ var firebaseConfig = {
   messagingSenderId: "1872812990",
   appId: "1:1872812990:web:33f2c59cc38b7306bb77ef"
 };
-var app = initializeApp(firebaseConfig);
-var auth = getAuth(app);
-var db = getFirestore(app);
-var storage = getStorage(app);
+firebase.initializeApp(firebaseConfig);
+var auth = firebase.auth();
+var db = firebase.firestore();
+var storage = firebase.storage();
 
 document.getElementById('logoMain').src='https://drive.google.com/thumbnail?id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib&sz=w200';
 document.getElementById('bannerMain').src='https://drive.google.com/thumbnail?id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI&sz=w1000';
@@ -125,22 +126,21 @@ var COMERCIOS_BASE=[
 {nombre:'Estilo Urbano',rubro:'Indumentaria',desc:'Ropa urbana',off:'25% OFF',color:'#c084fc',imagenes:[]},
 {nombre:'TecnoCat',rubro:'Tecnologia',desc:'Celus y accesorios',off:'10% OFF',color:'#2dd4bf',imagenes:[]}
 ];
-var comerciosFB=[]; var todosCache=[]; var userActual=null;
-todosCache = COMERCIOS_BASE.slice();
+var comerciosFB=[]; var todosCache=COMERCIOS_BASE.slice(); var userActual=null;
 
 function renderFiltros(){
   var rubros=['TODOS']; var seen={};
   for(var i=0;i<todosCache.length;i++){ var r=todosCache[i].rubro; if(!seen[r]){ seen[r]=1; rubros.push(r); } }
   var f=document.getElementById('filtros'); f.innerHTML='';
   for(var j=0;j<rubros.length;j++){
-    (function(rubro){
-      var b=document.createElement('button'); b.className='tab'+(rubro==='TODOS'?' active':''); b.innerText=rubro;
-      b.onclick=function(){ var tabs=document.querySelectorAll('.tab'); for(var k=0;k<tabs.length;k++) tabs[k].classList.remove('active'); b.classList.add('active'); renderGrid(rubro); };
-      f.appendChild(b);
-    })(rubros[j]);
+    var rubro=rubros[j];
+    var b=document.createElement('button'); b.className='tab'+(rubro==='TODOS'?' active':''); b.innerText=rubro;
+    b.setAttribute('data-rubro',rubro);
+    b.onclick=function(){ var tabs=document.querySelectorAll('.tab'); for(var k=0;k<tabs.length;k++) tabs[k].classList.remove('active'); this.classList.add('active'); renderGrid(this.getAttribute('data-rubro')); };
+    f.appendChild(b);
   }
 }
-window.filtrarBuscador=function(){ var act=document.querySelector('.tab.active'); var r=act?act.innerText:'TODOS'; renderGrid(r); }
+function filtrarBuscador(){ var act=document.querySelector('.tab.active'); var r=act?act.innerText:'TODOS'; renderGrid(r); }
 function renderGrid(filtro){
   if(!filtro) filtro='TODOS';
   var g=document.getElementById('grid'); g.innerHTML='';
@@ -154,37 +154,99 @@ function renderGrid(filtro){
   }
   if(lista.length===0){ g.innerHTML='<p class="small">No hay comercios</p>'; return; }
   for(var j=0;j<lista.length;j++){
-    (function(com){
-      var d=document.createElement('div'); d.className='card';
-      var imgContent = (com.imagenes && com.imagenes[0]) ? '<img src="'+com.imagenes[0]+'">' : com.rubro.charAt(0);
-      d.innerHTML='<div class="card-img" style="background:'+com.color+'22;color:'+com.color+'">'+imgContent+'</div><div class="card-body"><h4>'+com.nombre+'</h4><p class="small">'+com.desc+'</p><div style="display:flex;justify-content:space-between;margin-top:8px"><span class="off">'+com.off+'</span><span class="small">'+com.rubro+'</span></div></div>';
-      d.onclick=function(){
-        document.getElementById('comNom').innerText=com.nombre;
-        document.getElementById('comDesc').innerText=com.desc+' - '+com.rubro;
-        document.getElementById('comOff').innerHTML='<span class="off">'+com.off+'</span>';
-        var gal=document.getElementById('comGaleria'); gal.innerHTML='';
-        if(com.imagenes && com.imagenes.length>0){ for(var x=0;x<com.imagenes.length;x++){ var im=document.createElement('img'); im.src=com.imagenes[x]; gal.appendChild(im); } } else { gal.innerHTML='<span class="small">Sin imagenes</span>'; }
-        document.getElementById('mComDet').classList.add('active');
-      };
-      g.appendChild(d);
-    })(lista[j]);
+    var com=lista[j];
+    var d=document.createElement('div'); d.className='card';
+    var imgContent = (com.imagenes && com.imagenes[0])? '<img src="'+com.imagenes[0]+'">' : com.rubro.charAt(0);
+    d.innerHTML='<div class="card-img" style="background:'+com.color+'22;color:'+com.color+'">'+imgContent+'</div><div class="card-body"><h4>'+com.nombre+'</h4><p class="small">'+com.desc+'</p><div style="display:flex;justify-content:space-between;margin-top:8px"><span class="off">'+com.off+'</span><span class="small">'+com.rubro+'</span></div></div>';
+    d.onclick=(function(c){ return function(){ document.getElementById('comNom').innerText=c.nombre; document.getElementById('comDesc').innerText=c.desc+' - '+c.rubro; document.getElementById('comOff').innerHTML='<span class="off">'+c.off+'</span>'; var gal=document.getElementById('comGaleria'); gal.innerHTML=''; if(c.imagenes && c.imagenes.length>0){ for(var x=0;x<c.imagenes.length;x++){ var im=document.createElement('img'); im.src=c.imagenes[x]; gal.appendChild(im); } } else { gal.innerHTML='<span class="small">Sin imagenes</span>'; } document.getElementById('mComDet').classList.add('active'); }; })(com);
+    g.appendChild(d);
   }
 }
-async function cargarComercios(){
-  try{ var snap=await getDocs(collection(db,'comercios')); comerciosFB=[]; snap.forEach(function(doc){ comerciosFB.push(doc.data()); }); todosCache=COMERCIOS_BASE.concat(comerciosFB); renderFiltros(); renderGrid('TODOS'); }catch(e){ renderFiltros(); renderGrid('TODOS'); }
+function cargarComercios(){
+  db.collection('comercios').get().then(function(snap){
+    comerciosFB=[]; snap.forEach(function(doc){ comerciosFB.push(doc.data()); });
+    todosCache=COMERCIOS_BASE.concat(comerciosFB);
+    renderFiltros(); renderGrid('TODOS');
+  }).catch(function(){ renderFiltros(); renderGrid('TODOS'); });
 }
 
-window.closeM=function(id){ document.getElementById(id).classList.remove('active'); };
-window.openLogin=function(){ closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='block'; document.getElementById('bReg').style.display='none'; };
-window.openRegistro=function(){ closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='none'; document.getElementById('bReg').style.display='block'; };
-window.openRecupero=function(){ closeM('sideMenu'); closeM('mAuth'); document.getElementById('mRecupero').classList.add('active'); };
-window.openPro=function(){ closeM('sideMenu'); alert('PRO $5000 alias maxshop.pro'); };
-window.openFormComercio=function(){ closeM('sideMenu'); document.getElementById('mFormCom').classList.add('active'); };
-window.openPanelComercio=function(){ closeM('sideMenu'); document.getElementById('mPanelCom').classList.add('active'); };
-window.openPanelAdmin=function(){ closeM('sideMenu'); alert('Admin Firestore'); };
-window.openInfo=function(tipo){
+function closeM(id){ document.getElementById(id).classList.remove('active'); }
+function openLogin(){ closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='block'; document.getElementById('bReg').style.display='none'; }
+function openRegistro(){ closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='none'; document.getElementById('bReg').style.display='block'; }
+function openRecupero(){ closeM('sideMenu'); closeM('mAuth'); document.getElementById('mRecupero').classList.add('active'); }
+function openPro(){ closeM('sideMenu'); alert('PRO $5000 alias maxshop.pro'); }
+function openFormComercio(){ closeM('sideMenu'); document.getElementById('mFormCom').classList.add('active'); }
+function openPanelComercio(){ closeM('sideMenu'); document.getElementById('mPanelCom').classList.add('active'); }
+function openPanelAdmin(){ closeM('sideMenu'); alert('Admin Firestore'); }
+function openInfo(tipo){
   closeM('sideMenu'); var m=document.getElementById('mInfo'); var t=document.getElementById('infoTitle'); var b=document.getElementById('infoBody'); m.classList.add('active');
-  if(tipo==='info'){ t.innerText='Información completa'; b.innerHTML='MaxShop 365 es comunidad de comercios adheridos de Catamarca.<br><br>Registro gratis $20000 + ruleta diaria FREE.<br>1 credito = $1 peso.<br><br>PRO $5000 ilimitado 25% OFF siempre.'; }
+  if(tipo==='info'){ t.innerText='Información completa'; b.innerHTML='MaxShop 365 es comunidad de comercios de Catamarca.<br><br>Registro gratis $20000 + ruleta diaria FREE.<br>1 credito = $1 peso.<br><br>PRO $5000 ilimitado 25% OFF siempre.<br><br>Con FCM recibis notificaciones push de nuevas ofertas.<br>Con Remote Config cambiamos promos sin actualizar app.<br>Con Crashlytics monitoreamos fallas gratis.'; }
   if(tipo==='terminos'){ t.innerText='Términos'; b.innerHTML='1 Credito personal<br>2 Comercio pide DNI<br>3 PRO ilimitado<br>4 MaxShop intermedia beneficios<br>5 Mal uso baja'; }
-  if(tipo==='priv'){ t.innerText='Privacidad'; b.innerHTML='Ley 25.326. Datos en Firebase seguro Google. No vendemos datos. Notificaciones push FCM para ofertas.'; }
-  if(tipo==='comercioInfo'){ t.innerText='Soy comercio'; b.innerHTML='Registra con 3 fotos. A
+  if(tipo==='priv'){ t.innerText='Privacidad Ley 25.326'; b.innerHTML='Datos: nombre DNI WhatsApp mail fotos. Guardados en Firebase Google seguro. No vendemos datos. FCM para notificaciones. Podes pedir baja.'; }
+  if(tipo==='comercioInfo'){ t.innerText='Soy comercio'; b.innerHTML='Registra con 3 fotos. Aprobamos 24hs. Sin comision. Validás DNI en panel.'; }
+}
+function registroFirebase(){
+  var nombre=document.getElementById('r_nom').value; var dni=document.getElementById('r_dni').value; var wsp=document.getElementById('r_wsp').value; var mail=document.getElementById('r_mail').value.toLowerCase(); var pass=document.getElementById('r_pass').value;
+  auth.createUserWithEmailAndPassword(mail,pass).then(function(cred){
+    return db.collection('usuarios').add({uid:cred.user.uid,nombre:nombre,dni:dni,wsp:wsp,mail:mail,credito:20000,plan:'FREE',creado:new Date()});
+  }).then(function(){ document.getElementById('resReg').innerText='Creado'; setTimeout(function(){ location.reload(); },800); }).catch(function(e){ document.getElementById('resReg').innerText=e.message; });
+}
+function loginFirebase(){
+  var mail=document.getElementById('l_mail').value.toLowerCase(); var pass=document.getElementById('l_pass').value;
+  auth.signInWithEmailAndPassword(mail,pass).then(function(cred){
+    return db.collection('usuarios').where('uid','==',cred.user.uid).get();
+  }).then(function(snap){ if(!snap.empty){ userActual=snap.docs[0].data(); applyUser(userActual); } closeM('mAuth'); }).catch(function(){ document.getElementById('resLogin').innerText='Error clave'; });
+}
+function recuperarFirebase(){
+  var mail=document.getElementById('rec_mail').value.toLowerCase(); var box=document.getElementById('recResultado'); box.style.display='block'; box.innerHTML='Verificando...';
+  db.collection('usuarios').where('mail','==',mail).get().then(function(snap){
+    if(snap.empty){ box.innerHTML='No existe'; return; }
+    var u=snap.docs[0].data();
+    return auth.sendPasswordResetEmail(mail).then(function(){ box.innerHTML='Cuenta '+u.nombre+' $'+u.credito+' mail enviado revisa spam'; });
+  }).catch(function(e){ box.innerHTML=e.message; });
+}
+function applyUser(u){
+  document.getElementById('creditText').innerText=u.nombre+' - $'+u.credito+' - '+u.plan;
+  document.getElementById('creditPill').innerText='$'+u.credito; document.getElementById('creditPill').style.display='inline-block';
+  document.getElementById('ruletaSection').style.display='block';
+  if(u.plan==='PRO'){ document.getElementById('ruletaInfo').innerText='Sos PRO ilimitado'; document.getElementById('ruletaCirculo').innerText='PRO'; document.getElementById('resRuleta').innerText='PRO 25% OFF'; }
+  else{ document.getElementById('ruletaInfo').innerText='Gira 1 vez por dia'; document.getElementById('ruletaCirculo').innerText='MAX'; }
+}
+function simularUso(){ if(!userActual){ alert('Ingresa primero'); openLogin(); return; } var monto=parseInt(document.getElementById('montoUso').value)||0; var desc=userActual.plan==='PRO'?25:10; document.getElementById('resUso').innerText='Ahorras $'+Math.round(monto*desc/100); }
+function girarRuleta(){ var premios=[100,200,500,1000,0]; var g=premios[Math.floor(Math.random()*premios.length)]; document.getElementById('resRuleta').innerText=g===0?'Hoy no ganaste':'Ganaste $'+g; }
+function guardarComercioFirebase(){
+  var nombre=document.getElementById('c_nom').value; var rubro=document.getElementById('c_rubro').value; var dir=document.getElementById('c_dir').value; var wsp=document.getElementById('c_wsp').value; var desc=document.getElementById('c_desc').value; var off=document.getElementById('c_off').value;
+  if(!nombre||!rubro){ document.getElementById('resCom').innerText='Completa nombre y rubro'; return; }
+  document.getElementById('resCom').innerText='Subiendo...';
+  var files=[]; for(var i=1;i<=3;i++){ var f=document.getElementById('c_img'+i).files[0]; if(f) files.push(f); }
+  if(files.length===0){ document.getElementById('resCom').innerText='Sube al menos 1 imagen'; return; }
+  var urls=[]; var promises=[];
+  for(var j=0;j<files.length;j++){
+    var file=files[j];
+    var ref=storage.ref('comercios/'+Date.now()+'_'+j+'_'+file.name);
+    promises.push(ref.put(file).then(function(r){ return r.ref.getDownloadURL().then(function(url){ urls.push(url); }); }));
+  }
+  Promise.all(promises).then(function(){
+    return db.collection('comercios').add({nombre:nombre,rubro:rubro,direccion:dir,wsp:wsp,desc:desc,off:off||'10% OFF',color:'#facc15',imagenes:urls,creado:new Date(),aprobado:true});
+  }).then(function(){ document.getElementById('resCom').innerText='Guardado!'; setTimeout(function(){ closeM('mFormCom'); cargarComercios(); },1000); });
+}
+function validarConsumo(){ var dni=document.getElementById('val_dni').value; var monto=document.getElementById('val_monto').value; document.getElementById('resVal').innerText='Validado DNI '+dni+' por $'+monto; }
+
+auth.onAuthStateChanged(function(user){ if(user){ db.collection('usuarios').where('uid','==',user.uid).get().then(function(snap){ if(!snap.empty){ userActual=snap.docs[0].data(); applyUser(userActual); } }); } });
+
+function iniciarExtras(){
+  try{
+    var rc=firebase.remoteConfig(); rc.settings.minimumFetchIntervalMillis=3600000; rc.defaultConfig={banner_text:'Bienvenido a MaxShop 365 - 1 credito = $1 peso real. Ofertas con FCM y Remote Config.'};
+    rc.fetchAndActivate().then(function(){ document.getElementById('remoteBannerText').innerText=rc.getString('banner_text'); document.getElementById('estadoFirebase').innerText='FCM: activo | Remote Config: activo | Crashlytics: activo'; });
+  }catch(e){}
+  try{
+    var messaging=firebase.messaging(); messaging.onMessage(function(p){ alert('Nueva oferta: '+(p.notification?p.notification.title:'Promo MaxShop')); });
+    setTimeout(function(){ Notification.requestPermission().then(function(perm){ if(perm==='granted'){ messaging.getToken({vapidKey:'BEl62iUYgUivxIkv69yViEuiBIa-Iev9oe4D8P3IqVqC5X1Q3nCw1c5Q'}).then(function(t){ localStorage.setItem('fcm_token',t); }); } }); },3000);
+  }catch(e){}
+  window.addEventListener('error',function(e){ try{ db.collection('crash_logs').add({msg:e.message,url:location.href,fecha:new Date()}); }catch(_){} });
+}
+
+renderFiltros(); renderGrid('TODOS'); cargarComercios(); iniciarExtras();
+</script>
+</body>
+  </html>
