@@ -186,6 +186,7 @@ function enviarPrestamoWsp(){var n=document.getElementById('pre_nom').value;var 
 function enviarSeguroWsp(){var n=document.getElementById('seg_nom').value;var d=document.getElementById('seg_dni').value;var w=document.getElementById('seg_wsp').value;var t=document.getElementById('seg_tipo').value;var p=document.getElementById('seg_pat').value;var txt='SEGURO MaxShop Nombre:'+n+' DNI:'+d+' Wsp:'+w+' Tipo:'+t+' Dato:'+p;window.open('https://wa.me/5493834000000?text='+encodeURIComponent(txt),'_blank');}
 auth.onAuthStateChanged(function(u){if(u){db.collection('usuarios').where('uid','==',u.uid).get().then(function(s){if(!s.empty){userActual=s.docs[0].data();userDocId=s.docs[0].id;applyUser(userActual);}});}});
 </script>
+  
 <div id="mAdmin" class="modal"><div class="box" style="max-width:700px"><h2 style="font-size:16px">Panel administrador completo</h2>
 <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">
 <button class="btn btn-dark" style="width:auto;padding:8px 12px" onclick="adminTab('usuarios')">Usuarios gratis</button>
