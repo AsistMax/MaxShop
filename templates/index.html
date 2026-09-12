@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MaxShop 365 - Final Definitivo</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MaxShop 365 Final</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{--y:#facc15;--bg:#080808;--card:#151515;--line:#222}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:'Outfit',sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Outfit,sans-serif}
 .header{position:sticky;top:0;z-index:100;background:#0a0a0a;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:10px 14px}
 .logo{height:42px}.pill{background:var(--y);color:#000;padding:7px 14px;border-radius:20px;font-weight:800;display:none}
-.hamb{background:#1a1a1a;border:1px solid var(--line);color:#fff;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700}
+.hamb{background:#1a1a1a;border:1px solid var(--line);color:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
 .main{max-width:900px;margin:0 auto;padding:14px}
 .banner{width:100%;border-radius:18px}
 .filtros{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0}
@@ -18,14 +19,13 @@
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer}
 .card-img{height:90px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;background:#222;position:relative;overflow:hidden}
-.card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-.card-body{padding:12px}.card-body h4{margin:0 0 4px;font-size:14px}.card-body p{margin:0;color:#aaa;font-size:12px}
-.off{background:var(--y);color:#000;padding:4px 8px;border-radius:8px;font-weight:800;font-size:12px}
+.card-img img{width:100%;height:100%;object-fit:cover;position:absolute;left:0;top:0}
+.card-body{padding:12px}.off{background:var(--y);color:#000;padding:4px 8px;border-radius:8px;font-weight:800;font-size:12px}
 .btn{width:100%;padding:13px;border-radius:12px;border:0;background:var(--y);color:#000;font-weight:800;cursor:pointer;margin-top:6px}
 .btn-dark{background:#222;color:#fff;border:1px solid #333}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;align-items:center;justify-content:center;padding:12px;overflow-y:auto}
 .modal.active{display:flex}.box{background:#141414;border:1px solid #2a2a2a;border-radius:18px;width:100%;max-width:480px;padding:20px;max-height:92vh;overflow-y:auto}
-.input,select{width:100%;padding:12px;margin:6px 0;border-radius:12px;border:1px solid #2a2a2a;background:#0a0a0a;color:#fff}
+.input{width:100%;padding:12px;margin:6px 0;border-radius:12px;border:1px solid #2a2a2a;background:#0a0a0a;color:#fff}
 .info{background:#111;border-left:3px solid var(--y);padding:12px;border-radius:10px;font-size:12px;color:#ccc;margin:10px 0;line-height:1.5}
 .small{font-size:11px;color:#888;line-height:1.6}
 .galeria{display:flex;gap:8px;overflow-x:auto;margin:10px 0}
@@ -38,16 +38,13 @@
 </div>
 <div class="main">
 <img id="bannerMain" class="banner">
-<h2 id="bannerTitulo" style="text-align:center;margin:12px 0 4px">MaxShop 365</h2>
+<h2 id="bannerTitulo" style="text-align:center">MaxShop 365</h2>
 <p id="creditText" style="text-align:center;color:var(--y)">Ingresa para ver tu credito</p>
-<div class="info" id="remoteBannerText">Bienvenido a MaxShop 365 - Usa tu credito en comercios adheridos. 1 credito = $1 peso real.</div>
-
-<input id="buscador" class="input" placeholder="🔍 Buscar comercio, rubro o servicio..." oninput="filtrarBuscador()">
+<div class="info" id="remoteBannerText">Cargando promociones...</div>
+<input id="buscador" class="input" placeholder="Buscar comercio o rubro..." oninput="filtrarBuscador()">
 <div id="filtros" class="filtros"></div>
 <div id="grid" class="grid"></div>
-
-<div id="ruletaSection" style="display:none;margin-top:18px;border:1px solid var(--y);padding:16px;border-radius:16px;text-align:center"><h3 style="color:var(--y);margin:0">Ruleta Diaria Gratuita</h3><p id="ruletaInfo" style="font-size:12px;color:#aaa"></p><div id="ruletaCirculo" style="width:110px;height:110px;border-radius:50%;border:4px dashed var(--y);margin:12px auto;display:flex;align-items:center;justify-content:center;font-weight:800">MAX</div><button class="btn" id="btnRuleta" onclick="girarRuleta()">GIRAR AHORA</button><p id="resRuleta" style="color:var(--y);font-weight:700"></p></div>
-
+<div id="ruletaSection" style="display:none;margin-top:18px;border:1px solid var(--y);padding:16px;border-radius:16px;text-align:center"><h3 style="color:var(--y);margin:0">Ruleta Diaria</h3><p id="ruletaInfo" class="small"></p><div id="ruletaCirculo" style="width:100px;height:100px;border-radius:50%;border:4px dashed var(--y);margin:12px auto;display:flex;align-items:center;justify-content:center;font-weight:800">MAX</div><button class="btn" onclick="girarRuleta()">GIRAR</button><p id="resRuleta" style="color:var(--y);font-weight:700"></p></div>
 <div style="margin-top:30px;text-align:center;border-top:1px solid #222;padding-top:16px">
 <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
 <button class="btn-dark" style="padding:8px 12px;border-radius:8px;border:1px solid #333;cursor:pointer" onclick="openInfo('info')">Información ℹ️</button>
@@ -55,8 +52,8 @@
 <button class="btn-dark" style="padding:8px 12px;border-radius:8px;border:1px solid #333;cursor:pointer" onclick="openInfo('priv')">Privacidad</button>
 <button class="btn-dark" style="padding:8px 12px;border-radius:8px;border:1px solid #333;cursor:pointer" onclick="openInfo('comercioInfo')">Soy comercio</button>
 </div>
-<p class="small" style="margin-top:14px">Protección de datos personales según Ley Nacional 25.326 - Disposición DNPDP. Información provista por comercios adheridos. MaxShop 365 actúa como intermediario de beneficios, no es responsable por calidad de productos/servicios. Datos almacenados de forma segura en Firebase Google Cloud.</p>
-<p id="estadoFirebase" class="small">FCM: verificando | Remote Config: cargando | Crashlytics: activo</p>
+<p class="small" style="margin-top:14px">Protección de datos personales según Ley Nacional 25.326 - Disposición DNPDP. MaxShop 365 intermedia beneficios. Datos seguros en Firebase Google Cloud.</p>
+<p id="estadoFirebase" class="small">Firebase OK</p>
 </div>
 </div>
 
@@ -65,38 +62,38 @@
 <button class="btn btn-dark" onclick="openRegistro()">Registro Gratis $20000</button>
 <button class="btn btn-dark" onclick="openPro()">Ser PRO $5000</button>
 <button class="btn btn-dark" onclick="openRecupero()">Recuperar acceso</button>
-<hr style="border-top:1px solid #222;margin:10px 0">
+<hr>
 <button class="btn btn-dark" onclick="openFormComercio()">Registrar mi comercio + 3 imágenes</button>
 <button class="btn btn-dark" onclick="openPanelComercio()">Panel comercio - Validar DNI</button>
 <button class="btn btn-dark" onclick="openPanelAdmin()">Panel Admin</button>
-<hr style="border-top:1px solid #222;margin:10px 0">
+<hr>
 <button class="btn btn-dark" onclick="openInfo('info')">Información ℹ️ completa</button>
-<button class="btn btn-dark" onclick="openInfo('terminos')">Términos y condiciones</button>
-<button class="btn btn-dark" onclick="openInfo('priv')">Política privacidad</button>
+<button class="btn btn-dark" onclick="openInfo('terminos')">Términos</button>
+<button class="btn btn-dark" onclick="openInfo('priv')">Privacidad</button>
 <button class="btn" onclick="closeM('sideMenu')">Cerrar</button>
 </div></div>
 
-<div id="mAuth" class="modal"><div class="box"><h2 id="tAuth">Ingresar</h2>
-<div id="bLogin"><input id="l_mail" class="input" placeholder="Correo"><input id="l_pass" type="password" class="input" placeholder="Clave"><button class="btn" onclick="loginFirebase()">Ingresar</button><p style="text-align:center"><a href="#" onclick="openRecupero();return false" style="color:var(--y)">Olvidé clave</a></p><p id="resLogin" class="small"></p></div>
-<div id="bReg" style="display:none"><input id="r_nom" class="input" placeholder="Nombre y Apellido *"><input id="r_dni" class="input" placeholder="DNI *"><input id="r_wsp" class="input" placeholder="WhatsApp 549... *"><input id="r_mail" class="input" placeholder="Correo *"><input id="r_pass" type="password" class="input" placeholder="Clave *"><button class="btn" onclick="registroFirebase()">Crear cuenta</button><p id="resReg" class="small"></p></div>
+<div id="mAuth" class="modal"><div class="box"><h2>Acceso</h2>
+<div id="bLogin"><input id="l_mail" class="input" placeholder="Correo"><input id="l_pass" type="password" class="input" placeholder="Clave"><button class="btn" onclick="loginFirebase()">Ingresar</button><p id="resLogin" class="small"></p></div>
+<div id="bReg" style="display:none"><input id="r_nom" class="input" placeholder="Nombre y Apellido *"><input id="r_dni" class="input" placeholder="DNI *"><input id="r_wsp" class="input" placeholder="WhatsApp *"><input id="r_mail" class="input" placeholder="Correo *"><input id="r_pass" type="password" class="input" placeholder="Clave *"><button class="btn" onclick="registroFirebase()">Crear cuenta</button><p id="resReg" class="small"></p></div>
 <button class="btn btn-dark" onclick="closeM('mAuth')">Volver</button></div></div>
 
 <div id="mRecupero" class="modal"><div class="box"><h2>Recuperar</h2><input id="rec_mail" class="input" placeholder="Tu correo"><button class="btn" onclick="recuperarFirebase()">Recuperar</button><div id="recResultado" style="display:none" class="info"></div><button class="btn btn-dark" onclick="closeM('mRecupero')">Volver</button></div></div>
 
 <div id="mFormCom" class="modal"><div class="box"><h2>Registrar comercio</h2>
 <input id="c_nom" class="input" placeholder="Nombre comercio *">
-<select id="c_rubro" class="input"><option value="">Selecciona rubro / tipo *</option><option>Kiosco</option><option>Farmacia</option><option>Supermercado</option><option>Gastronomia</option><option>Indumentaria</option><option>Tecnologia</option><option>Servicios</option><option>Estetica</option><option>Gimnasio</option><option>Libreria</option><option>Ferreteria</option><option>Otros</option></select>
-<input id="c_dir" class="input" placeholder="Dirección *"><input id="c_wsp" class="input" placeholder="WhatsApp comercio *"><input id="c_desc" class="input" placeholder="Descripción breve"><input id="c_off" class="input" placeholder="Descuento ej 10% OFF">
-<p class="small">Sube 3 imágenes (logo + 2 del local) - Firebase Storage</p>
+<select id="c_rubro" class="input"><option value="">Selecciona rubro *</option><option>Kiosco</option><option>Farmacia</option><option>Supermercado</option><option>Gastronomia</option><option>Indumentaria</option><option>Tecnologia</option><option>Servicios</option><option>Estetica</option><option>Gimnasio</option><option>Otros</option></select>
+<input id="c_dir" class="input" placeholder="Dirección *"><input id="c_wsp" class="input" placeholder="WhatsApp comercio *"><input id="c_desc" class="input" placeholder="Descripción"><input id="c_off" class="input" placeholder="Descuento ej 10% OFF">
+<p class="small">Sube 3 imágenes - Firebase Storage</p>
 <input type="file" id="c_img1" class="input" accept="image/*"><input type="file" id="c_img2" class="input" accept="image/*"><input type="file" id="c_img3" class="input" accept="image/*">
-<button class="btn" onclick="guardarComercioFirebase()">Guardar en Firebase</button><p id="resCom" class="small"></p>
+<button class="btn" onclick="guardarComercioFirebase()">Guardar</button><p id="resCom" class="small"></p>
 <button class="btn btn-dark" onclick="closeM('mFormCom')">Volver</button></div></div>
 
 <div id="mComDet" class="modal"><div class="box"><h2 id="comNom"></h2><p id="comDesc" class="small"></p><div id="comGaleria" class="galeria"></div><div id="comOff"></div><input id="montoUso" type="number" class="input" placeholder="Monto compra"><button class="btn" onclick="simularUso()">Usar beneficio</button><p id="resUso" style="color:var(--y)"></p><button class="btn btn-dark" onclick="closeM('mComDet')">Cerrar</button></div></div>
 
-<div id="mPanelCom" class="modal"><div class="box"><h2>Panel comercio - Validar DNI</h2><input id="val_dni" class="input" placeholder="DNI cliente"><input id="val_monto" type="number" class="input" placeholder="Monto"><button class="btn" onclick="validarConsumo()">Validar y descontar</button><p id="resVal" class="small"></p><button class="btn btn-dark" onclick="closeM('mPanelCom')">Cerrar</button></div></div>
+<div id="mPanelCom" class="modal"><div class="box"><h2>Panel comercio</h2><input id="val_dni" class="input" placeholder="DNI cliente"><input id="val_monto" type="number" class="input" placeholder="Monto"><button class="btn" onclick="validarConsumo()">Validar</button><p id="resVal" class="small"></p><button class="btn btn-dark" onclick="closeM('mPanelCom')">Cerrar</button></div></div>
 
-<div id="mInfo" class="modal"><div class="box"><h2 id="infoTitle">Info</h2><div id="infoBody" class="small" style="line-height:1.7;font-size:12px"></div><button class="btn btn-dark" onclick="closeM('mInfo')">Cerrar</button></div></div>
+<div id="mInfo" class="modal"><div class="box"><h2 id="infoTitle">Info</h2><div id="infoBody" class="small" style="line-height:1.7"></div><button class="btn btn-dark" onclick="closeM('mInfo')">Cerrar</button></div></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
@@ -104,7 +101,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, se
 import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js";
 
-const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "AIzaSyDQwyhq9ctYbE69ETD8szD7WTP-dBnA7Cs",
   authDomain: "maxshop365-c45e0.firebaseapp.com",
   projectId: "maxshop365-c45e0",
@@ -112,109 +109,82 @@ const firebaseConfig = {
   messagingSenderId: "1872812990",
   appId: "1:1872812990:web:33f2c59cc38b7306bb77ef"
 };
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+var app = initializeApp(firebaseConfig);
+var auth = getAuth(app);
+var db = getFirestore(app);
+var storage = getStorage(app);
 
-document.getElementById('logoMain').src="https://drive.google.com/thumbnail?id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib&sz=w200";
-document.getElementById('bannerMain').src="https://drive.google.com/thumbnail?id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI&sz=w1000";
+document.getElementById('logoMain').src='https://drive.google.com/thumbnail?id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib&sz=w200';
+document.getElementById('bannerMain').src='https://drive.google.com/thumbnail?id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI&sz=w1000';
 
-let COMERCIOS_BASE=[
-{id:1,nombre:"Max Kiosco Centro",rubro:"Kiosco",desc:"Bebidas, snacks y mas - 24hs",off:"10% OFF",color:"#facc15",imagenes:[]},
-{id:2,nombre:"Farma365",rubro:"Farmacia",desc:"Perfumeria y farmacia",off:"15% OFF",color:"#4ade80",imagenes:[]},
-{id:3,nombre:"Super Barato",rubro:"Supermercado",desc:"Almacen completo",off:"5% OFF",color:"#60a5fa",imagenes:[]},
-{id:4,nombre:"Pizzeria La 10",rubro:"Gastronomia",desc:"Pizzas y empanadas",off:"20% OFF",color:"#f87171",imagenes:[]},
-{id:5,nombre:"Estilo Urbano",rubro:"Indumentaria",desc:"Ropa y zapatillas",off:"25% OFF",color:"#c084fc",imagenes:[]},
-{id:6,nombre:"TecnoCat",rubro:"Tecnologia",desc:"Celulares y accesorios",off:"10% OFF",color:"#2dd4bf",imagenes:[]},
+var COMERCIOS_BASE=[
+{nombre:'Max Kiosco Centro',rubro:'Kiosco',desc:'Bebidas y snacks 24hs',off:'10% OFF',color:'#facc15',imagenes:[]},
+{nombre:'Farma365',rubro:'Farmacia',desc:'Perfumeria y farmacia',off:'15% OFF',color:'#4ade80',imagenes:[]},
+{nombre:'Super Barato',rubro:'Supermercado',desc:'Almacen completo',off:'5% OFF',color:'#60a5fa',imagenes:[]},
+{nombre:'Pizzeria La 10',rubro:'Gastronomia',desc:'Pizzas y empanadas',off:'20% OFF',color:'#f87171',imagenes:[]},
+{nombre:'Estilo Urbano',rubro:'Indumentaria',desc:'Ropa urbana',off:'25% OFF',color:'#c084fc',imagenes:[]},
+{nombre:'TecnoCat',rubro:'Tecnologia',desc:'Celus y accesorios',off:'10% OFF',color:'#2dd4bf',imagenes:[]}
 ];
-let comerciosFB=[]; let todosCache=[...COMERCIOS_BASE]; let userActual=null;
+var comerciosFB=[]; var todosCache=[]; var userActual=null;
+todosCache = COMERCIOS_BASE.slice();
 
-function initApp(){
-  renderFiltrosYGrid();
-  cargarComercios();
-  iniciarFirebaseExtras();
+function renderFiltros(){
+  var rubros=['TODOS']; var seen={};
+  for(var i=0;i<todosCache.length;i++){ var r=todosCache[i].rubro; if(!seen[r]){ seen[r]=1; rubros.push(r); } }
+  var f=document.getElementById('filtros'); f.innerHTML='';
+  for(var j=0;j<rubros.length;j++){
+    (function(rubro){
+      var b=document.createElement('button'); b.className='tab'+(rubro==='TODOS'?' active':''); b.innerText=rubro;
+      b.onclick=function(){ var tabs=document.querySelectorAll('.tab'); for(var k=0;k<tabs.length;k++) tabs[k].classList.remove('active'); b.classList.add('active'); renderGrid(rubro); };
+      f.appendChild(b);
+    })(rubros[j]);
+  }
 }
-function renderFiltrosYGrid(){
-  const rubros=["TODOS",...new Set(todosCache.map(c=>c.rubro))];
-  const f=document.getElementById('filtros'); f.innerHTML='';
-  rubros.forEach(r=>{
-    let b=document.createElement('button'); b.className='tab'+(r==='TODOS'?' active':''); b.innerText=r;
-    b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderGrid(r);};
-    f.appendChild(b);
-  });
-  renderGrid("TODOS");
-}
-window.filtrarBuscador=()=>{ renderGrid(document.querySelector('.tab.active')?.innerText||"TODOS"); }
-function renderGrid(filtro="TODOS"){
-  const g=document.getElementById('grid'); if(!g) return; g.innerHTML='';
-  const txtBusc=(document.getElementById('buscador').value||'').toLowerCase();
-  const lista=todosCache.filter(c=> (filtro==="TODOS"||c.rubro===filtro) && (c.nombre.toLowerCase().includes(txtBusc)||c.rubro.toLowerCase().includes(txtBusc)) );
-  if(lista.length===0){ g.innerHTML='<p class="small">No hay comercios con ese filtro</p>'; return; }
-  lista.forEach(com=>{
-    let d=document.createElement('div'); d.className='card';
-    let imgHtml = com.imagenes && com.imagenes[0]? `<img src="${com.imagenes[0]}">` : com.rubro[0];
-    d.innerHTML=`<div class="card-img" style="background:${com.color}22;color:${com.color}">${imgHtml}</div><div class="card-body"><h4>${com.nombre}</h4><p>${com.desc}</p><div style="display:flex;justify-content:space-between;margin-top:8px"><span class="off">${com.off}</span><span class="small">${com.rubro}</span></div></div>`;
-    d.onclick=()=>{ document.getElementById('comNom').innerText=com.nombre; document.getElementById('comDesc').innerText=com.desc+' - '+com.rubro; document.getElementById('comOff').innerHTML=`<span class="off">${com.off}</span>`; const gal=document.getElementById('comGaleria'); gal.innerHTML=''; (com.imagenes||[]).forEach(u=>{let im=document.createElement('img'); im.src=u; im.onclick=()=>window.open(u); gal.appendChild(im);}); if(!com.imagenes||com.imagenes.length===0) gal.innerHTML='<span class="small">Sin imagenes aun</span>'; document.getElementById('mComDet').classList.add('active') };
-    g.appendChild(d);
-  });
+window.filtrarBuscador=function(){ var act=document.querySelector('.tab.active'); var r=act?act.innerText:'TODOS'; renderGrid(r); }
+function renderGrid(filtro){
+  if(!filtro) filtro='TODOS';
+  var g=document.getElementById('grid'); g.innerHTML='';
+  var txt=(document.getElementById('buscador').value||'').toLowerCase();
+  var lista=[];
+  for(var i=0;i<todosCache.length;i++){
+    var c=todosCache[i];
+    var okFiltro = (filtro==='TODOS'||c.rubro===filtro);
+    var okTxt = c.nombre.toLowerCase().indexOf(txt)>-1 || c.rubro.toLowerCase().indexOf(txt)>-1;
+    if(okFiltro && okTxt) lista.push(c);
+  }
+  if(lista.length===0){ g.innerHTML='<p class="small">No hay comercios</p>'; return; }
+  for(var j=0;j<lista.length;j++){
+    (function(com){
+      var d=document.createElement('div'); d.className='card';
+      var imgContent = (com.imagenes && com.imagenes[0]) ? '<img src="'+com.imagenes[0]+'">' : com.rubro.charAt(0);
+      d.innerHTML='<div class="card-img" style="background:'+com.color+'22;color:'+com.color+'">'+imgContent+'</div><div class="card-body"><h4>'+com.nombre+'</h4><p class="small">'+com.desc+'</p><div style="display:flex;justify-content:space-between;margin-top:8px"><span class="off">'+com.off+'</span><span class="small">'+com.rubro+'</span></div></div>';
+      d.onclick=function(){
+        document.getElementById('comNom').innerText=com.nombre;
+        document.getElementById('comDesc').innerText=com.desc+' - '+com.rubro;
+        document.getElementById('comOff').innerHTML='<span class="off">'+com.off+'</span>';
+        var gal=document.getElementById('comGaleria'); gal.innerHTML='';
+        if(com.imagenes && com.imagenes.length>0){ for(var x=0;x<com.imagenes.length;x++){ var im=document.createElement('img'); im.src=com.imagenes[x]; gal.appendChild(im); } } else { gal.innerHTML='<span class="small">Sin imagenes</span>'; }
+        document.getElementById('mComDet').classList.add('active');
+      };
+      g.appendChild(d);
+    })(lista[j]);
+  }
 }
 async function cargarComercios(){
-  try{ const snap=await getDocs(collection(db,"comercios")); comerciosFB=snap.docs.map(d=>d.data()); todosCache=[...COMERCIOS_BASE,...comerciosFB]; renderFiltrosYGrid(); }catch(e){ console.log('Firestore comercios vacio aun', e); }
+  try{ var snap=await getDocs(collection(db,'comercios')); comerciosFB=[]; snap.forEach(function(doc){ comerciosFB.push(doc.data()); }); todosCache=COMERCIOS_BASE.concat(comerciosFB); renderFiltros(); renderGrid('TODOS'); }catch(e){ renderFiltros(); renderGrid('TODOS'); }
 }
 
-function iniciarFirebaseExtras(){
-  // REMOTE CONFIG
-  import("https://www.gstatic.com/firebasejs/12.19.0/firebase-remote-config.js").then(async (mod)=>{
-    try{
-      const { getRemoteConfig, fetchAndActivate, getString } = mod;
-      const rc = getRemoteConfig(app); rc.settings.minimumFetchIntervalMillis=0; rc.defaultConfig={banner_text:"¡Bienvenido a MaxShop 365! Usa tu credito en comercios adheridos. 1 credito = $1 peso real."};
-      await fetchAndActivate(rc);
-      document.getElementById('remoteBannerText').innerText = getString(rc,'banner_text');
-      document.getElementById('estadoFirebase').innerText='FCM: activo | Remote Config: activo | Crashlytics: activo';
-    }catch(e){ console.log('Remote config fail',e); }
-  });
-  // FCM - NO BLOQUEA
-  import("https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging.js").then(async (mod)=>{
-    try{
-      const { getMessaging, getToken, onMessage, isSupported } = mod;
-      if(!(await isSupported())) return;
-      const messaging = getMessaging(app);
-      onMessage(messaging, (payload)=>{ alert('🔥 Nueva oferta: '+(payload.notification?.title||'Promo MaxShop')); });
-      setTimeout(async ()=>{
-        try{
-          const perm = await Notification.requestPermission();
-          if(perm==='granted'){
-            const token = await getToken(messaging, {vapidKey:'BEl62iUYgUivxIkv69yViEuiBIa-Iev9oe4D8P3IqVqC5X1Q3nCw1c5Q3nCw1c5Q'});
-            localStorage.setItem('fcm_token', token);
-            console.log('FCM OK', token);
-          }
-        }catch(e){ console.log('FCM permiso',e); }
-      },3000);
-    }catch(e){ console.log('FCM fail no rompe',e); }
-  });
-  // CRASHLYTICS SIMPLE
-  window.addEventListener('error', async (e)=>{
-    try{ await addDoc(collection(db,'crash_logs'), {msg: e.message, url: location.href, fecha: new Date()}); }catch(_){}
-  });
-}
-
-window.closeM=(id)=>document.getElementById(id).classList.remove('active');
-window.openLogin=()=>{closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='block'; document.getElementById('bReg').style.display='none';}
-window.openRegistro=()=>{closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='none'; document.getElementById('bReg').style.display='block';}
-window.openRecupero=()=>{closeM('sideMenu'); closeM('mAuth'); document.getElementById('mRecupero').classList.add('active')};
-window.openPro=()=>{closeM('sideMenu'); alert('PRO $5000 - Transferi al alias maxshop.pro y envia comprobante al WhatsApp oficial.');};
-window.openFormComercio=()=>{closeM('sideMenu'); document.getElementById('mFormCom').classList.add('active')};
-window.openPanelComercio=()=>{closeM('sideMenu'); document.getElementById('mPanelCom').classList.add('active')};
-window.openPanelAdmin=()=>{closeM('sideMenu'); alert('Admin: Firestore > usuarios > cambia plan FREE a PRO');};
-window.openInfo=(tipo)=>{
-  closeM('sideMenu'); const m=document.getElementById('mInfo'); const t=document.getElementById('infoTitle'); const b=document.getElementById('infoBody'); m.classList.add('active');
-  if(tipo==='info'){t.innerText='Información ℹ️ Completa'; b.innerHTML=`<b>Que es MaxShop 365?</b><br>Comunidad de comercios adheridos de Catamarca.<br><br><b>Como funciona?</b><br>1. Registro gratis $20000 + ruleta diaria (solo FREE).<br>2. Mostras DNI en comercio.<br>3. 1 credito = $1 peso.<br><br><b>PRO $5000</b><br>Descuento ilimitado 25% OFF siempre, sin ruleta, sin tope.`;}
-  if(tipo==='terminos'){t.innerText='Términos'; b.innerHTML=`1. Credito personal.<br>2. Comercio puede pedir DNI.<br>3. PRO ilimitado.<br>4. MaxShop intermedia descuentos.<br>5. Mal uso = baja.`;}
-  if(tipo==='priv'){t.innerText='Privacidad'; b.innerHTML=`Ley 25.326. Datos: nombre, DNI, WhatsApp, mail, fotos comercios en Firebase seguro Google. No vendemos datos. Notificaciones push FCM. Podes pedir baja.`;}
-  if(tipo==='comercioInfo'){t.innerText='Soy comercio'; b.innerHTML=`Registra con 3 fotos. Te aprobamos 24hs. Sin comision. Validás con DNI.`;}
-};
-
-window.registroFirebase=async()=>{
-  const nombre=document.getElementById('r_nom').value, dni=document.getElementById('r_dni').value, wsp=document.getElementById('r_wsp').value, mail=document.getElementById('r_mail').value.toLowerCase(), pass=document.getElementById('r_pass').value;
-  try{ const cred=await createUserWithEmailAndPassword(auth, mail, pass); await addDoc(collection(db,"usuarios"),{uid:cred.user.uid,nombre,dni,wsp,mail,credito:20000,plan:"FREE",fcm_token: localStorage.getItem('fcm_token')||'', creado:new Date()}); document.getElementById('resReg').innerText='Creado!'; setTimeout(()=>location.reload(),800);}catch(e){document.get
+window.closeM=function(id){ document.getElementById(id).classList.remove('active'); };
+window.openLogin=function(){ closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='block'; document.getElementById('bReg').style.display='none'; };
+window.openRegistro=function(){ closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='none'; document.getElementById('bReg').style.display='block'; };
+window.openRecupero=function(){ closeM('sideMenu'); closeM('mAuth'); document.getElementById('mRecupero').classList.add('active'); };
+window.openPro=function(){ closeM('sideMenu'); alert('PRO $5000 alias maxshop.pro'); };
+window.openFormComercio=function(){ closeM('sideMenu'); document.getElementById('mFormCom').classList.add('active'); };
+window.openPanelComercio=function(){ closeM('sideMenu'); document.getElementById('mPanelCom').classList.add('active'); };
+window.openPanelAdmin=function(){ closeM('sideMenu'); alert('Admin Firestore'); };
+window.openInfo=function(tipo){
+  closeM('sideMenu'); var m=document.getElementById('mInfo'); var t=document.getElementById('infoTitle'); var b=document.getElementById('infoBody'); m.classList.add('active');
+  if(tipo==='info'){ t.innerText='Información completa'; b.innerHTML='MaxShop 365 es comunidad de comercios adheridos de Catamarca.<br><br>Registro gratis $20000 + ruleta diaria FREE.<br>1 credito = $1 peso.<br><br>PRO $5000 ilimitado 25% OFF siempre.'; }
+  if(tipo==='terminos'){ t.innerText='Términos'; b.innerHTML='1 Credito personal<br>2 Comercio pide DNI<br>3 PRO ilimitado<br>4 MaxShop intermedia beneficios<br>5 Mal uso baja'; }
+  if(tipo==='priv'){ t.innerText='Privacidad'; b.innerHTML='Ley 25.326. Datos en Firebase seguro Google. No vendemos datos. Notificaciones push FCM para ofertas.'; }
+  if(tipo==='comercioInfo'){ t.innerText='Soy comercio'; b.innerHTML='Registra con 3 fotos. A
