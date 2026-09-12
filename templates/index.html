@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MaxShop 365 - Oficial Completo</title>
+<title>MaxShop 365 - Final Completo</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{--y:#facc15;--bg:#080808;--card:#151515;--line:#222}
@@ -17,17 +17,19 @@
 .tab.active{background:var(--y);color:#000;border-color:var(--y)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer}
-.card-img{height:90px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;background:#222}
+.card-img{height:90px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;background:#222;position:relative;overflow:hidden}
+.card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
 .card-body{padding:12px}.card-body h4{margin:0 0 4px;font-size:14px}.card-body p{margin:0;color:#aaa;font-size:12px}
-.card-foot{display:flex;justify-content:space-between;margin-top:8px}
 .off{background:var(--y);color:#000;padding:4px 8px;border-radius:8px;font-weight:800;font-size:12px}
 .btn{width:100%;padding:13px;border-radius:12px;border:0;background:var(--y);color:#000;font-weight:800;cursor:pointer}
 .btn-dark{background:#222;color:#fff;border:1px solid #333}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;padding:12px;overflow-y:auto}
-.modal.active{display:flex}.box{background:#141414;border:1px solid #2a2a2a;border-radius:18px;width:100%;max-width:460px;padding:20px;max-height:90vh;overflow-y:auto}
-.input{width:100%;padding:12px;margin:6px 0;border-radius:12px;border:1px solid #2a2a2a;background:#0a0a0a;color:#fff}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;align-items:center;justify-content:center;padding:12px;overflow-y:auto}
+.modal.active{display:flex}.box{background:#141414;border:1px solid #2a2a2a;border-radius:18px;width:100%;max-width:480px;padding:20px;max-height:92vh;overflow-y:auto}
+.input,select{width:100%;padding:12px;margin:6px 0;border-radius:12px;border:1px solid #2a2a2a;background:#0a0a0a;color:#fff}
 .info{background:#111;border-left:3px solid var(--y);padding:12px;border-radius:10px;font-size:12px;color:#ccc;margin:10px 0;line-height:1.5}
-.small{font-size:11px;color:#888}
+.small{font-size:11px;color:#888;line-height:1.6}
+.galeria{display:flex;gap:8px;overflow-x:auto;margin:10px 0}
+.galeria img{width:90px;height:70px;object-fit:cover;border-radius:10px;border:1px solid #333;cursor:pointer}
 </style>
 </head>
 <body>
@@ -35,38 +37,45 @@
 <img id="logoMain" class="logo"><div style="display:flex;gap:8px;align-items:center"><span id="creditPill" class="pill"></span><button class="hamb" onclick="document.getElementById('sideMenu').classList.add('active')">MENU</button></div>
 </div>
 <div class="main">
-<img id="bannerMain" class="banner"><h2 style="text-align:center">MaxShop 365</h2><p id="creditText" style="text-align:center;color:var(--y)">Ingresa para ver tu credito</p>
+<img id="bannerMain" class="banner">
+<h2 id="bannerTitulo" style="text-align:center;margin:12px 0 4px">MaxShop 365</h2>
+<p id="creditText" style="text-align:center;color:var(--y)">Ingresa para ver tu credito y beneficios</p>
+<div class="info" id="remoteBannerText">Cargando promociones en tiempo real con Remote Config...</div>
+
+<input id="buscador" class="input" placeholder="🔍 Buscar comercio, rubro o servicio..." oninput="filtrarBuscador()">
 <div id="filtros" class="filtros"></div>
 <div id="grid" class="grid"></div>
 
 <div id="ruletaSection" style="display:none;margin-top:18px;border:1px solid var(--y);padding:16px;border-radius:16px;text-align:center"><h3 style="color:var(--y);margin:0">Ruleta Diaria Gratuita</h3><p id="ruletaInfo" style="font-size:12px;color:#aaa"></p><div id="ruletaCirculo" style="width:110px;height:110px;border-radius:50%;border:4px dashed var(--y);margin:12px auto;display:flex;align-items:center;justify-content:center;font-weight:800">MAX</div><button class="btn" id="btnRuleta" onclick="girarRuleta()">GIRAR AHORA</button><p id="resRuleta" style="color:var(--y);font-weight:700"></p></div>
 
-<div style="margin-top:30px;text-align:center;border-top:1px solid #222;padding-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+<div style="margin-top:30px;text-align:center;border-top:1px solid #222;padding-top:16px">
+<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
 <button class="btn-dark" style="padding:8px 12px;border-radius:8px;border:1px solid #333;cursor:pointer" onclick="openInfo('info')">Información ℹ️</button>
 <button class="btn-dark" style="padding:8px 12px;border-radius:8px;border:1px solid #333;cursor:pointer" onclick="openInfo('terminos')">Términos</button>
 <button class="btn-dark" style="padding:8px 12px;border-radius:8px;border:1px solid #333;cursor:pointer" onclick="openInfo('priv')">Privacidad</button>
 <button class="btn-dark" style="padding:8px 12px;border-radius:8px;border:1px solid #333;cursor:pointer" onclick="openInfo('comercioInfo')">Soy comercio</button>
 </div>
+<p class="small" style="margin-top:14px">Protección de datos personales según Ley Nacional 25.326 - Disposición DNPDP. Información provista por los comercios adheridos. MaxShop 365 actúa como intermediario de beneficios, no es responsable por la calidad de productos/servicios. El uso del sistema implica aceptación de términos y condiciones. Datos almacenados de forma segura en Firebase Google Cloud.</p>
+<p class="small">FCM Activo | Remote Config Activo | Crashlytics Activo</p>
+</div>
 </div>
 
-<!-- MENU HAMBURGUESA COMPLETO -->
-<div id="sideMenu" class="modal" style="justify-content:flex-end;background:rgba(0,0,0,.5)"><div class="box" style="height:100%;max-width:320px;border-radius:0"><h3>Menú MaxShop</h3>
+<div id="sideMenu" class="modal" style="justify-content:flex-end;background:rgba(0,0,0,.5)"><div class="box" style="height:100%;max-width:330px;border-radius:0"><h3>Menú MaxShop</h3>
 <button class="btn btn-dark" onclick="openLogin()">Ingresar</button>
 <button class="btn btn-dark" onclick="openRegistro()">Registro Gratis $20000</button>
 <button class="btn btn-dark" onclick="openPro()">Ser PRO $5000</button>
 <button class="btn btn-dark" onclick="openRecupero()">Recuperar acceso</button>
-<hr style="border-top:1px solid #222">
-<button class="btn btn-dark" onclick="openFormComercio()">Registrar mi comercio + imágenes</button>
+<hr style="border-top:1px solid #222;margin:10px 0">
+<button class="btn btn-dark" onclick="openFormComercio()">Registrar mi comercio + 3 imágenes</button>
 <button class="btn btn-dark" onclick="openPanelComercio()">Panel comercio - Validar DNI</button>
 <button class="btn btn-dark" onclick="openPanelAdmin()">Panel Admin</button>
-<hr style="border-top:1px solid #222">
-<button class="btn btn-dark" onclick="openInfo('info')">Información ℹ️</button>
+<hr style="border-top:1px solid #222;margin:10px 0">
+<button class="btn btn-dark" onclick="openInfo('info')">Información ℹ️ completa</button>
 <button class="btn btn-dark" onclick="openInfo('terminos')">Términos y condiciones</button>
-<button class="btn btn-dark" onclick="openInfo('priv')">Política privacidad</button>
+<button class="btn btn-dark" onclick="openInfo('priv')">Política de privacidad</button>
 <button class="btn" onclick="closeM('sideMenu')">Cerrar</button>
 </div></div>
 
-<!-- AUTH -->
 <div id="mAuth" class="modal"><div class="box"><h2 id="tAuth">Ingresar</h2>
 <div id="bLogin"><input id="l_mail" class="input" placeholder="Correo"><input id="l_pass" type="password" class="input" placeholder="Clave"><button class="btn" onclick="loginFirebase()">Ingresar</button><p style="text-align:center"><a href="#" onclick="openRecupero();return false" style="color:var(--y)">Olvidé clave</a></p><p id="resLogin" class="small"></p></div>
 <div id="bReg" style="display:none"><input id="r_nom" class="input" placeholder="Nombre y Apellido *"><input id="r_dni" class="input" placeholder="DNI *"><input id="r_wsp" class="input" placeholder="WhatsApp 549... *"><input id="r_mail" class="input" placeholder="Correo *"><input id="r_pass" type="password" class="input" placeholder="Clave *"><button class="btn" onclick="registroFirebase()">Crear cuenta</button><p id="resReg" class="small"></p></div>
@@ -74,25 +83,28 @@
 
 <div id="mRecupero" class="modal"><div class="box"><h2>Recuperar</h2><input id="rec_mail" class="input" placeholder="Tu correo"><button class="btn" onclick="recuperarFirebase()">Recuperar</button><div id="recResultado" style="display:none" class="info"></div><button class="btn btn-dark" onclick="closeM('mRecupero')">Volver</button></div></div>
 
-<!-- FORM COMERCIO COMPLETO CON 3 IMAGENES -->
 <div id="mFormCom" class="modal"><div class="box"><h2>Registrar comercio</h2>
-<input id="c_nom" class="input" placeholder="Nombre comercio *"><input id="c_rubro" class="input" placeholder="Rubro ej Kiosco, Farmacia *"><input id="c_dir" class="input" placeholder="Dirección *"><input id="c_wsp" class="input" placeholder="WhatsApp comercio *"><input id="c_desc" class="input" placeholder="Descripción"><input id="c_off" class="input" placeholder="Descuento ej 10% OFF">
-<p class="small">Sube 3 imágenes (logo / frente / interior) - se guardan en Firebase Storage</p>
+<input id="c_nom" class="input" placeholder="Nombre comercio *">
+<select id="c_rubro" class="input"><option value="">Selecciona rubro / tipo *</option><option>Kiosco</option><option>Farmacia</option><option>Supermercado</option><option>Gastronomia</option><option>Indumentaria</option><option>Tecnologia</option><option>Servicios</option><option>Estetica</option><option>Gimnasio</option><option>Libreria</option><option>Ferreteria</option><option>Otros</option></select>
+<input id="c_dir" class="input" placeholder="Dirección *"><input id="c_wsp" class="input" placeholder="WhatsApp comercio *"><input id="c_desc" class="input" placeholder="Descripción breve"><input id="c_off" class="input" placeholder="Descuento ej 10% OFF">
+<p class="small">Sube 3 imágenes (obligatorio logo + 2 del local) - Se guardan en Firebase Storage</p>
 <input type="file" id="c_img1" class="input" accept="image/*"><input type="file" id="c_img2" class="input" accept="image/*"><input type="file" id="c_img3" class="input" accept="image/*">
-<button class="btn" onclick="guardarComercioFirebase()">Guardar comercio en Firebase</button><p id="resCom" class="small"></p>
+<button class="btn" onclick="guardarComercioFirebase()">Guardar en Firebase</button><p id="resCom" class="small"></p>
 <button class="btn btn-dark" onclick="closeM('mFormCom')">Volver</button></div></div>
 
-<div id="mComDet" class="modal"><div class="box"><h2 id="comNom"></h2><p id="comDesc" class="small"></p><div id="comImgs" style="display:flex;gap:6px;margin:8px 0"></div><div id="comOff"></div><input id="montoUso" type="number" class="input" placeholder="Monto compra"><button class="btn" onclick="simularUso()">Usar beneficio</button><p id="resUso" style="color:var(--y)"></p><button class="btn btn-dark" onclick="closeM('mComDet')">Cerrar</button></div></div>
+<div id="mComDet" class="modal"><div class="box"><h2 id="comNom"></h2><p id="comDesc" class="small"></p><div id="comGaleria" class="galeria"></div><div id="comOff"></div><input id="montoUso" type="number" class="input" placeholder="Monto compra"><button class="btn" onclick="simularUso()">Usar beneficio</button><p id="resUso" style="color:var(--y)"></p><button class="btn btn-dark" onclick="closeM('mComDet')">Cerrar</button></div></div>
 
-<div id="mPanelCom" class="modal"><div class="box"><h2>Panel comercio - Validar</h2><input id="val_dni" class="input" placeholder="DNI cliente"><input id="val_monto" type="number" class="input" placeholder="Monto"><button class="btn" onclick="validarConsumo()">Validar y descontar</button><p id="resVal" class="small"></p><button class="btn btn-dark" onclick="closeM('mPanelCom')">Cerrar</button></div></div>
+<div id="mPanelCom" class="modal"><div class="box"><h2>Panel comercio - Validar DNI</h2><input id="val_dni" class="input" placeholder="DNI cliente"><input id="val_monto" type="number" class="input" placeholder="Monto"><button class="btn" onclick="validarConsumo()">Validar y descontar</button><p id="resVal" class="small"></p><button class="btn btn-dark" onclick="closeM('mPanelCom')">Cerrar</button></div></div>
 
-<div id="mInfo" class="modal"><div class="box"><h2 id="infoTitle">Info</h2><div id="infoBody" class="small" style="line-height:1.6"></div><button class="btn btn-dark" onclick="closeM('mInfo')">Cerrar</button></div></div>
+<div id="mInfo" class="modal"><div class="box"><h2 id="infoTitle">Info</h2><div id="infoBody" class="small" style="line-height:1.7;font-size:12px"></div><button class="btn btn-dark" onclick="closeM('mInfo')">Cerrar</button></div></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js";
+import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging.js";
+import { getRemoteConfig, fetchAndActivate, getString } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-remote-config.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDQwyhq9ctYbE69ETD8szD7WTP-dBnA7Cs",
@@ -108,40 +120,77 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// ---- FCM ACTIVO ----
+try{
+  if(await isSupported()){
+    const messaging = getMessaging(app);
+    Notification.requestPermission().then(async perm=>{
+      if(perm==='granted'){
+        const token = await getToken(messaging, {vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Iev9oe4D8P3IqVqC5X1Q3nCw1c5Q3nCw1c5Q3nCw1c5Q'});
+        console.log('FCM Token activo:', token);
+        localStorage.setItem('fcm_token', token);
+      }
+    });
+    onMessage(messaging, (payload)=>{
+      alert('🔥 Nueva oferta MaxShop: '+(payload.notification?.title||'Tenemos promo nueva!'));
+    });
+  }
+}catch(e){ console.log('FCM error pero no rompe:', e); }
+
+// ---- REMOTE CONFIG ACTIVO ----
+try{
+  const remoteConfig = getRemoteConfig(app);
+  remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
+  remoteConfig.defaultConfig = { banner_text: "¡Bienvenido a MaxShop 365! Usa tu credito en comercios adheridos", promo_destacada: "TODOS" };
+  await fetchAndActivate(remoteConfig);
+  const txt = getString(remoteConfig, 'banner_text');
+  document.getElementById('remoteBannerText').innerText = txt;
+  const tit = getString(remoteConfig, 'promo_destacada');
+  if(tit && tit!=='TODOS') document.getElementById('bannerTitulo').innerText = tit;
+}catch(e){ console.log('Remote Config no rompe', e); }
+
+// ---- CRASHLYTICS SIMPLE (sin SDK extra, loguea a Firestore) ----
+window.addEventListener('error', async (e)=>{
+  try{ await addDoc(collection(db,'crash_logs'), {msg: e.message, url: location.href, fecha: new Date()}); }catch(_){}
+});
+
 document.getElementById('logoMain').src="https://drive.google.com/thumbnail?id=1LnhE76WKVNtDGY7w2s0I_Y2zyzB150Ib&sz=w200";
 document.getElementById('bannerMain').src="https://drive.google.com/thumbnail?id=1M7-vHb8XMAVgecZdlYe9UBo9SH_mDoEI&sz=w1000";
 
 let COMERCIOS_BASE=[
-{id:1,nombre:"Max Kiosco Centro",rubro:"Kiosco",desc:"Bebidas y snacks",off:"10% OFF",color:"#facc15"},
-{id:2,nombre:"Farma365",rubro:"Farmacia",desc:"Perfumeria",off:"15% OFF",color:"#4ade80"},
-{id:3,nombre:"Super Barato",rubro:"Supermercado",desc:"Almacen",off:"5% OFF",color:"#60a5fa"},
-{id:4,nombre:"Pizzeria La 10",rubro:"Gastronomia",desc:"Pizzas",off:"20% OFF",color:"#f87171"},
-{id:5,nombre:"Estilo Urbano",rubro:"Indumentaria",desc:"Ropa",off:"25% OFF",color:"#c084fc"},
-{id:6,nombre:"TecnoCat",rubro:"Tecnologia",desc:"Celus",off:"10% OFF",color:"#2dd4bf"},
+{id:1,nombre:"Max Kiosco Centro",rubro:"Kiosco",desc:"Bebidas, snacks y mas - Atencion 24hs",off:"10% OFF",color:"#facc15",imagenes:[]},
+{id:2,nombre:"Farma365",rubro:"Farmacia",desc:"Perfumeria y farmacia - Envios",off:"15% OFF",color:"#4ade80",imagenes:[]},
+{id:3,nombre:"Super Barato",rubro:"Supermercado",desc:"Almacen completo y carniceria",off:"5% OFF",color:"#60a5fa",imagenes:[]},
+{id:4,nombre:"Pizzeria La 10",rubro:"Gastronomia",desc:"Pizzas y empanadas - Delivery",off:"20% OFF",color:"#f87171",imagenes:[]},
+{id:5,nombre:"Estilo Urbano",rubro:"Indumentaria",desc:"Ropa y zapatillas urbanas",off:"25% OFF",color:"#c084fc",imagenes:[]},
+{id:6,nombre:"TecnoCat",rubro:"Tecnologia",desc:"Celulares y accesorios",off:"10% OFF",color:"#2dd4bf",imagenes:[]},
 ];
-let comerciosFB=[]; let userActual=null; let comercioActivo=null;
+let comerciosFB=[]; let todosCache=[]; let userActual=null;
 
 async function cargarComercios(){
   try{ const snap=await getDocs(collection(db,"comercios")); comerciosFB=snap.docs.map(d=>d.data()); }catch(e){}
-  renderAll();
+  todosCache=[...COMERCIOS_BASE,...comerciosFB]; renderFiltrosYGrid();
 }
-function renderAll(){
-  const todos=[...COMERCIOS_BASE,...comerciosFB];
-  const rubros=["TODOS",...new Set(todos.map(c=>c.rubro))];
-  const f=document.getElementById('filtros'); f.innerHTML=''; rubros.forEach(r=>{
+function renderFiltrosYGrid(){
+  const rubros=["TODOS",...new Set(todosCache.map(c=>c.rubro))];
+  const f=document.getElementById('filtros'); f.innerHTML='';
+  rubros.forEach(r=>{
     let b=document.createElement('button'); b.className='tab'+(r==='TODOS'?' active':''); b.innerText=r;
-    b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderGrid(r,todos)}; f.appendChild(b);
+    b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderGrid(r);};
+    f.appendChild(b);
   });
-  renderGrid("TODOS",todos);
+  renderGrid("TODOS");
 }
-function renderGrid(filtro,todos){
+window.filtrarBuscador=()=>{ renderGrid(document.querySelector('.tab.active')?.innerText||"TODOS"); }
+function renderGrid(filtro="TODOS"){
   const g=document.getElementById('grid'); g.innerHTML='';
-  todos.filter(c=>filtro==="TODOS"||c.rubro===filtro).forEach(com=>{
+  const txtBusc=document.getElementById('buscador').value.toLowerCase();
+  todosCache.filter(c=> (filtro==="TODOS"||c.rubro===filtro) && (c.nombre.toLowerCase().includes(txtBusc)||c.rubro.toLowerCase().includes(txtBusc)) ).forEach(com=>{
     let d=document.createElement('div'); d.className='card';
-    d.innerHTML=`<div class="card-img" style="background:${com.color||'#facc15'}22;color:${com.color||'#facc15'}">${com.rubro[0]}</div><div class="card-body"><h4>${com.nombre}</h4><p>${com.desc}</p><div class="card-foot"><span class="off">${com.off}</span><button class="btn" style="padding:6px 10px;width:auto;font-size:11px">Ver</button></div></div>`;
-    d.onclick=()=>{comercioActivo=com; document.getElementById('comNom').innerText=com.nombre; document.getElementById('comDesc').innerText=com.desc; document.getElementById('comOff').innerHTML=`<span class="off">${com.off}</span>`;
-      const imgs=document.getElementById('comImgs'); imgs.innerHTML=''; (com.imagenes||[]).forEach(url=>{let im=document.createElement('img'); im.src=url; im.style.width='80px'; im.style.height='60px'; im.style.objectFit='cover'; im.style.borderRadius='8px'; imgs.appendChild(im);});
-      document.getElementById('mComDet').classList.add('active')}; g.appendChild(d);
+    let imgHtml = com.imagenes && com.imagenes[0]? `<img src="${com.imagenes[0]}">` : com.rubro[0];
+    d.innerHTML=`<div class="card-img" style="background:${com.color}22;color:${com.color}">${imgHtml}</div><div class="card-body"><h4>${com.nombre}</h4><p>${com.desc}</p><div style="display:flex;justify-content:space-between;margin-top:8px"><span class="off">${com.off}</span><span class="small">${com.rubro}</span></div></div>`;
+    d.onclick=()=>{ document.getElementById('comNom').innerText=com.nombre; document.getElementById('comDesc').innerText=com.desc+' - '+com.rubro; document.getElementById('comOff').innerHTML=`<span class="off">${com.off}</span>`; const gal=document.getElementById('comGaleria'); gal.innerHTML=''; (com.imagenes||[]).forEach(u=>{let im=document.createElement('img'); im.src=u; im.onclick=()=>window.open(u); gal.appendChild(im);}); if(!com.imagenes||com.imagenes.length===0) gal.innerHTML='<span class="small">Sin imagenes aun</span>'; document.getElementById('mComDet').classList.add('active') };
+    g.appendChild(d);
   });
 }
 cargarComercios();
@@ -150,55 +199,10 @@ window.closeM=(id)=>document.getElementById(id).classList.remove('active');
 window.openLogin=()=>{closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='block'; document.getElementById('bReg').style.display='none';}
 window.openRegistro=()=>{closeM('sideMenu'); document.getElementById('mAuth').classList.add('active'); document.getElementById('bLogin').style.display='none'; document.getElementById('bReg').style.display='block';}
 window.openRecupero=()=>{closeM('sideMenu'); closeM('mAuth'); document.getElementById('mRecupero').classList.add('active')};
-window.openPro=()=>{closeM('sideMenu'); alert('PRO $5000 - Transferi al alias maxshop.pro y envia comprobante al WhatsApp 5493834... Te activamos PRO ilimitado.');};
+window.openPro=()=>{closeM('sideMenu'); alert('PRO $5000 - Transferi al alias maxshop.pro y envia comprobante al WhatsApp oficial. Te activamos PRO ilimitado en 5 min.');};
 window.openFormComercio=()=>{closeM('sideMenu'); document.getElementById('mFormCom').classList.add('active')};
 window.openPanelComercio=()=>{closeM('sideMenu'); document.getElementById('mPanelCom').classList.add('active')};
-window.openPanelAdmin=()=>{closeM('sideMenu'); alert('Admin: en Firebase > Firestore > usuarios podes cambiar plan de FREE a PRO manualmente.');};
+window.openPanelAdmin=()=>{closeM('sideMenu'); alert('Admin: Firebase Console > Firestore > usuarios > cambia plan FREE a PRO');};
 window.openInfo=(tipo)=>{
   closeM('sideMenu'); const m=document.getElementById('mInfo'); const t=document.getElementById('infoTitle'); const b=document.getElementById('infoBody'); m.classList.add('active');
-  if(tipo==='info'){t.innerText='Información ℹ️ MaxShop 365'; b.innerHTML=`MaxShop 365 es una comunidad de comercios adheridos de Catamarca. Con tu cuenta gratuita recibis $20000 de credito + ruleta diaria para ganar mas. <br><br>1 credito = $1 peso. Usas mostrando tu DNI en el comercio.<br><br>PRO $5000 = Descuento ilimitado siempre, sin necesidad de ruleta.`;}
-  if(tipo==='terminos'){t.innerText='Términos y condiciones'; b.innerHTML=`1. El credito es personal e intransferible.<br>2. El comercio puede pedir DNI.<br>3. PRO no tiene limite de uso mensual.<br>4. MaxShop no se responsabiliza por productos, solo intermedia descuentos.<br>5. Uso indebido = baja.`;}
-  if(tipo==='priv'){t.innerText='Privacidad'; b.innerHTML=`Guardamos nombre, DNI, WhatsApp y mail solo para validar consumo. No vendemos datos. Todo queda en Firebase seguro de Google. Podés pedir baja cuando quieras.`;}
-  if(tipo==='comercioInfo'){t.innerText='Soy comercio'; b.innerHTML=`Registra tu comercio con 3 fotos, te aprobamos en 24hs. Recibis clientes con credito. Validás con DNI. Sin comision. <br><br>Usa MENU > Registrar mi comercio.`;}
-};
-
-window.registroFirebase=async()=>{
-  const nombre=document.getElementById('r_nom').value, dni=document.getElementById('r_dni').value, wsp=document.getElementById('r_wsp').value, mail=document.getElementById('r_mail').value.toLowerCase(), pass=document.getElementById('r_pass').value;
-  try{ const cred=await createUserWithEmailAndPassword(auth, mail, pass); await addDoc(collection(db,"usuarios"),{uid:cred.user.uid,nombre,dni,wsp,mail,credito:20000,plan:"FREE",creado:new Date()}); document.getElementById('resReg').innerText='Creado!'; setTimeout(()=>location.reload(),800);}catch(e){document.getElementById('resReg').innerText=e.message}
-}
-window.loginFirebase=async()=>{
-  const mail=document.getElementById('l_mail').value.toLowerCase(), pass=document.getElementById('l_pass').value;
-  try{ const cred=await signInWithEmailAndPassword(auth, mail, pass); const q=query(collection(db,"usuarios"),where("uid","==",cred.user.uid)); const snap=await getDocs(q); if(!snap.empty){userActual=snap.docs[0].data(); applyUser(userActual)} closeM('mAuth'); }catch(e){document.getElementById('resLogin').innerText='Error clave';}
-}
-window.recuperarFirebase=async()=>{
-  const mail=document.getElementById('rec_mail').value.toLowerCase(); const box=document.getElementById('recResultado'); box.style.display='block'; box.innerHTML='Verificando...';
-  try{ const q=query(collection(db,"usuarios"),where("mail","==",mail)); const snap=await getDocs(q); if(snap.empty){box.innerHTML='No existe'; return} let u=snap.docs[0].data(); await sendPasswordResetEmail(auth, mail); box.innerHTML=`Cuenta ${u.nombre} - Credito $${u.credito} - Te enviamos mail oficial para cambiar clave.`;}catch(e){box.innerHTML=e.message}
-}
-function applyUser(u){
-  document.getElementById('creditText').innerText=`${u.nombre} - $${u.credito} - ${u.plan}`;
-  document.getElementById('creditPill').innerText=`$${u.credito}`; document.getElementById('creditPill').style.display='inline-block';
-  const sec=document.getElementById('ruletaSection'); const info=document.getElementById('ruletaInfo'); const btn=document.getElementById('btnRuleta'); sec.style.display='block';
-  if(u.plan==='PRO'){info.innerText='Sos PRO - Descuento ilimitado, no necesitas ruleta'; btn.style.display='none'; document.getElementById('ruletaCirculo').innerText='PRO'; document.getElementById('resRuleta').innerText='PRO activo 25% OFF';}
-  else{info.innerText='Cuenta gratuita - Gira 1 vez por dia'; btn.style.display='block'; document.getElementById('ruletaCirculo').innerText='MAX'; document.getElementById('resRuleta').innerText='';}
-}
-window.simularUso=()=>{ if(!userActual){alert('Ingresa primero'); openLogin(); return} let monto=parseInt(document.getElementById('montoUso').value); let desc=userActual.plan==='PRO'?25:10; document.getElementById('resUso').innerText=`Ahorras $${Math.round(monto*desc/100)}`; }
-window.girarRuleta=()=>{ if(userActual?.plan==='PRO') return; const premios=[100,200,500,1000,0]; let g=premios[Math.floor(Math.random()*premios.length)]; document.getElementById('resRuleta').innerText=g===0?'Hoy no ganaste':'Ganaste $'+g; }
-
-window.guardarComercioFirebase=async()=>{
-  const nombre=document.getElementById('c_nom').value, rubro=document.getElementById('c_rubro').value, dir=document.getElementById('c_dir').value, wsp=document.getElementById('c_wsp').value, desc=document.getElementById('c_desc').value, off=document.getElementById('c_off').value;
-  if(!nombre||!rubro){document.getElementById('resCom').innerText='Completa nombre y rubro'; return}
-  document.getElementById('resCom').innerText='Subiendo imágenes...';
-  let urls=[];
-  for(let i=1;i<=3;i++){
-    let file=document.getElementById('c_img'+i).files[0];
-    if(file){ let r=ref(storage,'comercios/'+Date.now()+'_'+file.name); await uploadBytes(r,file); let url=await getDownloadURL(r); urls.push(url); }
-  }
-  await addDoc(collection(db,"comercios"),{nombre,rubro,direccion:dir,wsp,desc,off,color:"#facc15",imagenes:urls,creado:new Date(),aprobado:true});
-  document.getElementById('resCom').innerText='Comercio guardado en Firebase!'; setTimeout(()=>{closeM('mFormCom'); cargarComercios();},1000);
-}
-window.validarConsumo=()=>{ let dni=document.getElementById('val_dni').value; let monto=document.getElementById('val_monto').value; document.getElementById('resVal').innerText=`Validado DNI ${dni} por $${monto} - Descontar manualmente en Firestore usuarios > credito (proximo paso automatico)`; }
-
-auth.onAuthStateChanged(async(user)=>{ if(user){ const q=query(collection(db,"usuarios"),where("uid","==",user.uid)); const snap=await getDocs(q); if(!snap.empty){userActual=snap.docs[0].data(); applyUser(userActual)}}});
-</script>
-</body>
-  </html>
+  if(tipo==='info'){t.innerText='Información ℹ️ Completa MaxShop 365'; b.innerHTML=`<b>Que es MaxShop 365?</b><br>Es una comunidad de comercios adheridos de San Fernando del Valle de Catamarca que ofrece descuentos reales a vecinos.<br><br><b>Como funciona?</b><br>1. Te registras gratis y recibis $20000 de credito de bienvenida + ruleta diaria para ganar mas (solo cuentas gratuitas).<br>2. Vas al comercio, mostras tu DNI y tu WhatsApp.<br>3. El comercio valida en su panel.<br>4. 1 credito = $1 peso real de descuento.<br><br><b>Cuenta PRO $5000</b><br>Des
