@@ -1,68 +1,67 @@
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from datetime import datetime
 import uuid, os
 
-app = FastAPI(title="MaxShop v3.0 FINAL")
+app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# --- MODELOS ---
 class PagoQR(BaseModel):
     comercio_id: str
     monto: float
-    tipo_pago: str = "efectivo"  # efectivo o mp
+    tipo_pago: str = "efectivo"
 
 class LeadPrestamo(BaseModel):
     nombre: str
     tipo: str
     monto: str = ""
 
-# --- ENDPOINTS CORE ---
-@app.get("/")
-def root(): return {"status":"MaxShop v3.0 FINAL - Formato que te enamoró - Listo para campañas"}
+# --- RUTA RAIZ SIRVE TU APP CON LOGO OJO (NO EL JSON NEGRO) ---
+@app.get("/", response_class=HTMLResponse)
+def serve_app():
+    if os.path.exists("index.html"):
+        with open("index.html", "r", encoding="utf-8") as f:
+            return f.read()
+    # Si no hay index.html, devuelve la app embebida FINAL
+    return """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Max%Shop - DESCUENTOS DE LOCOS</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap" rel="stylesheet">
+<style>*{font-family:Inter,sans-serif}.logo-eye{width:34px;height:34px;background:white;border:3px solid #1e3a8a;border-radius:50%;position:relative;display:inline-flex;align-items:center;justify-content:center;margin:0 1px}.logo-eye-pupil{width:18px;height:18px;background:#ff6a00;border-radius:50%;display:flex;align-items:center;justify-content:center}.logo-eye-pupil::after{content:'';width:8px;height:8px;background:#1e3a8a;border-radius:50%}.logo-tongue{position:absolute;bottom:-8px;right:2px;width:10px;height:10px;background:#ff6a00;border-radius:0 0 10px 10px}.confetti{position:absolute;width:10px;height:10px;animation:fall 3s linear infinite}@keyframes fall{0%{transform:translateY(-100vh) rotate(0deg)}100%{transform:translateY(100vh) rotate(720deg)}}</style>
+</head>
+<body class="bg-[#f5f7fb] min-h-screen">
+<div class="max-w-[390px] mx-auto bg-white min-h-screen shadow-2xl relative pb-[80px]">
+<header class="bg-white px-4 pt-3 pb-2 sticky top-0 z-50 border-b"><div class="flex items-center justify-between"><div class="flex items-center"><span class="text-[30px] font-black text-[#1e3a8a]">Max</span><span class="text-[30px] font-black text-[#ff6a00]">%</span><span class="text-[30px] font-black text-[#1e3a8a] flex items-center">Sh<div class="logo-eye"><div class="logo-eye-pupil"></div><div class="logo-tongue"></div></div>p</span></div><div class="flex gap-2"><div class="w-8 h-8 bg-[#fff3eb] rounded-full flex items-center justify-center">🔔</div><div class="w-8 h-8 bg-[#ff6a00] rounded-full flex items-center justify-center text-white">👤</div></div></div><div class="text-[11px] font-bold tracking-[0.15em] text-[#1e3a8a]">DESCUENTOS DE LOCOS</div></header>
+<div class="mx-4 mt-4 bg-[#1e3a8a] rounded-[20px] p-4 text-white"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-12 h-12 bg-[#ff6a00] rounded-full flex items-center justify-center text-xl">👛</div><div><div class="text-[12px] opacity-80">Saldo Cashback:</div><div class="text-[32px] font-black">$1.250</div></div></div><span class="bg-white text-[#ff6a00] text-[11px] font-bold px-3 py-1 rounded-full">Disponible</span></div><div class="text-[11px] opacity-70 mt-2">Se acredita en 24h • Válido 30 días • Tope 30% $300 por compra</div><button onclick="pagarQR()" class="w-full mt-4 bg-[#ff6a00] text-white font-black py-3.5 rounded-full">◫ PAGAR CON QR</button></div>
+<div class="px-4 mt-6"><div class="flex justify-between"><h2 class="font-bold text-[#1e3a8a]">Tiendas cercanas</h2><span class="text-[#ff6a00] text-[12px]">Ver todo ›</span></div><div class="mt-3 bg-[#f9fafb] border-2 border-dashed rounded-[16px] p-8 text-center"><div class="text-3xl">🗺️</div><div class="font-bold text-[#1e3a8a] text-[14px]">Aún no hay comercios cerca tuyo</div><div class="text-[11px] text-gray-500">Sé el primero en descubrir descuentos en Catamarca</div><button class="mt-3 bg-[#1e3a8a] text-white text-[12px] px-4 py-2 rounded-full">Sumar mi comercio gratis</button></div></div>
+<div id="cashback-modal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4"><div class="bg-white rounded-[24px] p-6 w-full max-w-[320px] text-center relative"><div id="confetti-container" class="absolute inset-0 pointer-events-none"></div><div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto text-2xl">✅</div><div class="font-black text-[22px] mt-3 text-[#1e3a8a]">¡Cashback recibido!</div><div class="text-[28px] font-black text-[#ff6a00]">+$300 CASHBACK</div><div class="text-[12px] text-gray-500">Acreditado a tu saldo</div><div class="mt-4 bg-[#fff7ed] rounded-xl p-3 flex gap-3 text-left"><img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=80" class="w-16 h-16 rounded-lg object-cover"><div><div class="font-bold text-[13px]">Panadería El Sol</div><div class="text-[11px] text-gray-600">20% OFF en panadería artesanal</div><div class="text-[#ff6a00] text-[11px] font-bold mt-1">Ver Promoción →</div></div></div><button onclick="document.getElementById('cashback-modal').classList.add('hidden')" class="w-full mt-4 bg-[#1e3a8a] text-white py-3 rounded-full font-bold">¡Genial!</button></div></div>
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t flex justify-around py-2 z-50"><button class="flex flex-col items-center text-[#ff6a00]"><span class="text-xl">🏠</span><span class="text-[10px] font-bold">Inicio</span></button><button class="flex flex-col items-center text-gray-400"><span class="text-xl">🏷️</span><span class="text-[10px]">Ofertas</span></button><button onclick="pagarQR()" class="w-14 h-14 bg-[#ff6a00] rounded-full -mt-6 flex items-center justify-center text-white text-xl shadow-lg border-4 border-[#f5f7fb]">◫</button><button class="flex flex-col items-center text-gray-400"><span class="text-xl">💵</span><span class="text-[10px]">Cashback</span></button><button class="flex flex-col items-center text-gray-400"><span class="text-xl">👤</span><span class="text-[10px]">Perfil</span></button></nav>
+</div>
+<script>function pagarQR(){const c=document.getElementById('confetti-container');c.innerHTML='';for(let i=0;i<30;i++){let d=document.createElement('div');d.className='confetti';d.style.left=Math.random()*100+'%';d.style.background=['#ff6a00','#1e3a8a','#22c55e'][Math.floor(Math.random()*3)];c.appendChild(d);}document.getElementById('cashback-modal').classList.remove('hidden');fetch('/api/wallet/pagar-qr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({comercio_id:'demo',monto:1000})});}</script>
+</body>
+</html>
+    """
+
+@app.get("/api/status")
+def status_api():
+    return {"status":"MaxShop v3.0 FINAL - API OK - Listo para campañas"}
 
 @app.post("/api/wallet/pagar-qr")
 def pagar_qr(pago: PagoQR):
-    # Lógica final: Bienvenida $1500 tope 30% $300, cashback 1.2%, comisión 2.5%
     comision = pago.monto * 0.025
     cashback = pago.monto * 0.012
     comprobante_id = f"MAX-{uuid.uuid4().hex[:4].upper()}-{datetime.now().strftime('%d%m%Y')}"
     estado = "PENDIENTE ⏳" if pago.tipo_pago=="efectivo" else "PAGADO ✅"
-    # Si efectivo => genera saldo_pendiente_comision (Uber) para el comercio
-    # Si MP => descuenta deuda
-    return {
-        "comprobante_numero": comprobante_id,
-        "fecha_venta": datetime.now().strftime("%d/%m/%Y %H:%M"),
-        "monto_venta": pago.monto,
-        "comision_generada": round(comision,2),
-        "cashback_generado": round(cashback,2),
-        "estado": estado,
-        "mensaje": "Cashback acreditado en 24h • Válido 30 días"
-    }
+    return {"comprobante_numero": comprobante_id, "fecha_venta": datetime.now().strftime("%d/%m/%Y %H:%M"), "monto_venta": pago.monto, "comision_generada": round(comision,2), "cashback_generado": round(cashback,2), "estado": estado}
 
 @app.post("/api/prestamos/lead")
 def lead_prestamo(lead: LeadPrestamo):
-    # Guarda lead y deriva a WhatsApp tercerizado
-    log = f"{datetime.now()} - Lead {lead.tipo} {lead.monto} de {lead.nombre}"
-    print(log)
-    return {"status":"ok","wa_url": f"https://wa.me/5493834000000?text=Lead {lead.tipo} {lead.nombre} {lead.monto}"}
-
-@app.post("/api/comercios/registro")
-def registro_comercio(nombre: str, email: str, alias_mp: str):
-    return {"comercio_id": str(uuid.uuid4()), "status":"pendiente_verificacion", "mensaje":"Subí logo/banner/3 fotos en /upload"}
-
-@app.post("/api/comercios/upload")
-async def upload(file: UploadFile = File(...)):
-    return {"filename": file.filename, "url": f"/uploads/{file.filename}", "status":"ok"}
-
-@app.get("/api/comisiones/{comercio_id}")
-def comisiones(comercio_id: str):
-    # Devuelve comprobantes con fecha/hora ID PENDIENTE/PAGADO
-    return [{"comprobante_numero":"MAX-AB12-15092026","fecha_venta":"15/09/2026 14:32","monto_venta":1200,"comision":30,"estado":"PENDIENTE ⏳"}]
-
-# --- SQL PARA SUPABASE (pegar en SQL Editor) ---
-# CREATE TABLE comisiones_comercios (id uuid primary key default gen_random_uuid(), comercio_id text, comprobante_numero text unique, fecha_venta timestamp default now(), fecha_pago timestamp, monto_venta numeric, comision_generada numeric, tipo_pago text, estado text, cashback_otorgado numeric);
-# CREATE TABLE saldo_pendiente_comision (comercio_id text primary key, saldo_pendiente numeric default 0, updated_at timestamp default now());
-# CREATE TABLE leads_prestamos (id uuid primary key default gen_random_uuid(), nombre text, tipo text, monto text, created_at timestamp default now(), estado text default 'nuevo');
+    return {"status":"ok", "wa_url": f"https://wa.me/5493834000000?text=Lead {lead.tipo}"}
