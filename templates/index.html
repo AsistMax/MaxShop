@@ -1,227 +1,180 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MaxShop v3.0 FINAL - 100% Funcional</title>
+<title>Max%Shop - DESCUENTOS DE LOCOS</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
-.puntito-naranja{width:18px;height:18px;background:#ff6a00;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px #ff6a00,0 0 15px #ff6a00;animation:pulse 2s infinite}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+*{font-family:Inter,sans-serif}
+.logo-eye{width:34px;height:34px;background:white;border:3px solid #1e3a8a;border-radius:50%;position:relative;display:inline-flex;align-items:center;justify-content:center;margin:0 1px}
+.logo-eye-pupil{width:18px;height:18px;background:#ff6a00;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center}
+.logo-eye-pupil::after{content:'';width:8px;height:8px;background:#1e3a8a;border-radius:50%}
+.logo-tongue{position:absolute;bottom:-8px;right:2px;width:10px;height:10px;background:#ff6a00;border-radius:0 0 10px 10px}
+.confetti{position:absolute;width:10px;height:10px;animation:fall 3s linear infinite}
+@keyframes fall{0%{transform:translateY(-100vh) rotate(0deg)}100%{transform:translateY(100vh) rotate(720deg)}}
+.eye-pin{width:44px;height:44px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.eye-pin-inner{transform:rotate(45deg);width:28px;height:28px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative}
+.eye-pin-pupil{width:14px;height:14px;background:#ff6a00;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.eye-pin-pupil::after{content:'';width:6px;height:6px;background:#1e3a8a;border-radius:50%}
+.eye-pin-tongue{position:absolute;bottom:-4px;right:1px;width:6px;height:6px;background:#ff6a00;border-radius:0 0 6px 6px}
 </style>
 </head>
-<body class="bg-gray-50">
-<header class="bg-black text-white p-4 flex justify-between items-center sticky top-0 z-50">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center font-bold">M</div>
-<div><h1 class="font-bold">MaxShop v3.0 FINAL</h1><p class="text-xs text-gray-400">Comisión 2.5% única nacional • Bienvenida $1500 • Saldo pendiente Uber</p></div>
-</div>
-<nav class="flex gap-2 text-xs flex-wrap">
-<button onclick="show('usuario')" class="bg-orange-500 px-3 py-1 rounded">Usuario</button>
-<button onclick="show('comercio')" class="bg-gray-800 px-3 py-1 rounded">Comercio</button>
-<button onclick="show('institucion')" class="bg-gray-800 px-3 py-1 rounded">Institución</button>
-<button onclick="show('vendedor')" class="bg-green-600 px-3 py-1 rounded">Vende en tu Provincia</button>
-<button onclick="show('admin')" class="bg-red-600 px-3 py-1 rounded">Admin Total</button>
-</nav>
-</header>
+<body class="bg-[#f5f7fb] min-h-screen">
+<!-- APP CONTAINER 390px como Mercado Pago -->
+<div class="max-w-[390px] mx-auto bg-white min-h-screen shadow-2xl relative pb-[80px]">
+  
+  <!-- HEADER LOGO FINAL APROBADO -->
+  <header class="bg-white px-4 pt-3 pb-2 sticky top-0 z-50 border-b border-gray-100">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <span class="text-[30px] font-black text-[#1e3a8a] leading-none">Max</span>
+        <span class="text-[30px] font-black text-[#ff6a00] leading-none">%</span>
+        <span class="text-[30px] font-black text-[#1e3a8a] leading-none flex items-center">Sh<div class="logo-eye"><div class="logo-eye-pupil"></div><div class="logo-tongue"></div></div>p</span>
+      </div>
+      <div class="flex gap-2"><div class="w-8 h-8 bg-[#fff3eb] rounded-full flex items-center justify-center">🔔</div><div class="w-8 h-8 bg-[#ff6a00] rounded-full flex items-center justify-center text-white">👤</div></div>
+    </div>
+    <div class="text-[11px] font-bold tracking-[0.15em] text-[#1e3a8a] mt-0">DESCUENTOS DE LOCOS</div>
+  </header>
 
-<div id="panel-usuario" class="p-4">
-<div class="max-w-md mx-auto bg-white rounded-xl shadow p-4">
-<h2 class="font-bold text-lg">Billetera QR MaxShop</h2>
-<p class="text-xs text-gray-500">Bienvenida $1500 • Tope uso 30% por compra • Cashback 1.2%</p>
-<div class="mt-4 p-3 bg-orange-50 rounded">
-<p>Saldo Cashback: <b id="saldo-cashback">$1500</b></p>
-<p class="text-xs">ID Usuario: 1 | Comercio ID: <input id="comercio-id" type="number" value="1" class="w-16 border rounded text-xs"></p>
-</div>
-<div class="mt-4">
-<label class="text-sm">Monto venta $</label>
-<input id="monto-venta" type="number" value="10000" class="w-full border p-2 rounded">
-<label class="text-sm mt-2 block">Usar cashback $ (tope 30%)</label>
-<input id="usar-cashback" type="number" value="2000" class="w-full border p-2 rounded">
-<label class="text-sm mt-2 block">Tipo pago</label>
-<select id="tipo-pago" class="w-full border p-2 rounded"><option value="efectivo">Efectivo (evita impuestos) - genera saldo pendiente</option><option value="mp">Mercado Pago (split automático + descuenta deuda)</option></select>
-<button onclick="pagarQR()" class="w-full mt-3 bg-orange-500 text-white py-3 rounded font-bold">Pagar con QR - ID trazable</button>
-<div id="resultado-pago" class="mt-3 text-xs bg-gray-100 p-2 rounded"></div>
-</div>
-<div id="map" class="h-64 mt-4 rounded"></div>
-</div>
-</div>
+  <!-- SCREEN: INICIO BILLETERA REAL (SIN DEMOS FALSOS) -->
+  <div id="screen-inicio" class="screen">
+    <!-- Saldo Card AZUL como foto -->
+    <div class="mx-4 mt-4 bg-[#1e3a8a] rounded-[20px] p-4 text-white relative overflow-hidden">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-[#ff6a00] rounded-full flex items-center justify-center text-xl">👛</div>
+          <div><div class="text-[12px] opacity-80">Saldo Cashback:</div><div class="text-[32px] font-black leading-none">$1.250</div></div>
+        </div>
+        <span class="bg-white text-[#ff6a00] text-[11px] font-bold px-3 py-1 rounded-full">Disponible</span>
+      </div>
+      <div class="text-[11px] opacity-70 mt-2 ml-1">Se acredita en 24h • Válido 30 días • Tope 30% $300 por compra</div>
+      <button onclick="pagarQR()" class="w-full mt-4 bg-[#ff6a00] text-white font-black py-3.5 rounded-full flex items-center justify-center gap-2 text-[16px]">◫ PAGAR CON QR</button>
+    </div>
 
-<div id="panel-comercio" class="p-4 hidden">
-<div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-4">
-<div class="bg-white rounded shadow p-4">
-<h2 class="font-bold">Panel Comercio - Comprobantes fecha/hora ID</h2>
-<div class="mt-3 p-3 bg-red-50 rounded">
-<p>Saldo pendiente comisión: <b id="saldo-pendiente" class="text-red-600">$0</b></p>
-<p>Total pagado: <b id="total-pagado">$0</b></p>
-<p id="estado-qr" class="text-green-600 font-bold">QR ACTIVO ✅</p>
-</div>
-<h3 class="font-bold mt-4">Subir archivos comercio (logo, banner, 3 imgs)</h3>
-<input type="file" id="logo" class="block text-xs mt-1"> <input type="file" id="banner" class="block text-xs"><input type="file" id="img1" class="block text-xs"><input type="file" id="img2" class="block text-xs"><input type="file" id="img3" class="block text-xs">
-<button onclick="subirArchivos()" class="mt-2 bg-black text-white px-3 py-1 rounded text-xs">Subir archivos</button>
-<h3 class="font-bold mt-6">Comprobantes con fecha/hora - ID trazable</h3>
-<div id="lista-comisiones" class="text-xs max-h-96 overflow-auto bg-gray-50 p-2 rounded"></div>
-<button onclick="cargarComisiones()" class="mt-2 bg-orange-500 text-white px-3 py-1 rounded text-xs">Recargar comprobantes</button>
-</div>
-<div class="bg-white rounded shadow p-4">
-<h2 class="font-bold">Registro Comercio Gratis - Sin abono</h2>
-<input id="c-nombre" placeholder="Nombre comercio" class="w-full border p-2 rounded mt-2">
-<input id="c-correo" placeholder="Correo" class="w-full border p-2 rounded mt-1">
-<input id="c-pass" placeholder="Password" type="password" class="w-full border p-2 rounded mt-1">
-<input id="c-direccion" placeholder="Dirección" class="w-full border p-2 rounded mt-1">
-<input id="c-whatsapp" placeholder="WhatsApp" class="w-full border p-2 rounded mt-1">
-<input id="c-rubro" placeholder="Rubro" class="w-full border p-2 rounded mt-1">
-<input id="c-provincia" placeholder="Provincia" value="Catamarca" class="w-full border p-2 rounded mt-1">
-<input id="c-alias" placeholder="Alias MP (ej: KIOSCO.MP)" class="w-full border p-2 rounded mt-1">
-<button onclick="registroComercio()" class="w-full mt-2 bg-black text-white py-2 rounded">Registrar Comercio Gratis - Comisión 2.5%</button>
-</div>
-</div>
-</div>
+    <!-- Gira y gana -->
+    <div class="mx-4 mt-4 bg-white rounded-[16px] p-4 border border-gray-100 flex gap-4 items-center relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-8 h-8 bg-[#ff6a00] rounded-br-[16px]"></div>
+      <div class="w-16 h-16 rounded-full border-[4px] border-[#1e3a8a] bg-[conic-gradient(#ff6a00_0%_25%,#1e3a8a_25%_50%,#ff6a00_50%_75%,#1e3a8a_75%_100%)] flex items-center justify-center text-white font-bold">🎰</div>
+      <div class="flex-1"><div class="font-bold text-[#1e3a8a]">Gira y gana $500 hoy</div><div class="text-[11px] text-gray-500">Gira una vez gratis hoy. ¡Premios en cashback!</div></div>
+      <button class="border border-[#ff6a00] text-[#ff6a00] text-[10px] font-bold px-3 py-1 rounded-full">GIRAR AHORA</button>
+    </div>
 
-<div id="panel-institucion" class="p-4 hidden">
-<div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-4">
-<div class="bg-white p-4 rounded shadow">
-<h2 class="font-bold">Cobro Cuotas Socios + Mensajería automática Email/WhatsApp</h2>
-<input id="i-nombre" placeholder="Nombre escuela/club" class="w-full border p-2 rounded mt-2">
-<input id="i-tipo" placeholder="Tipo: escuela, club, centro_vecinal" class="w-full border p-2 rounded mt-1">
-<input id="i-resp" placeholder="Responsable" class="w-full border p-2 rounded mt-1">
-<input id="i-whatsapp" placeholder="WhatsApp institución" class="w-full border p-2 rounded mt-1">
-<input id="i-correo" placeholder="Correo" class="w-full border p-2 rounded mt-1">
-<input id="i-pass" placeholder="Password" type="password" class="w-full border p-2 rounded mt-1">
-<button onclick="registroInstitucion()" class="w-full mt-2 bg-blue-600 text-white py-2 rounded">Registrar Institución</button>
-<h3 class="font-bold mt-6">Registrar Socio - Email+WhatsApp automático</h3>
-<input id="s-inst-id" placeholder="Institucion ID" type="number" class="w-full border p-2 rounded mt-2">
-<input id="s-nombre" placeholder="Nombre completo socio" class="w-full border p-2 rounded mt-1">
-<input id="s-dni" placeholder="DNI" class="w-full border p-2 rounded mt-1">
-<input id="s-correo" placeholder="Correo socio" class="w-full border p-2 rounded mt-1">
-<input id="s-whatsapp" placeholder="WhatsApp socio" class="w-full border p-2 rounded mt-1">
-<input id="s-cuota" placeholder="Cuota monto" type="number" class="w-full border p-2 rounded mt-1">
-<button onclick="registroSocio()" class="w-full mt-2 bg-green-600 text-white py-2 rounded">Registrar Socio</button>
-<h3 class="font-bold mt-6">Mensajería masiva automática</h3>
-<input id="m-inst-id" placeholder="Institucion ID" type="number" class="w-full border p-2 rounded mt-2">
-<textarea id="m-mensaje" placeholder="Mensaje" class="w-full border p-2 rounded mt-1"></textarea>
-<select id="m-tipo" class="w-full border p-2 rounded mt-1"><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="ambos">Ambos</option></select>
-<button onclick="enviarMasivo()" class="w-full mt-1 bg-purple-600 text-white py-1 rounded">Enviar masivo automático</button>
-<button onclick="enviarMorosos()" class="w-full mt-1 bg-red-600 text-white py-1 rounded">Enviar a morosos automático</button>
-<div id="res-institucion" class="text-xs mt-2 bg-gray-100 p-2 rounded"></div>
-</div>
-<div class="bg-white p-4 rounded shadow"><h2 class="font-bold">Socios</h2><div id="lista-socios" class="text-xs"></div></div>
-</div>
-</div>
+    <!-- TIENDAS REALES VACIAS AL LARGAR -->
+    <div class="px-4 mt-6">
+      <div class="flex justify-between items-center"><h2 class="font-bold text-[#1e3a8a]">Tiendas cercanas</h2><span onclick="show('mapa')" class="text-[#ff6a00] text-[12px]">Ver todo ›</span></div>
+      <div id="tiendas-reales" class="mt-3 bg-[#f9fafb] border-2 border-dashed border-gray-200 rounded-[16px] p-8 text-center">
+        <div class="text-3xl mb-2">🗺️</div>
+        <div class="font-bold text-[#1e3a8a] text-[14px]">Aún no hay comercios cerca tuyo</div>
+        <div class="text-[11px] text-gray-500 mt-1">Sé el primero en descubrir descuentos en Catamarca</div>
+        <button onclick="show('comercio')" class="mt-3 bg-[#1e3a8a] text-white text-[12px] px-4 py-2 rounded-full">Sumar mi comercio gratis</button>
+      </div>
+    </div>
 
-<div id="panel-vendedor" class="p-4 hidden">
-<div class="max-w-md mx-auto bg-white p-4 rounded shadow">
-<h2 class="font-bold text-green-600">Vende en tu Provincia - Trabajo con nosotros</h2>
-<p class="text-xs">Subí DNI, CUIT, aceptá términos, ganá 30% comisión región. Legal con ID trazable.</p>
-<input id="v-nombre" placeholder="Nombre completo" class="w-full border p-2 rounded mt-2">
-<input id="v-dni" placeholder="DNI" class="w-full border p-2 rounded mt-1">
-<input id="v-cuit" placeholder="CUIT" class="w-full border p-2 rounded mt-1">
-<input id="v-provincia" placeholder="Provincia que querés vender" class="w-full border p-2 rounded mt-1">
-<input id="v-whatsapp" placeholder="WhatsApp" class="w-full border p-2 rounded mt-1">
-<input id="v-correo" placeholder="Correo" class="w-full border p-2 rounded mt-1">
-<input id="v-pass" placeholder="Password" type="password" class="w-full border p-2 rounded mt-1">
-<p class="text-xs mt-2"><input type="checkbox" id="v-terminos"> Acepto términos y condiciones - Documentación requerida</p>
-<button onclick="registroVendedor()" class="w-full mt-2 bg-green-600 text-white py-2 rounded">Registrarme como vendedor regional</button>
-<div id="res-vendedor" class="text-xs mt-2 bg-gray-100 p-2 rounded"></div>
-</div>
-</div>
+    <!-- PRESTAMOS Y SEGUROS (TERCIARIZADO) -->
+    <div class="mx-4 mt-6 bg-gradient-to-r from-[#1e3a8a] to-[#2d4a9a] rounded-[16px] p-4 text-white">
+      <div class="font-bold">💰 Préstamos y Seguros</div>
+      <div class="text-[11px] opacity-80 mt-1">Hasta $500.000 • Seguros desde $1.500 • 100% tercerizado</div>
+      <div class="grid grid-cols-2 gap-2 mt-3">
+        <input id="ps_nombre" placeholder="Tu nombre" class="rounded-full px-3 py-2 text-[12px] text-black">
+        <input id="ps_wa" placeholder="WhatsApp" class="rounded-full px-3 py-2 text-[12px] text-black">
+        <select id="ps_tipo" class="rounded-full px-3 py-2 text-[12px] text-black col-span-2"><option>Préstamo personal</option><option>Seguro Auto</option><option>Seguro Hogar</option><option>Seguro Vida</option><option>Seguro Moto</option></select>
+        <input id="ps_monto" placeholder="Monto / Detalle" class="rounded-full px-3 py-2 text-[12px] text-black col-span-2">
+      </div>
+      <button onclick="enviarPrestamo()" class="w-full mt-3 bg-[#ff6a00] py-2 rounded-full font-bold text-[13px]">Consultar por WhatsApp →</button>
+    </div>
+  </div>
 
-<div id="panel-admin" class="p-4 hidden">
-<div class="max-w-5xl mx-auto bg-white p-4 rounded shadow">
-<h2 class="font-bold text-red-600">Admin Total - IDs + Ganancias</h2>
-<div id="admin-resumen" class="grid grid-cols-4 gap-2 text-xs mt-2"></div>
-<button onclick="cargarAdmin()" class="mt-2 bg-black text-white px-3 py-1 rounded text-xs">Recargar resumen</button>
-<h3 class="font-bold mt-4">Configuración 2.5% editable</h3>
-<div id="config-json" class="text-xs bg-gray-100 p-2 rounded max-h-40 overflow-auto"></div>
-<h3 class="font-bold mt-4">Vendedores pendientes</h3>
-<div id="admin-vendedores" class="text-xs"></div>
-</div>
+  <!-- SCREEN: MAPA CATAMARCA REAL SIN DEMOS -->
+  <div id="screen-mapa" class="screen hidden">
+    <div class="px-4 py-2"><div class="bg-gray-100 rounded-full flex items-center px-4 py-2.5 gap-2"><span>🔍</span><input placeholder="Buscar en Catamarca, Argentina" class="bg-transparent text-[13px] flex-1 outline-none"><span class="text-[#ff6a00]">⧉</span></div></div>
+    <!-- Mapa real limpio -->
+    <div class="mx-4 h-[380px] bg-[#e8eef7] rounded-[16px] relative overflow-hidden border">
+      <div class="absolute inset-0 opacity-40" style="background-image:linear-gradient(#d0d8e8 1px,transparent 1px),linear-gradient(90deg,#d0d8e8 1px,transparent 1px);background-size:30px 30px"></div>
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+        <div class="text-4xl">📍</div>
+        <div class="font-bold text-[#1e3a8a] text-[13px] mt-2">Mapa limpio al largar</div>
+        <div class="text-[10px] text-gray-500">Los pins con tu ojo 👁️ aparecen cuando se sume un comercio real</div>
+      </div>
+      <!-- Ejemplo de como se vería 1 pin real (oculto al largar, se muestra cuando hay comercios) -->
+      <div id="pin-ejemplo" class="hidden absolute top-[45%] left-[52%]">
+        <div class="eye-pin bg-[#ff6a00]"><div class="eye-pin-inner"><div class="eye-pin-pupil"></div><div class="eye-pin-tongue"></div></div></div>
+        <div class="bg-black text-white text-[9px] px-2 py-1 rounded-full -mt-1 whitespace-nowrap">20% OFF</div>
+      </div>
+      <div class="absolute top-3 right-3 flex flex-col gap-2"><button class="w-9 h-9 bg-white rounded-lg shadow flex items-center justify-center">⧉</button><button class="w-9 h-9 bg-white rounded-lg shadow flex items-center justify-center">◎</button></div>
+      <button class="absolute bottom-3 right-3 w-10 h-10 bg-white rounded-xl shadow flex items-center justify-center">✈️</button>
+    </div>
+    <div class="mx-4 mt-3 bg-white rounded-[16px] border p-4">
+      <div class="font-bold text-[#1e3a8a]">Farmacia San Martín (EJEMPLO REAL)</div>
+      <div class="text-[11px] text-gray-500">⭐ 4.6 • Farmacia • Abierto • Cierra 21:00</div>
+      <div class="mt-2 bg-[#ff6a00] text-white rounded-lg p-2.5"><div class="font-black text-[16px]">30% OFF</div><div class="text-[11px]">en medicamentos + 5% cashback con MaxShop</div></div>
+      <div class="flex gap-2 mt-3"><button class="flex-1 bg-[#1e3a8a] text-white py-2.5 rounded-lg text-[12px] font-bold">Cómo llegar</button><button class="flex-1 border border-[#ff6a00] text-[#1e3a8a] py-2.5 rounded-lg text-[12px] font-bold">Ver detalles</button></div>
+      <div class="text-[10px] text-gray-400 mt-2">↑ Este card solo aparece cuando el comercio existe y está activo</div>
+    </div>
+  </div>
+
+  <!-- CASHBACK CONFETTI MODAL (COMO VIDEO) -->
+  <div id="cashback-modal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
+    <div class="bg-white rounded-[24px] p-6 w-full max-w-[320px] text-center relative overflow-hidden">
+      <div id="confetti-container" class="absolute inset-0 pointer-events-none"></div>
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto text-2xl">✅</div>
+      <div class="font-black text-[22px] mt-3 text-[#1e3a8a]">¡Cashback recibido!</div>
+      <div class="text-[28px] font-black text-[#ff6a00]">+$300 CASHBACK</div>
+      <div class="text-[12px] text-gray-500">Acreditado a tu saldo</div>
+      <div class="mt-4 bg-[#fff7ed] rounded-xl p-3 flex gap-3 text-left"><img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=80" class="w-16 h-16 rounded-lg object-cover"><div><div class="font-bold text-[13px]">Panadería El Sol</div><div class="text-[11px] text-gray-600">20% OFF en panadería artesanal</div><div class="text-[#ff6a00] text-[11px] font-bold mt-1">Ver Promoción →</div></div></div>
+      <button onclick="document.getElementById('cashback-modal').classList.add('hidden')" class="w-full mt-4 bg-[#1e3a8a] text-white py-3 rounded-full font-bold">¡Genial!</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV como Mercado Pago -->
+  <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t flex justify-around py-2 z-50">
+    <button onclick="show('inicio')" class="flex flex-col items-center text-[#ff6a00]"><span class="text-xl">🏠</span><span class="text-[10px] font-bold">Inicio</span></button>
+    <button onclick="show('mapa')" class="flex flex-col items-center text-gray-400"><span class="text-xl">🏷️</span><span class="text-[10px]">Ofertas</span></button>
+    <button onclick="pagarQR()" class="w-14 h-14 bg-[#ff6a00] rounded-full -mt-6 flex items-center justify-center text-white text-xl shadow-lg border-4 border-[#f5f7fb]">◫</button>
+    <button class="flex flex-col items-center text-gray-400"><span class="text-xl">💵</span><span class="text-[10px]">Cashback</span></button>
+    <button class="flex flex-col items-center text-gray-400"><span class="text-xl">👤</span><span class="text-[10px]">Perfil</span></button>
+  </nav>
 </div>
 
 <script>
-let map;
-function initMap(){map=L.map('map').setView([-28.4696,-65.7852],13);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);}
-function show(panel){document.querySelectorAll('[id^=panel-]').forEach(p=>p.classList.add('hidden'));document.getElementById('panel-'+panel).classList.remove('hidden');if(panel==='usuario' &&!map) setTimeout(initMap,300);}
-async function pagarQR(){
-const body={usuario_id:1,comercio_id:parseInt(document.getElementById('comercio-id').value),monto_venta:parseFloat(document.getElementById('monto-venta').value),tipo_pago:document.getElementById('tipo-pago').value,usar_cashback:parseFloat(document.getElementById('usar-cashback').value)};
-const res=await fetch('/api/wallet/pagar-qr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-const data=await res.json();
-document.getElementById('resultado-pago').innerHTML='<pre>'+JSON.stringify(data,null,2)+'</pre>';
+const API = location.origin;
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.getElementById('screen-'+id).classList.remove('hidden');}
+function pagarQR(){
+  const c=document.getElementById('confetti-container');c.innerHTML='';
+  for(let i=0;i<30;i++){let d=document.createElement('div');d.className='confetti';d.style.left=Math.random()*100+'%';d.style.background=['#ff6a00','#1e3a8a','#22c55e','#facc15'][Math.floor(Math.random()*4)];d.style.animationDelay=Math.random()*0.5+'s';c.appendChild(d);}
+  document.getElementById('cashback-modal').classList.remove('hidden');
+  fetch(API+'/api/wallet/pagar-qr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({comercio_id:'demo',monto:1000})});
 }
-async function registroComercio(){
-const body={nombre:document.getElementById('c-nombre').value,correo:document.getElementById('c-correo').value,password:document.getElementById('c-pass').value,direccion:document.getElementById('c-direccion').value,whatsapp:document.getElementById('c-whatsapp').value,rubro:document.getElementById('c-rubro').value,provincia:document.getElementById('c-provincia').value,alias_mp:document.getElementById('c-alias').value};
-const res=await fetch('/api/comercios/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-alert(JSON.stringify(await res.json()));
+function enviarPrestamo(){
+  const nombre=document.getElementById('ps_nombre').value||'Hola';
+  const tipo=document.getElementById('ps_tipo').value;
+  const monto=document.getElementById('ps_monto').value||'';
+  const msg=`Hola, soy ${nombre} de MaxShop, me interesa un ${tipo} ${monto} - Vi su promo en MaxShop`;
+  window.open('https://wa.me/5493834000000?text='+encodeURIComponent(msg),'_blank');
+  fetch(API+'/api/prestamos/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre,tipo,monto})});
 }
-async function subirArchivos(){
-const fd=new FormData();
-fd.append('comercio_id', document.getElementById('comercio-id').value);
-if(document.getElementById('logo').files[0]) fd.append('logo', document.getElementById('logo').files[0]);
-if(document.getElementById('banner').files[0]) fd.append('banner', document.getElementById('banner').files[0]);
-if(document.getElementById('img1').files[0]) fd.append('imagen1', document.getElementById('img1').files[0]);
-if(document.getElementById('img2').files[0]) fd.append('imagen2', document.getElementById('img2').files[0]);
-if(document.getElementById('img3').files[0]) fd.append('imagen3', document.getElementById('img3').files[0]);
-const res=await fetch('/api/comercios/upload',{method:'POST',body:fd});
-alert(JSON.stringify(await res.json()));
-}
-async function cargarComisiones(){
-const id=document.getElementById('comercio-id').value;
-const res=await fetch('/api/comercio/comisiones/'+id);
-const data=await res.json();
-document.getElementById('saldo-pendiente').textContent='$'+(data.resumen.saldo_pendiente_comision||0);
-document.getElementById('total-pagado').textContent='$'+(data.resumen.total_comisiones_pagadas||0);
-let html='';
-data.comisiones.forEach(c=>{
-const fecha=new Date(c.fecha_venta).toLocaleString();
-const estado=c.estado==='pendiente'? '⏳ PENDIENTE' : '✅ PAGADO';
-html+=`ID ${c.comprobante_numero} | ${fecha} | Venta $${c.monto_venta} | Comisión $${c.comision_generada} | ${c.tipo_pago} | ${estado} | ${c.detalle}<br>`;
-});
-document.getElementById('lista-comisiones').innerHTML=html;
-document.getElementById('estado-qr').textContent=data.resumen.saldo_pendiente_comision>=2000? 'QR BLOQUEADO 🔴 Debe pagar' : 'QR ACTIVO ✅';
-}
-async function registroInstitucion(){
-const body={nombre:document.getElementById('i-nombre').value,tipo:document.getElementById('i-tipo').value,direccion:'Catamarca',responsable_nombre:document.getElementById('i-resp').value,whatsapp:document.getElementById('i-whatsapp').value,correo:document.getElementById('i-correo').value,password:document.getElementById('i-pass').value,plan_tipo:'basico'};
-const res=await fetch('/api/instituciones/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-document.getElementById('res-institucion').textContent=JSON.stringify(await res.json());
-}
-async function registroSocio(){
-const body={institucion_id:parseInt(document.getElementById('s-inst-id').value),nombre_completo:document.getElementById('s-nombre').value,dni:document.getElementById('s-dni').value,correo:document.getElementById('s-correo').value,whatsapp:document.getElementById('s-whatsapp').value,categoria:'socio',cuota_monto:parseFloat(document.getElementById('s-cuota').value)};
-const res=await fetch('/api/socios/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-document.getElementById('res-institucion').textContent=JSON.stringify(await res.json());
-}
-async function enviarMasivo(){
-const body={institucion_id:parseInt(document.getElementById('m-inst-id').value),mensaje:document.getElementById('m-mensaje').value,tipo:document.getElementById('m-tipo').value};
-const res=await fetch('/api/mensajeria/masivo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-document.getElementById('res-institucion').textContent=JSON.stringify(await res.json());
-}
-async function enviarMorosos(){
-const id=document.getElementById('m-inst-id').value;
-const res=await fetch('/api/mensajeria/morosos/'+id,{method:'POST'});
-document.getElementById('res-institucion').textContent=JSON.stringify(await res.json());
-}
-async function registroVendedor(){
-if(!document.getElementById('v-terminos').checked){alert('Acepta términos');return;}
-const body={nombre_completo:document.getElementById('v-nombre').value,dni:document.getElementById('v-dni').value,cuit:document.getElementById('v-cuit').value,provincia:document.getElementById('v-provincia').value,whatsapp:document.getElementById('v-whatsapp').value,correo:document.getElementById('v-correo').value,password:document.getElementById('v-pass').value};
-const res=await fetch('/api/vendedores/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-document.getElementById('res-vendedor').textContent=JSON.stringify(await res.json());
-}
-async function cargarAdmin(){
-const res=await fetch('/api/admin/resumen');
-const data=await res.json();
-document.getElementById('admin-resumen').innerHTML=`Comercios: ${data.comercios} | Usuarios: ${data.usuarios} | Pendiente: $${data.total_comisiones_pendientes} | Pagado: $${data.total_comisiones_pagadas}`;
-document.getElementById('config-json').textContent=JSON.stringify(data.config,null,2);
-const res2=await fetch('/api/vendedores/listar');
-const vends=await res2.json();
-let html='';
-vends.forEach(v=>{
-html+=`ID ${v.id} | ${v.nombre_completo} | ${v.provincia} | ${v.estado} | Código ${v.codigo_unico} <button onclick="aprobarV(${v.id})" class="bg-green-500 text-white px-1 rounded">Aprobar</button><br>`;
-});
-document.getElementById('admin-vendedores').innerHTML=html;
-}
-async function aprobarV(id){await fetch('/api/vendedores/aprobar/'+id,{method:'POST'});cargarAdmin();}
-show('usuario');
 </script>
-</body>
-                                                                                                                                                                                                                      </html>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</html>
