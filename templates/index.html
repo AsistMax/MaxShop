@@ -1,87 +1,227 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MaxShop Billetera - Descuento de Locos</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MaxShop v3.0 FINAL - 100% Funcional</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<style>body{font-family:Outfit,sans-serif}</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+.puntito-naranja{width:18px;height:18px;background:#ff6a00;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px #ff6a00,0 0 15px #ff6a00;animation:pulse 2s infinite}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+</style>
 </head>
-<body class="bg-[#080808] text-white min-h-screen">
-<div class="sticky top-0 z-50 bg-[#080808]/90 backdrop-blur-xl border-b border-[#1e1e1e] px-4 py-3 flex justify-between items-center">
-  <div class="flex items-center gap-2">
-    <div class="w-10 h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center font-black text-[#ff6b1a] text-xl">%</div>
-    <div>
-      <div class="font-black text-[18px] leading-none"><span class="text-[#4a7fc5]">Max</span><span class="text-[#ff6b1a]">Shop</span></div>
-      <div class="text-[10px] text-zinc-500 font-semibold tracking-widest">DESCUENTO DE LOCOS</div>
-    </div>
-  </div>
-  <div id="pillSaldo" class="bg-[#ff6b1a] text-black px-3 py-1.5 rounded-full text-[12px] font-black hidden">Saldo: $0</div>
+<body class="bg-gray-50">
+<header class="bg-black text-white p-4 flex justify-between items-center sticky top-0 z-50">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center font-bold">M</div>
+<div><h1 class="font-bold">MaxShop v3.0 FINAL</h1><p class="text-xs text-gray-400">Comisión 2.5% única nacional • Bienvenida $1500 • Saldo pendiente Uber</p></div>
 </div>
-<main class="max-w-[480px] mx-auto px-4 pb-20">
-  <div class="mt-4 rounded-[24px] bg-gradient-to-br from-[#1e3a5f] to-[#162c4a] p-5 border border-[#2a4a73] relative overflow-hidden shadow-2xl">
-    <div class="absolute -right-16 -top-16 w-48 h-48 bg-[#ff6b1a]/20 rounded-full blur-2xl"></div>
-    <div class="relative">
-      <p class="text-[11px] tracking-[0.2em] text-[#7aa0d1] font-bold">BILLETERA MAXSHOP</p>
-      <div class="mt-3">
-        <p class="text-[12px] text-[#a3bddf]">Saldo Cashback Disponible</p>
-        <h2 id="txtCashback" class="text-[34px] font-black leading-none">$ 0 ARS</h2>
-        <p class="text-[11px] text-[#7aa0d1] mt-1">Ganas 5% en cada compra - PRO 7%</p>
-      </div>
-      <div class="mt-4 flex gap-3">
-        <div class="bg-black/30 rounded-xl px-3 py-2 flex-1"><p class="text-[10px] text-zinc-400">Pesos</p><p id="txtPesos" class="font-bold text-[14px]">$ 0</p></div>
-        <div class="bg-[#ff6b1a]/20 rounded-xl px-3 py-2 flex-1 border border-[#ff6b1a]/30"><p class="text-[10px] text-[#ff8c4a]">Racha</p><p id="txtRacha" class="font-bold text-[14px] text-[#ff6b1a]">0 dias</p></div>
-      </div>
-    </div>
-  </div>
-  <button onclick="openScanner()" class="mt-5 w-full bg-gradient-to-r from-[#ff6b1a] to-[#ff8c2a] text-black font-black text-[18px] py-[18px] rounded-[18px] flex items-center justify-center gap-3"><span class="material-icons text-[28px]">qr_code_scanner</span> PAGAR CON QR</button>
-  <div class="mt-3 grid grid-cols-2 gap-3">
-    <button onclick="openQRUsuario()" class="bg-[#161616] border border-[#232323] py-3 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2"><span class="material-icons text-[18px]">qr_code</span> Mi QR Descuento</button>
-    <button onclick="cargarMapa()" class="bg-[#161616] border border-[#232323] py-3 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2"><span class="material-icons text-[18px]">map</span> Mapa Catamarca</button>
-  </div>
-  <div class="mt-6">
-    <div class="flex justify-between items-center mb-2"><h3 class="font-bold text-[14px]">📍 Comercios cerca - Puntitos naranja</h3><span class="text-[10px] bg-[#1e3a5f] px-2 py-1 rounded-full">CATAMARCA</span></div>
-    <div id="mapaContainer" class="w-full h-[260px] rounded-2xl bg-[#121212] border border-[#232323] relative overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-[#0f1f35] to-[#0a0a0a]"></div>
-      <div id="pins" class="absolute inset-0"></div>
-      <div class="absolute bottom-2 left-2 right-2 bg-black/70 backdrop-blur rounded-xl p-2 text-[11px] text-zinc-300">Toca un puntito naranja para ver descuento + cashback</div>
-    </div>
-    <div id="listaComerciosMapa" class="mt-3 space-y-2"></div>
-  </div>
-  <div id="ruletaSection" class="mt-6 rounded-2xl bg-[#121212] border border-[#232323] p-4 text-center">
-    <h3 class="font-black text-[15px]">🎡 Ruleta Diaria - Gana Cashback Real</h3>
-    <p id="ruletaInfo" class="text-[11px] text-zinc-500 mt-1">Gira todos los dias y suma a tu billetera</p>
-    <div id="ruletaCirculo" class="w-[88px] h-[88px] mx-auto mt-3 rounded-full border-2 border-dashed border-[#333] flex items-center justify-center font-black text-[#ff6b1a] bg-[#161616]">MAX</div>
-    <button id="btnRuleta" onclick="girarRuleta()" class="mt-3 w-full bg-[#ff6b1a] text-black font-black py-3 rounded-xl">GIRAR Y GANAR CASHBACK</button>
-    <p id="resRuleta" class="text-[13px] font-bold text-[#ff6b1a] mt-2"></p>
-  </div>
-  <div class="mt-6">
-    <input id="buscador" placeholder="Buscar kiosco, farmacia..." class="w-full bg-[#121212] border border-[#232323] rounded-xl px-4 py-3 text-[13px] outline-none">
-    <div id="gridComercios" class="mt-3 grid grid-cols-2 gap-3"></div>
-  </div>
-</main>
-<div id="mQRUser" class="fixed inset-0 bg-black/90 hidden z-[100] p-4 flex items-center justify-center"><div class="bg-[#131313] rounded-2xl p-6 w-full max-w-[360px] text-center"><h2 class="font-black">Mi QR Descuento</h2><div id="qrUser" class="mx-auto mt-4 bg-white p-3 rounded-xl w-[220px] h-[220px] flex items-center justify-center"></div><p id="qrUserText" class="text-[11px] text-zinc-500 mt-3"></p><button onclick="closeM('mQRUser')" class="mt-4 w-full bg-[#1e1e1e] py-3 rounded-xl">Cerrar</button></div></div>
-<div id="mScanner" class="fixed inset-0 bg-black/90 hidden z-[100] p-4 flex items-center justify-center"><div class="bg-[#131313] rounded-2xl p-4 w-full max-w-[420px]"><h2 class="font-bold">Escanear QR Comercio</h2><div id="qr-reader" class="mt-3 rounded-xl overflow-hidden bg-black"></div><p id="scanResult" class="text-[12px] text-[#ff6b1a] mt-2 font-bold"></p><button onclick="stopScanner();closeM('mScanner')" class="mt-3 w-full bg-[#1e1e1e] py-3 rounded-xl">Cerrar</button></div></div>
-<div id="mPagoQR" class="fixed inset-0 bg-black/90 hidden z-[100] p-4 flex items-center justify-center"><div class="bg-[#131313] rounded-2xl p-6 w-full max-w-[380px]"><h2 id="pagoComercioNom" class="font-black text-[18px]"></h2><p id="pagoComercioOff" class="text-[12px] text-zinc-400"></p><input id="montoCompra" type="number" placeholder="Monto compra $" class="mt-4 w-full bg-[#0e0e0e] border border-[#2a2a2a] rounded-xl px-4 py-3"><div id="calcAhorro" class="mt-3 bg-[#1e3a5f]/30 border border-[#1e3a5f] rounded-xl p-3 text-[13px]"></div><button onclick="confirmarPagoQR()" class="mt-3 w-full bg-[#ff6b1a] text-black font-black py-3 rounded-xl">CONFIRMAR PAGO</button><button onclick="closeM('mPagoQR')" class="mt-2 w-full bg-[#1e1e1e] py-3 rounded-xl text-[12px]">Cancelar</button></div></div>
+<nav class="flex gap-2 text-xs flex-wrap">
+<button onclick="show('usuario')" class="bg-orange-500 px-3 py-1 rounded">Usuario</button>
+<button onclick="show('comercio')" class="bg-gray-800 px-3 py-1 rounded">Comercio</button>
+<button onclick="show('institucion')" class="bg-gray-800 px-3 py-1 rounded">Institución</button>
+<button onclick="show('vendedor')" class="bg-green-600 px-3 py-1 rounded">Vende en tu Provincia</button>
+<button onclick="show('admin')" class="bg-red-600 px-3 py-1 rounded">Admin Total</button>
+</nav>
+</header>
+
+<div id="panel-usuario" class="p-4">
+<div class="max-w-md mx-auto bg-white rounded-xl shadow p-4">
+<h2 class="font-bold text-lg">Billetera QR MaxShop</h2>
+<p class="text-xs text-gray-500">Bienvenida $1500 • Tope uso 30% por compra • Cashback 1.2%</p>
+<div class="mt-4 p-3 bg-orange-50 rounded">
+<p>Saldo Cashback: <b id="saldo-cashback">$1500</b></p>
+<p class="text-xs">ID Usuario: 1 | Comercio ID: <input id="comercio-id" type="number" value="1" class="w-16 border rounded text-xs"></p>
+</div>
+<div class="mt-4">
+<label class="text-sm">Monto venta $</label>
+<input id="monto-venta" type="number" value="10000" class="w-full border p-2 rounded">
+<label class="text-sm mt-2 block">Usar cashback $ (tope 30%)</label>
+<input id="usar-cashback" type="number" value="2000" class="w-full border p-2 rounded">
+<label class="text-sm mt-2 block">Tipo pago</label>
+<select id="tipo-pago" class="w-full border p-2 rounded"><option value="efectivo">Efectivo (evita impuestos) - genera saldo pendiente</option><option value="mp">Mercado Pago (split automático + descuenta deuda)</option></select>
+<button onclick="pagarQR()" class="w-full mt-3 bg-orange-500 text-white py-3 rounded font-bold">Pagar con QR - ID trazable</button>
+<div id="resultado-pago" class="mt-3 text-xs bg-gray-100 p-2 rounded"></div>
+</div>
+<div id="map" class="h-64 mt-4 rounded"></div>
+</div>
+</div>
+
+<div id="panel-comercio" class="p-4 hidden">
+<div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-4">
+<div class="bg-white rounded shadow p-4">
+<h2 class="font-bold">Panel Comercio - Comprobantes fecha/hora ID</h2>
+<div class="mt-3 p-3 bg-red-50 rounded">
+<p>Saldo pendiente comisión: <b id="saldo-pendiente" class="text-red-600">$0</b></p>
+<p>Total pagado: <b id="total-pagado">$0</b></p>
+<p id="estado-qr" class="text-green-600 font-bold">QR ACTIVO ✅</p>
+</div>
+<h3 class="font-bold mt-4">Subir archivos comercio (logo, banner, 3 imgs)</h3>
+<input type="file" id="logo" class="block text-xs mt-1"> <input type="file" id="banner" class="block text-xs"><input type="file" id="img1" class="block text-xs"><input type="file" id="img2" class="block text-xs"><input type="file" id="img3" class="block text-xs">
+<button onclick="subirArchivos()" class="mt-2 bg-black text-white px-3 py-1 rounded text-xs">Subir archivos</button>
+<h3 class="font-bold mt-6">Comprobantes con fecha/hora - ID trazable</h3>
+<div id="lista-comisiones" class="text-xs max-h-96 overflow-auto bg-gray-50 p-2 rounded"></div>
+<button onclick="cargarComisiones()" class="mt-2 bg-orange-500 text-white px-3 py-1 rounded text-xs">Recargar comprobantes</button>
+</div>
+<div class="bg-white rounded shadow p-4">
+<h2 class="font-bold">Registro Comercio Gratis - Sin abono</h2>
+<input id="c-nombre" placeholder="Nombre comercio" class="w-full border p-2 rounded mt-2">
+<input id="c-correo" placeholder="Correo" class="w-full border p-2 rounded mt-1">
+<input id="c-pass" placeholder="Password" type="password" class="w-full border p-2 rounded mt-1">
+<input id="c-direccion" placeholder="Dirección" class="w-full border p-2 rounded mt-1">
+<input id="c-whatsapp" placeholder="WhatsApp" class="w-full border p-2 rounded mt-1">
+<input id="c-rubro" placeholder="Rubro" class="w-full border p-2 rounded mt-1">
+<input id="c-provincia" placeholder="Provincia" value="Catamarca" class="w-full border p-2 rounded mt-1">
+<input id="c-alias" placeholder="Alias MP (ej: KIOSCO.MP)" class="w-full border p-2 rounded mt-1">
+<button onclick="registroComercio()" class="w-full mt-2 bg-black text-white py-2 rounded">Registrar Comercio Gratis - Comisión 2.5%</button>
+</div>
+</div>
+</div>
+
+<div id="panel-institucion" class="p-4 hidden">
+<div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-4">
+<div class="bg-white p-4 rounded shadow">
+<h2 class="font-bold">Cobro Cuotas Socios + Mensajería automática Email/WhatsApp</h2>
+<input id="i-nombre" placeholder="Nombre escuela/club" class="w-full border p-2 rounded mt-2">
+<input id="i-tipo" placeholder="Tipo: escuela, club, centro_vecinal" class="w-full border p-2 rounded mt-1">
+<input id="i-resp" placeholder="Responsable" class="w-full border p-2 rounded mt-1">
+<input id="i-whatsapp" placeholder="WhatsApp institución" class="w-full border p-2 rounded mt-1">
+<input id="i-correo" placeholder="Correo" class="w-full border p-2 rounded mt-1">
+<input id="i-pass" placeholder="Password" type="password" class="w-full border p-2 rounded mt-1">
+<button onclick="registroInstitucion()" class="w-full mt-2 bg-blue-600 text-white py-2 rounded">Registrar Institución</button>
+<h3 class="font-bold mt-6">Registrar Socio - Email+WhatsApp automático</h3>
+<input id="s-inst-id" placeholder="Institucion ID" type="number" class="w-full border p-2 rounded mt-2">
+<input id="s-nombre" placeholder="Nombre completo socio" class="w-full border p-2 rounded mt-1">
+<input id="s-dni" placeholder="DNI" class="w-full border p-2 rounded mt-1">
+<input id="s-correo" placeholder="Correo socio" class="w-full border p-2 rounded mt-1">
+<input id="s-whatsapp" placeholder="WhatsApp socio" class="w-full border p-2 rounded mt-1">
+<input id="s-cuota" placeholder="Cuota monto" type="number" class="w-full border p-2 rounded mt-1">
+<button onclick="registroSocio()" class="w-full mt-2 bg-green-600 text-white py-2 rounded">Registrar Socio</button>
+<h3 class="font-bold mt-6">Mensajería masiva automática</h3>
+<input id="m-inst-id" placeholder="Institucion ID" type="number" class="w-full border p-2 rounded mt-2">
+<textarea id="m-mensaje" placeholder="Mensaje" class="w-full border p-2 rounded mt-1"></textarea>
+<select id="m-tipo" class="w-full border p-2 rounded mt-1"><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="ambos">Ambos</option></select>
+<button onclick="enviarMasivo()" class="w-full mt-1 bg-purple-600 text-white py-1 rounded">Enviar masivo automático</button>
+<button onclick="enviarMorosos()" class="w-full mt-1 bg-red-600 text-white py-1 rounded">Enviar a morosos automático</button>
+<div id="res-institucion" class="text-xs mt-2 bg-gray-100 p-2 rounded"></div>
+</div>
+<div class="bg-white p-4 rounded shadow"><h2 class="font-bold">Socios</h2><div id="lista-socios" class="text-xs"></div></div>
+</div>
+</div>
+
+<div id="panel-vendedor" class="p-4 hidden">
+<div class="max-w-md mx-auto bg-white p-4 rounded shadow">
+<h2 class="font-bold text-green-600">Vende en tu Provincia - Trabajo con nosotros</h2>
+<p class="text-xs">Subí DNI, CUIT, aceptá términos, ganá 30% comisión región. Legal con ID trazable.</p>
+<input id="v-nombre" placeholder="Nombre completo" class="w-full border p-2 rounded mt-2">
+<input id="v-dni" placeholder="DNI" class="w-full border p-2 rounded mt-1">
+<input id="v-cuit" placeholder="CUIT" class="w-full border p-2 rounded mt-1">
+<input id="v-provincia" placeholder="Provincia que querés vender" class="w-full border p-2 rounded mt-1">
+<input id="v-whatsapp" placeholder="WhatsApp" class="w-full border p-2 rounded mt-1">
+<input id="v-correo" placeholder="Correo" class="w-full border p-2 rounded mt-1">
+<input id="v-pass" placeholder="Password" type="password" class="w-full border p-2 rounded mt-1">
+<p class="text-xs mt-2"><input type="checkbox" id="v-terminos"> Acepto términos y condiciones - Documentación requerida</p>
+<button onclick="registroVendedor()" class="w-full mt-2 bg-green-600 text-white py-2 rounded">Registrarme como vendedor regional</button>
+<div id="res-vendedor" class="text-xs mt-2 bg-gray-100 p-2 rounded"></div>
+</div>
+</div>
+
+<div id="panel-admin" class="p-4 hidden">
+<div class="max-w-5xl mx-auto bg-white p-4 rounded shadow">
+<h2 class="font-bold text-red-600">Admin Total - IDs + Ganancias</h2>
+<div id="admin-resumen" class="grid grid-cols-4 gap-2 text-xs mt-2"></div>
+<button onclick="cargarAdmin()" class="mt-2 bg-black text-white px-3 py-1 rounded text-xs">Recargar resumen</button>
+<h3 class="font-bold mt-4">Configuración 2.5% editable</h3>
+<div id="config-json" class="text-xs bg-gray-100 p-2 rounded max-h-40 overflow-auto"></div>
+<h3 class="font-bold mt-4">Vendedores pendientes</h3>
+<div id="admin-vendedores" class="text-xs"></div>
+</div>
+</div>
+
 <script>
-let userActual = JSON.parse(localStorage.getItem('maxshop_user')||'null');
-let walletActual = null; let comercioSeleccionado = null; let html5QrCode = null;
-function closeM(id){document.getElementById(id).classList.add('hidden');}
-function openM(id){document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex');}
-async function cargarWallet(){ if(!userActual) return; const r = await fetch(`/api/wallet/saldo/${userActual.correo}`); const j = await r.json(); if(j.success){ walletActual = j.wallet; document.getElementById('pillSaldo').classList.remove('hidden'); document.getElementById('pillSaldo').innerText = `Saldo $${Math.round(walletActual.saldo_cashback)}`; document.getElementById('txtCashback').innerText = `$ ${Math.round(walletActual.saldo_cashback).toLocaleString()}`; document.getElementById('txtPesos').innerText = `$ ${Math.round(walletActual.saldo_pesos||0)}`; } }
-async function cargarMapa(){ const cont = document.getElementById('pins'); cont.innerHTML=''; const lista = document.getElementById('listaComerciosMapa'); lista.innerHTML='Cargando...'; const r = await fetch('/api/map/comercios'); const j = await r.json(); const comercios = j.data||[]; comercios.slice(0,15).forEach(c=>{ const pin = document.createElement('div'); pin.className='absolute w-3 h-3 bg-[#ff6b1a] rounded-full border-2 border-white'; pin.style.left = (10 + Math.random()*80)+'%'; pin.style.top = (10 + Math.random()*70)+'%'; pin.onclick = ()=> seleccionarComercio(c); cont.appendChild(pin); }); lista.innerHTML=''; comercios.slice(0,6).forEach(c=>{ const d = document.createElement('div'); d.className='bg-[#121212] border border-[#232323] rounded-xl p-3 flex justify-between'; d.innerHTML=`<div><p class="font-bold text-[13px]">${c.nombre||'Comercio'}</p><p class="text-[11px] text-zinc-500">${c.rubro}</p></div><div><span class="bg-[#ff6b1a] text-black text-[11px] font-black px-2 py-1 rounded-full">${c.descuento||10}% OFF</span></div>`; d.onclick=()=>seleccionarComercio(c); lista.appendChild(d); }); const grid = document.getElementById('gridComercios'); grid.innerHTML=''; comercios.forEach(c=>{ const card = document.createElement('div'); card.className='bg-[#121212] border border-[#232323] rounded-xl overflow-hidden'; card.innerHTML=`<div class="h-[80px] bg-[#1a1a1a] flex items-center justify-center">${(c.rubro||'')[0]||'%'}</div><div class="p-2"><p class="font-bold text-[12px]">${c.nombre}</p></div>`; card.onclick=()=>seleccionarComercio(c); grid.appendChild(card); }); }
-function seleccionarComercio(c){ comercioSeleccionado = c; document.getElementById('pagoComercioNom').innerText = c.nombre || 'Comercio'; document.getElementById('pagoComercioOff').innerText = `${c.descuento||10}% OFF + ${c.cashback||5}% cashback`; openM('mPagoQR'); }
-document.getElementById('montoCompra').addEventListener('input', function(){ const monto = parseFloat(this.value)||0; const desc = comercioSeleccionado.descuento||10; const cb = comercioSeleccionado.cashback||5; const ahorro = monto*desc/100; const cash = monto*cb/100; document.getElementById('calcAhorro').innerHTML = `Ahorro: $${ahorro.toFixed(0)} - Cashback: $${cash.toFixed(0)}<br>Pagas $${(monto-ahorro).toFixed(0)}`; });
-async function confirmarPagoQR(){ const monto = parseFloat(document.getElementById('montoCompra').value)||0; const r = await fetch('/api/wallet/pagar-qr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo_usuario:userActual.correo, comercio_nombre:comercioSeleccionado.nombre, monto_compra:monto})}); const j = await r.json(); if(j.success){alert(j.mensaje); closeM('mPagoQR'); cargarWallet();}else alert(j.error); }
-function openQRUsuario(){ openM('mQRUser'); const cont = document.getElementById('qrUser'); cont.innerHTML=''; const txt = `MAXSHOP|USER|${userActual.dni||''}|${userActual.correo}|CASHBACK:${walletActual?.saldo_cashback||0}`; new QRCode(cont,{text:txt,width:200,height:200}); }
-function openScanner(){ openM('mScanner'); html5QrCode = new Html5Qrcode("qr-reader"); html5QrCode.start({facingMode:"environment"},{fps:10,qrbox:250},(decoded)=>{ stopScanner(); closeM('mScanner'); seleccionarComercio({nombre:'Comercio Escaneado', descuento:15, cashback:5}); },()=>{}); }
-function stopScanner(){if(html5QrCode){try{html5QrCode.stop();}catch(e){}}}
-async function girarRuleta(){ const r = await fetch('/api/ruleta/girar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({correo:userActual.correo})}); const j = await r.json(); if(j.success){document.getElementById('resRuleta').innerText=`Ganaste $${j.premio} cashback!`; cargarWallet();} }
-if(userActual) cargarWallet(); cargarMapa();
+let map;
+function initMap(){map=L.map('map').setView([-28.4696,-65.7852],13);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);}
+function show(panel){document.querySelectorAll('[id^=panel-]').forEach(p=>p.classList.add('hidden'));document.getElementById('panel-'+panel).classList.remove('hidden');if(panel==='usuario' &&!map) setTimeout(initMap,300);}
+async function pagarQR(){
+const body={usuario_id:1,comercio_id:parseInt(document.getElementById('comercio-id').value),monto_venta:parseFloat(document.getElementById('monto-venta').value),tipo_pago:document.getElementById('tipo-pago').value,usar_cashback:parseFloat(document.getElementById('usar-cashback').value)};
+const res=await fetch('/api/wallet/pagar-qr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+const data=await res.json();
+document.getElementById('resultado-pago').innerHTML='<pre>'+JSON.stringify(data,null,2)+'</pre>';
+}
+async function registroComercio(){
+const body={nombre:document.getElementById('c-nombre').value,correo:document.getElementById('c-correo').value,password:document.getElementById('c-pass').value,direccion:document.getElementById('c-direccion').value,whatsapp:document.getElementById('c-whatsapp').value,rubro:document.getElementById('c-rubro').value,provincia:document.getElementById('c-provincia').value,alias_mp:document.getElementById('c-alias').value};
+const res=await fetch('/api/comercios/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+alert(JSON.stringify(await res.json()));
+}
+async function subirArchivos(){
+const fd=new FormData();
+fd.append('comercio_id', document.getElementById('comercio-id').value);
+if(document.getElementById('logo').files[0]) fd.append('logo', document.getElementById('logo').files[0]);
+if(document.getElementById('banner').files[0]) fd.append('banner', document.getElementById('banner').files[0]);
+if(document.getElementById('img1').files[0]) fd.append('imagen1', document.getElementById('img1').files[0]);
+if(document.getElementById('img2').files[0]) fd.append('imagen2', document.getElementById('img2').files[0]);
+if(document.getElementById('img3').files[0]) fd.append('imagen3', document.getElementById('img3').files[0]);
+const res=await fetch('/api/comercios/upload',{method:'POST',body:fd});
+alert(JSON.stringify(await res.json()));
+}
+async function cargarComisiones(){
+const id=document.getElementById('comercio-id').value;
+const res=await fetch('/api/comercio/comisiones/'+id);
+const data=await res.json();
+document.getElementById('saldo-pendiente').textContent='$'+(data.resumen.saldo_pendiente_comision||0);
+document.getElementById('total-pagado').textContent='$'+(data.resumen.total_comisiones_pagadas||0);
+let html='';
+data.comisiones.forEach(c=>{
+const fecha=new Date(c.fecha_venta).toLocaleString();
+const estado=c.estado==='pendiente'? '⏳ PENDIENTE' : '✅ PAGADO';
+html+=`ID ${c.comprobante_numero} | ${fecha} | Venta $${c.monto_venta} | Comisión $${c.comision_generada} | ${c.tipo_pago} | ${estado} | ${c.detalle}<br>`;
+});
+document.getElementById('lista-comisiones').innerHTML=html;
+document.getElementById('estado-qr').textContent=data.resumen.saldo_pendiente_comision>=2000? 'QR BLOQUEADO 🔴 Debe pagar' : 'QR ACTIVO ✅';
+}
+async function registroInstitucion(){
+const body={nombre:document.getElementById('i-nombre').value,tipo:document.getElementById('i-tipo').value,direccion:'Catamarca',responsable_nombre:document.getElementById('i-resp').value,whatsapp:document.getElementById('i-whatsapp').value,correo:document.getElementById('i-correo').value,password:document.getElementById('i-pass').value,plan_tipo:'basico'};
+const res=await fetch('/api/instituciones/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+document.getElementById('res-institucion').textContent=JSON.stringify(await res.json());
+}
+async function registroSocio(){
+const body={institucion_id:parseInt(document.getElementById('s-inst-id').value),nombre_completo:document.getElementById('s-nombre').value,dni:document.getElementById('s-dni').value,correo:document.getElementById('s-correo').value,whatsapp:document.getElementById('s-whatsapp').value,categoria:'socio',cuota_monto:parseFloat(document.getElementById('s-cuota').value)};
+const res=await fetch('/api/socios/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+document.getElementById('res-institucion').textContent=JSON.stringify(await res.json());
+}
+async function enviarMasivo(){
+const body={institucion_id:parseInt(document.getElementById('m-inst-id').value),mensaje:document.getElementById('m-mensaje').value,tipo:document.getElementById('m-tipo').value};
+const res=await fetch('/api/mensajeria/masivo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+document.getElementById('res-institucion').textContent=JSON.stringify(await res.json());
+}
+async function enviarMorosos(){
+const id=document.getElementById('m-inst-id').value;
+const res=await fetch('/api/mensajeria/morosos/'+id,{method:'POST'});
+document.getElementById('res-institucion').textContent=JSON.stringify(await res.json());
+}
+async function registroVendedor(){
+if(!document.getElementById('v-terminos').checked){alert('Acepta términos');return;}
+const body={nombre_completo:document.getElementById('v-nombre').value,dni:document.getElementById('v-dni').value,cuit:document.getElementById('v-cuit').value,provincia:document.getElementById('v-provincia').value,whatsapp:document.getElementById('v-whatsapp').value,correo:document.getElementById('v-correo').value,password:document.getElementById('v-pass').value};
+const res=await fetch('/api/vendedores/registro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+document.getElementById('res-vendedor').textContent=JSON.stringify(await res.json());
+}
+async function cargarAdmin(){
+const res=await fetch('/api/admin/resumen');
+const data=await res.json();
+document.getElementById('admin-resumen').innerHTML=`Comercios: ${data.comercios} | Usuarios: ${data.usuarios} | Pendiente: $${data.total_comisiones_pendientes} | Pagado: $${data.total_comisiones_pagadas}`;
+document.getElementById('config-json').textContent=JSON.stringify(data.config,null,2);
+const res2=await fetch('/api/vendedores/listar');
+const vends=await res2.json();
+let html='';
+vends.forEach(v=>{
+html+=`ID ${v.id} | ${v.nombre_completo} | ${v.provincia} | ${v.estado} | Código ${v.codigo_unico} <button onclick="aprobarV(${v.id})" class="bg-green-500 text-white px-1 rounded">Aprobar</button><br>`;
+});
+document.getElementById('admin-vendedores').innerHTML=html;
+}
+async function aprobarV(id){await fetch('/api/vendedores/aprobar/'+id,{method:'POST'});cargarAdmin();}
+show('usuario');
 </script>
 </body>
-                                                                                                                                                                                                                           </html>
+                                                                                                                                                                                                                      </html>
