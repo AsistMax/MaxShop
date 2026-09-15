@@ -5,7 +5,4 @@ supabase
 mercadopago
 python-multipart
 python-dotenv
-git add .
-git commit -m "MaxShop Billetera v2.0 - SuperApp con cashback y mapa"
-git push origin main
 bcrypt
