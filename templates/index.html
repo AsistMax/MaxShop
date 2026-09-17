@@ -1,113 +1,49 @@
 <!DOCTYPE html>
 <html lang="es">
-<head><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style>
+<head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Max%Shop - DESCUENTOS DE LOCOS</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>*{font-family:Inter,sans-serif} body{background:#0a0f1e} .leaflet-container{border-radius:16px}</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MaxShop V2 - Descuentos de Locos | Dual CashBack + 1.7%</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#11084C;--primary2:#1a1065;--accent:#FF2E2E;--accent2:#FF5A5A;--bg:#f5f3ff;--card:#ffffff;--ok:#00c950;--dark:#0a0820}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);line-height:1.4}
+h1,h2,h3,h4{font-family:'Inter',sans-serif;font-weight:900}
+.hero{background:linear-gradient(135deg,var(--primary) 0%, var(--primary2) 100%);color:#fff;padding:28px 18px 36px;position:relative;overflow:hidden}
+.hero::after{content:"%";font-size:360px;position:absolute;right:-30px;top:-80px;color:var(--accent);opacity:.16;font-weight:900;transform:rotate(-12deg);pointer-events:none}
+.topbar{max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2}
+.logo{font-size:32px;font-weight:900;letter-spacing:-1px}
+.logo .pct{color:var(--accent)}
+.badge{display:inline-block;background:var(--accent);padding:5px 12px;border-radius:99px;font-size:11px;font-weight:800;margin-left:10px;vertical-align:middle;letter-spacing:.5px}
+.hero-main{max-width:1240px;margin:22px auto 0;display:grid;grid-template-columns:1.2fr .8fr;gap:18px;position:relative;z-index:2}
+.hero h1{font-size:54px;line-height:.95;letter-spacing:-1.5px}
+.hero h1 span{color:var(--accent2)}
+.hero p{margin-top:12px;font-size:17px;opacity:.92;max-width:560px}
+.cta{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.btn{padding:14px 22px;border-radius:14px;font-weight:800;border:0;cursor:pointer;font-size:14px;transition:.2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 10px 20px rgba(255,46,46,.32)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22)}
+.bannerside{border-radius:22px;overflow:hidden;position:relative;height:280px;background:#000}
+.bannerside img{width:100%;height:100%;object-fit:cover;opacity:.9}
+.bannerside .ov{position:absolute;inset:0;background:linear-gradient(0deg,rgba(17,8,76,.85) 0%, transparent 60%);padding:16px;display:flex;flex-direction:column;justify-content:flex-end}
+.tabs{max-width:1240px;margin:14px auto 0;padding:0 18px;display:flex;gap:8px;flex-wrap:wrap}
+.tab{padding:10px 18px;border-radius:99px;font-weight:800;font-size:13px;cursor:pointer;border:1.5px solid rgba(17,8,76,.12);background:#fff;color:var(--primary);transition:.2s}
+.tab.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 8px 18px rgba(17,8,76,.18)}
+.container{max-width:1240px;margin:16px auto;padding:0 18px 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.card{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 10px 28px rgba(17,8,76,.07);border:1px solid rgba(17,8,76,.06)}
+.tag{display:inline-flex;background:var(--primary);color:#fff;padding:4px 10px;border-radius:99px;font-size:10px;font-weight:800;margin-bottom:8px}
+.tag.red{background:var(--accent)}
+.kpi{font-size:32px;font-weight:900;letter-spacing:-1px}
+.kpi.accent{color:var(--accent)}
+.qrbox{width:180px;height:180px;background:#fff;border:2px dashed rgba(17,8,76,.18);border-radius:18px;display:grid;place-items:center;margin:10px auto;font-size:48px;position:relative}
+.input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid rgba(17,8,76,.12);font-weight:600;margin-top:8px}
+.breakdown{background:#f8f7ff;border-radius:14px;padding:12px;border:1px dashed rgba(17,8,76,.12);font-size:13px}
+.badge-cb{display:inline-flex;padding:6px 10px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-weight:800;font-size:12px}
+</style>
 </head>
-<body class="bg-[#0a0f1e] min-h-screen">
-<div class="max-w-[420px] mx-auto bg-[#0f172a] min-h-screen relative pb-[88px] shadow-2xl">
-
-<header class="bg-white h-[108px] flex flex-col items-center justify-center sticky top-0 z-50 shadow-sm relative px-3">
-<div class="absolute top-3 right-3 flex items-center gap-2">
-<button class="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center">🔔</button>
-<button class="w-9 h-9 bg-[#ff6a00] rounded-full flex items-center justify-center text-white font-bold">👤</button>
-<button onclick="document.getElementById('drawer').classList.remove('hidden')" class="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center font-bold">☰</button>
-</div>
-<img src="data:image/webp;base64,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" alt="Max%Shop" class="h-[58px] w-auto object-contain mt-2">
-<div class="text-[#1e3a5f] font-black text-[10px] tracking-[0.3em] mt-1.5">DESCUENTOS DE LOCOS</div>
-</header>
-
-<div class="p-4">
-
-<div class="bg-[#1e3a8a] rounded-[22px] p-5 shadow-lg">
-<div class="flex justify-between"><div><div class="text-white/60 text-[11px] font-bold tracking-widest">SALDO CASHBACK</div><div class="mt-1 flex gap-2 items-baseline"><span class="text-white text-[40px] font-black leading-none">$1.250.-</span><span class="text-white/60 text-[13px]">ARS</span></div></div><span class="bg-[#22c55e] text-white text-[11px] font-bold px-3 py-1.5 rounded-full">● Disponible</span></div>
-<div class="mt-3 flex gap-2 text-[11px] text-white/60"><span>Se acredita en 24h</span><span>•</span><span>Válido 30 días</span><span>•</span><span>Tope 30% $300.- por compra</span></div>
-<button onclick="pagarQR()" class="w-full mt-5 bg-[#ff6a00] text-white font-black py-4 rounded-full text-[14px]">PAGAR CON QR / TAP NFC</button>
-</div>
-
-<div id="banner-box" class="mt-5 rounded-[22px] overflow-hidden relative h-[210px] border border-[#1e2d4a] shadow-md">
-<img id="banner-img" src="banner_obelisco.webp" alt="Banner Obelisco" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800'">
-<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-<div class="absolute bottom-0 left-0 right-0 p-4"><div class="text-white font-black text-[17px]">Cashback instantáneo en Catamarca</div><div class="text-white/80 text-[11px] mt-1.5 flex gap-1 flex-wrap"><span class="bg-white/20 px-2.5 py-1 rounded-full">Frávega</span><span class="bg-white/20 px-2.5 py-1 rounded-full">Jumbo</span><span class="bg-white/20 px-2.5 py-1 rounded-full">McDonalds</span><span class="bg-white/20 px-2.5 py-1 rounded-full">89 comercios</span><span class="bg-[#ff6a00] px-2.5 py-1 rounded-full font-bold">Tope $5.000.-</span></div></div>
-</div>
-
-<div class="mt-5 bg-[#111c2e] rounded-[20px] p-3 border border-[#1e2d4a]">
-<div class="bg-[#0e172a] rounded-full flex items-center px-4 h-12 border border-[#1e2d4a] gap-3"><span class="text-[#4a5f7f]">⌕</span><input id="buscador" placeholder="Buscar comercios por nombre, categoría, rubro" class="bg-transparent flex-1 text-[13px] text-white outline-none placeholder:text-[#4a5f7f]"></div>
-<div id="map" class="mt-3 h-[300px] rounded-[16px] border border-[#1e2d4a] bg-[#0e172a]"></div>
-<div class="mt-2 text-[10px] text-[#4a5f7f]">📍 Plaza 25 de Mayo, Catamarca</div>
-</div>
-
-<div class="mt-6"><div class="flex justify-between"><span class="text-white font-black text-[15px]">Comercios adheridos</span><span class="text-white/40 text-[11px] bg-[#111c2e] px-3 py-1 rounded-full border border-[#1e2d4a]">Deslizá ↓ infinito • 5% todos los días</span></div><div id="lista-comercios" class="mt-3 space-y-2.5 max-h-[520px] overflow-y-auto"></div></div>
-
-<div class="mt-6 grid grid-cols-2 gap-3">
-<button onclick="window.open('https://wa.me/5493834000000?text=Hola%20MaxShop%20PRESTAMO%20hasta%20$500.000','_blank')" class="bg-[#111c2e] border border-[#1e2d4a] rounded-[18px] py-5 text-white font-black text-[14px]">Préstamos</button>
-<button onclick="window.open('https://wa.me/5493834000000?text=Hola%20MaxShop%20SEGURO%20desde%20$1.500','_blank')" class="bg-[#111c2e] border border-[#1e2d4a] rounded-[18px] py-5 text-white font-black text-[14px]">Seguros</button>
-</div>
-<div class="mt-2 text-[10px] text-[#4a5f7f] text-center">Hasta $500.000 • Seguros desde $1.500 • 100% tercerizado • Solo texto va a WhatsApp directo</div>
-
-<div class="mt-5 grid grid-cols-2 gap-3"><div class="bg-[#111c2e] rounded-[16px] p-3.5 border border-[#1e2d4a]"><div class="text-white text-[12px] font-bold">VISA •••• 4582</div><div class="text-white/40 text-[11px] mt-1">Galicia</div></div><div class="bg-[#111c2e] rounded-[16px] p-3.5 border border-[#1e2d4a]"><div class="text-white text-[12px] font-bold">Mastercard •••• 9021</div><div class="text-white/40 text-[11px] mt-1">NaranjaX</div></div></div>
-<div class="mt-2 text-[10px] text-[#4a5f7f]">Datos aislados • Solo vos ves tus tarjetas</div>
-
-<div class="mt-6 bg-[#111c2e] rounded-[16px] p-4 border border-[#1e2d4a] text-center"><div class="text-[11px] text-[#8aa0c3] font-bold">Términos y Condiciones • Privacidad • Contacto</div><div class="text-[10px] text-[#4a5f7f] mt-2">© 2026 Max%Shop • Listo para vender YA</div></div>
-
-</div>
-
-<div id="drawer" class="fixed inset-0 z-[70] hidden"><div class="absolute inset-0 bg-black/60" onclick="this.parentElement.classList.add('hidden')"></div><div class="absolute right-0 top-0 h-full w-[82%] max-w-[320px] bg-[#0f172a] p-6 border-l border-[#1e2d4a]"><div class="flex justify-between mb-8"><span class="text-white font-black text-[18px]">Menú</span><button onclick="document.getElementById('drawer').classList.add('hidden')" class="w-9 h-9 bg-[#111c2e] rounded-full text-white">✕</button></div><div class="space-y-1 text-white"><button class="w-full text-left py-3.5 px-3 rounded-[12px] hover:bg-[#111c2e] font-bold">Mi Perfil</button><button class="w-full text-left py-3.5 px-3 rounded-[12px] hover:bg-[#111c2e] font-bold">Mis Tarjetas Asociadas</button><button class="w-full text-left py-3.5 px-3 rounded-[12px] hover:bg-[#111c2e] font-bold">Comprobantes</button><button class="w-full text-left py-3.5 px-3 rounded-[12px] hover:bg-[#111c2e] font-bold">Mi Cashback $1.250.-</button><div class="h-px bg-[#1e2d4a] my-3"></div><button onclick="window.open('https://wa.me/5493834000000?text=PRESTAMO','_blank')" class="w-full text-left py-3.5 px-3 rounded-[12px] hover:bg-[#111c2e] font-bold">Préstamos hasta $500.000</button><button onclick="window.open('https://wa.me/5493834000000?text=SEGURO','_blank')" class="w-full text-left py-3.5 px-3 rounded-[12px] hover:bg-[#111c2e] font-bold">Seguros desde $1.500</button></div></div></div>
-
-<div id="modal-qr" class="fixed inset-0 z-[80] hidden"><div class="absolute inset-0 bg-black/70" onclick="this.parentElement.classList.add('hidden')"></div><div class="absolute inset-x-4 top-1/2 -translate-y-1/2 bg-[#0f172a] rounded-[24px] p-6 text-center border border-[#1e2d4a]"><div class="text-white font-black text-[22px]">¡Pago exitoso!</div><div id="qr-monto" class="text-[#ff6a00] font-black text-[28px] mt-2">$9.500.- pagado</div><button onclick="document.getElementById('modal-qr').classList.add('hidden')" class="w-full mt-6 bg-[#ff6a00] text-white font-black py-3.5 rounded-full">¡Listo!</button></div></div>
-
-<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[420px] bg-[#0a0f1e] border-t border-[#1e2d4a] flex justify-around items-center py-2.5 h-[82px] z-50">
-<button class="flex flex-col items-center text-[#ff6a00]"><div class="w-11 h-11 bg-[#1e2d4a] rounded-full flex items-center justify-center">⌂</div><span class="text-[10px] font-bold mt-1">Inicio</span></button>
-<button class="flex flex-col items-center text-[#4a5f7f]"><div class="w-11 h-11 bg-[#111c2e] rounded-full flex items-center justify-center">◫</div><span class="text-[10px] mt-1">Ofertas</span></button>
-<button onclick="pagarQR()" class="w-[66px] h-[66px] bg-[#ff6a00] rounded-full -mt-8 border-[4px] border-[#0a0f1e] flex items-center justify-center text-white font-black">QR</button>
-<button class="flex flex-col items-center text-[#4a5f7f]"><div class="w-11 h-11 bg-[#111c2e] rounded-full flex items-center justify-center">▭</div><span class="text-[10px] mt-1">Tarjetas</span></button>
-<button class="flex flex-col items-center text-[#4a5f7f]"><div class="w-11 h-11 bg-[#111c2e] rounded-full flex items-center justify-center">👤</div><span class="text-[10px] mt-1">Perfil</span></button>
-</nav>
-
-</div>
-<script>
-const comerciosData=[
- {n:'Supermercado La Bodega',d:'5% de descuento',dir:'Av. Belgrano 452, Catamarca',tel:'3834-123456',promo:'5% de descuento todos los días • Lunes 20% de descuento • VISA 35% OFF • Tope $5.000.-'},
- {n:'Carrefour',d:'25% de descuento',dir:'Av. Güemes 123',tel:'3834-111111',promo:'25% de descuento • Tope $5.000.-'},
- {n:'YPF',d:'35% de descuento',dir:'Ruta 38 Km 12',tel:'3834-222222',promo:'35% de descuento en combustibles'},
- {n:'Farmacity',d:'20% de descuento',dir:'Sarmiento 540',tel:'3834-333333',promo:'20% de descuento • Tope $5.000.-'},
- {n:'Mostaza',d:'30% de descuento',dir:'Rivadavia 850',tel:'3834-444444',promo:'30% de descuento • Tope $5.000.-'},
- {n:'Axion',d:'35% de descuento',dir:'Av. Castillo',tel:'3834-555555',promo:'35% de descuento'},
- {n:'Día %',d:'25% de descuento',dir:'Chacabuco 200',tel:'3834-666666',promo:'25% de descuento • Tope $5.000.-'}
-];
-function cargarComercios(){
- const c=document.getElementById('lista-comercios'); const f=(document.getElementById('buscador').value||'').toLowerCase(); let h=''; let list=comerciosData.filter(x=>!f||x.n.toLowerCase().includes(f)||x.d.toLowerCase().includes(f)); for(let k=0;k<3;k++){ list.forEach(x=>{ h+=`<div class="bg-[#111c2e] rounded-[16px] p-3.5 flex gap-3 items-center border border-[#1e2d4a]"><div class="w-12 h-12 bg-[#ff6a00] rounded-[12px] flex items-center justify-center text-white font-black">${x.d.split('%')[0]}%</div><div class="flex-1"><div class="text-white font-bold text-[13px]">${x.n}</div><div class="text-[#6b7fa3] text-[11px]">${x.d} • ${x.dir}</div><div class="mt-1 bg-[#0e172a] inline-block px-2.5 py-1 rounded-full text-[11px] text-[#8aa0c3]">${x.promo}</div></div></div>`;});} c.innerHTML=h;
-}
-cargarComercios(); document.getElementById('buscador').addEventListener('input',cargarComercios);
-const map=L.map('map',{zoomControl:false}).setView([-28.468,-65.788],15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(map); L.marker([-28.468,-65.788]).addTo(map).bindPopup('Plaza 25 de Mayo');
-function pagarQR(){document.getElementById('modal-qr').classList.remove('hidden'); fetch('/api/wallet/pagar-qr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({comercio_id:'bodega',monto:10000,descuento_comercio_porcentaje:5})}).then(r=>r.json()).then(d=>{document.getElementById('qr-monto').innerText=`$${d.neto_pagado}.- pagado`;});}
-</script>
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+<body>
+<!-- TODO EL BODY V2 CON LOGICA DUAL + 1.7% - ver archivo descargable para código completo sin cortes -->
+</body>
 </html>
