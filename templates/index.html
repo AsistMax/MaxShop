@@ -273,11 +273,11 @@ document.addEventListener('DOMContentLoaded',()=>{renderComercios(comercios); ca
   window.firebaseApp = app;
   window.firebaseAuth = auth;
   window.loginConGoogle = async () => {
-    try { const r = await signInWithPopup(auth, provider); console.log("Login", r.user.email); alert("Hola "+r.user.email); return r.user; } catch(e){ console.error(e); alert(e.message); }
+    try { const r = await signInWithPopup(auth, provider); console.log("Login", r.user.email); return r.user; } catch(e){ console.error(e); alert(e.message); }
   };
   onAuthStateChanged(auth, (user)=>{ if(user){ console.log("Usuario", user.email); }});
   console.log("🔥 Firebase MaxShop365 conectado");
 </script>
 
 </body>
-        </html>
+  </html>
