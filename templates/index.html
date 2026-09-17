@@ -98,7 +98,7 @@ h1,h2,h3,h4{font-family:'Inter',sans-serif;font-weight:900}
       <div class="card">
         <span class="tag red">NUEVO FLUJO V2 - CLIENTE ESCANEA</span>
         <h3>Escanear QR del comercio para pagar</h3>
-        <p class="muted">El comercio muestra QR en caja. Vos lo escaneás y pagás desde MaxShop con tarjetas asociadas (MP). Así cobramos 1.7% real.</p>
+        <p class="muted">El comercio muestra QR en caja. Vos lo escaneás y pagás desde MaxShop con tarjetas asociadas (MP).</p>
         <div class="qrbox">📷<div class="scanline"></div></div>
         <div class="row">
           <input id="montoInput" class="input" type="number" value="10000" placeholder="Monto ticket"/>
@@ -121,7 +121,7 @@ h1,h2,h3,h4{font-family:'Inter',sans-serif;font-weight:900}
         <pre style="background:#0a0820;color:#b4b3d8;padding:12px;border-radius:12px;margin-top:8px;font-size:11px;overflow:auto">const API_URL = "https://maxshop-api.onrender.com";
 fetch(`${API_URL}/comercio/qr/generar`, {method:'POST'})
 fetch(`${API_URL}/pago/procesar-via-app`, {method:'POST', body:{...}})</pre>
-        <p class="muted" style="margin-top:8px">MP splitea solo. Vos recibís 1.7% real en tu Map.</p>
+        <p class="muted" style="margin-top:8px">MP splitea solo. Vos recibís 1.7% real en tu MP.</p>
       </div>
     </div>
   </div>
@@ -181,10 +181,8 @@ fetch(`${API_URL}/pago/procesar-via-app`, {method:'POST', body:{...}})</pre>
 <footer class="footer">MaxShop V2 · Catamarca · Dual 5%+5% + 1.7% real MP · #11084C + #FF2E2E</footer>
 
 <script>
-// === ESTO ES LO QUE PEDISTE CAMBIAR ===
 const API_URL = "https://maxshop-api.onrender.com";
 let comerciosAPI = [];
-
 async function cargarComerciosAPI(){
   try{
     const res = await fetch(`${API_URL}/comercios/mapa?lat=-28.469&lng=-65.785`);
@@ -199,7 +197,6 @@ async function cargarComerciosAPI(){
     }
   }catch(e){ renderComercios(comercios); }
 }
-
 const comercios = [
   {id:'1',nombre:'Jumbo Catamarca',cat:'Supermercado',desc:35,cb:7,banco:'Galicia',dist:'420m'},
   {id:'2',nombre:'Frávega',cat:'Electro',desc:25,cb:5,banco:'Santander',dist:'610m'},
@@ -207,7 +204,6 @@ const comercios = [
   {id:'4',nombre:'McDonalds',cat:'Gastro',desc:20,cb:7,banco:'Todos',dist:'1.1km'},
   {id:'5',nombre:'Banco Galicia Suc',cat:'Banco',desc:5,cb:5,banco:'Galicia',dist:'200m'}
 ];
-
 function renderComercios(list){
   const el=document.getElementById('maplist'); if(!el) return;
   el.innerHTML=list.map(c=>`<div class="mapitem"><div class="left"><div class="dot">${c.desc}%</div><div><b>${c.nombre}</b><br><span class="muted">${c.cat} · ${c.banco} · ${c.cb}% C$B dual · ${c.dist}</span></div></div><span class="badge-cb">${c.desc}% OFF</span></div>`).join('');
@@ -255,5 +251,33 @@ async function crearLink(){
 }
 document.addEventListener('DOMContentLoaded',()=>{renderComercios(comercios); cargarComerciosAPI();});
 </script>
+
+<!-- Firebase MaxShop365 V2 -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDQwyhq9ctYbE69ETD8szD7WTP-dBnA7Cs",
+    authDomain: "maxshop365-c45e0.firebaseapp.com",
+    projectId: "maxshop365-c45e0",
+    storageBucket: "maxshop365-c45e0.firebasestorage.app",
+    messagingSenderId: "1872812990",
+    appId: "1:1872812990:web:33f2c59cc38b7306bb77ef",
+    measurementId: "G-9TJ0NPEBHD"
+  };
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+  window.firebaseApp = app;
+  window.firebaseAuth = auth;
+  window.loginConGoogle = async () => {
+    try { const r = await signInWithPopup(auth, provider); console.log("Login", r.user.email); alert("Hola "+r.user.email); return r.user; } catch(e){ console.error(e); alert(e.message); }
+  };
+  onAuthStateChanged(auth, (user)=>{ if(user){ console.log("Usuario", user.email); }});
+  console.log("🔥 Firebase MaxShop365 conectado");
+</script>
+
 </body>
-  </html>
+        </html>
