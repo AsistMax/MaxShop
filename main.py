@@ -1,7 +1,3 @@
-
-"""
-MaxShop V2 FINAL - Sirve index.html en / y API en /api
-"""
 import os, hmac, hashlib, uuid, base64
 from datetime import datetime, timedelta
 from typing import Optional, List
