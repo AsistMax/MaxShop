@@ -12,7 +12,12 @@ from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import jwt
-import qrcode
+try:
+    import qrcode
+    QRCODE_AVAILABLE=True
+except ImportError:
+    QRCODE_AVAILABLE=False
+    qrcode=None
 from io import BytesIO
 import base64
 
@@ -80,8 +85,10 @@ def generar_qr_comercio(comercio_id: str) -> dict:
     token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
     firma = hmac.new(QR_SECRET.encode(), token.encode(), hashlib.sha256).hexdigest()[:16]
     qr_data = f"MAXSHOP-COMERCIO:{token}.{firma}"
-    qr = qrcode.make(qr_data)
-    buf = BytesIO(); qr.save(buf, format="PNG"); b64 = base64.b64encode(buf.getvalue()).decode()
+    b64 = ''
+    if QRCODE_AVAILABLE:
+        qr = qrcode.make(qr_data)
+        buf = BytesIO(); qr.save(buf, format="PNG"); b64 = base64.b64encode(buf.getvalue()).decode()
     return {"qr_data": qr_data, "qr_base64": b64, "expires_in": 600}
 
 def validar_qr_comercio(qr_data: str):
@@ -104,7 +111,9 @@ def generar_qr_usuario(user_id: str) -> dict:
     token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
     firma = hmac.new(QR_SECRET.encode(), token.encode(), hashlib.sha256).hexdigest()[:16]
     qr_data = f"{token}.{firma}"
-    qr = qrcode.make(qr_data); buf = BytesIO(); qr.save(buf, format="PNG"); b64 = base64.b64encode(buf.getvalue()).decode()
+    b64 = ''
+    if QRCODE_AVAILABLE:
+        qr = qrcode.make(qr_data); buf = BytesIO(); qr.save(buf, format="PNG"); b64 = base64.b64encode(buf.getvalue()).decode()
     return {"qr_data": qr_data, "qr_base64": b64, "expires_in": 30}
 
 @app.get("/")
