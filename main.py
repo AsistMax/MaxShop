@@ -1,119 +1,48 @@
-import os, uuid, base64
-from datetime import datetime
-from typing import Optional
-from fastapi import FastAPI, HTTPException
+import os
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-import jwt
 
-JWT_SECRET = os.getenv("JWT_SECRET", "maxshop-super-secret-2026")
-COMISION = 0.017
-CSB_ADHERIDO_CLIENTE = 0.10
-CSB_NO_ADHERIDO_CLIENTE = 0.05
-CSB_COMERCIO = 0.05
-
-app = FastAPI(title="MaxShop V5")
+app = FastAPI(title="MaxShop V7")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-COMERCIOS_ADHERIDOS = {"felipe", "panaderia_pm", "lomitos_lo_mas", "comercio_123"}
+COMERCIOS_ADHERIDOS = {"felipe", "panaderia_pm", "lomitos_lo_mas"}
 
 class PagoRequest(BaseModel):
     user_id: str
     comercio_id: str
     monto_original: float
-    card_token: str = "card_token_demo"
-    qr_posnet_data: Optional[str] = None
-
-class WebhookPago(BaseModel):
-    status: str
-    amount: float
-    comercio_id: str
-    user_id: str
-    transaction_id: str
-
-def validar_qr_posnet(qr_data: str):
-    try:
-        if qr_data and qr_data.startswith("MAXSHOP"):
-            clean = qr_data.split(":")[-1].rsplit(".",1)[0] if "." in qr_data else ""
-            if clean:
-                decoded = jwt.decode(clean, JWT_SECRET, algorithms=["HS256"])
-                return decoded
-        return {"monto": None, "comercio_id": "detectado_por_gps"}
-    except:
-        return {"monto": None, "comercio_id": "detectado_por_gps"}
-
-INDEX_HTML_B64 = "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9IlVURi04Ij4KPG1ldGEgbmFtZT0idmlld3BvcnQiIGNvbnRlbnQ9IndpZHRoPWRldmljZS13aWR0aCwgaW5pdGlhbC1zY2FsZT0xLjAsIG1heGltdW0tc2NhbGU9MS4wLCB1c2VyLXNjYWxhYmxlPW5vIj4KPHRpdGxlPk1heFNob3AgLSBEZXNjdWVudG9zIGRlIExvY29zPC90aXRsZT4KPGxpbmsgaHJlZj0iaHR0cHM6Ly9mb250cy5nb29nbGVhcGlzLmNvbS9jc3MyP2ZhbWlseT1JbnRlcjp3Z2h0QDgwMDs5MDAmZmFtaWx5PU1hbnJvcGU6d2dodEA2MDA7NzAwOzgwMCZkaXNwbGF5PXN3YXAiIHJlbD0ic3R5bGVzaGVldCI+CjxzdHlsZT4KOnJvb3R7LS1wcmltYXJ5OiMxMTA4NEM7LS1hY2NlbnQ6I0ZGMkUyRTstLWJnOiNmN2Y2ZmY7LS1jYXJkOiNmZmY7LS1vazojMDBjOTUwOy0tbXV0ZWQ6IzZiNmE4YTstLWJvcmRlcjpyZ2JhKDE3LDgsNzYsLjA4KX0KKnttYXJnaW46MDtwYWRkaW5nOjA7Ym94LXNpemluZzpib3JkZXItYm94fQpib2R5e2ZvbnQtZmFtaWx5OidNYW5yb3BlJyxzYW5zLXNlcmlmO2JhY2tncm91bmQ6dmFyKC0tYmcpO2NvbG9yOnZhcigtLXByaW1hcnkpOy13ZWJraXQtZm9udC1zbW9vdGhpbmc6YW50aWFsaWFzZWR9Ci5uYXZiYXJ7cG9zaXRpb246c3RpY2t5O3RvcDowO3otaW5kZXg6MTA7YmFja2dyb3VuZDpyZ2JhKDI1NSwyNTUsMjU1LC45NSk7YmFja2Ryb3AtZmlsdGVyOmJsdXIoMTJweCk7Ym9yZGVyLWJvdHRvbToxcHggc29saWQgdmFyKC0tYm9yZGVyKTtwYWRkaW5nOjEycHggMTZweDtkaXNwbGF5OmZsZXg7anVzdGlmeS1jb250ZW50OnNwYWNlLWJldHdlZW47YWxpZ24taXRlbXM6Y2VudGVyfQoubG9nb3tmb250LWZhbWlseTonSW50ZXInLHNhbnMtc2VyaWY7Zm9udC13ZWlnaHQ6OTAwO2ZvbnQtc2l6ZToyMnB4O2xldHRlci1zcGFjaW5nOi0xcHh9LmxvZ28gc3Bhbntjb2xvcjp2YXIoLS1hY2NlbnQpfQouY2FyZHtiYWNrZ3JvdW5kOnZhcigtLWNhcmQpO2JvcmRlcjoxcHggc29saWQgdmFyKC0tYm9yZGVyKTtib3JkZXItcmFkaXVzOjE4cHg7cGFkZGluZzoxNnB4O2JveC1zaGFkb3c6MCA4cHggMjRweCByZ2JhKDE3LDgsNzYsLjA2KX0KLmhlcm97bWF4LXdpZHRoOjExMDBweDttYXJnaW46MCBhdXRvO3BhZGRpbmc6MThweCAxNnB4O2Rpc3BsYXk6Z3JpZDtncmlkLXRlbXBsYXRlLWNvbHVtbnM6MS4xZnIgLjlmcjtnYXA6MTZweH0KLmhlcm8gaDF7Zm9udC1mYW1pbHk6J0ludGVyJyxzYW5zLXNlcmlmO2ZvbnQtd2VpZ2h0OjkwMDtmb250LXNpemU6NDJweDtsaW5lLWhlaWdodDouOTU7bGV0dGVyLXNwYWNpbmc6LTFweH0KLmhlcm8gaDEgYntjb2xvcjp2YXIoLS1hY2NlbnQpfQouYnRue3BhZGRpbmc6MTJweCAxOHB4O2JvcmRlci1yYWRpdXM6MTJweDtmb250LXdlaWdodDo4MDA7Ym9yZGVyOjA7Y3Vyc29yOnBvaW50ZXI7ZGlzcGxheTppbmxpbmUtZmxleDtnYXA6NnB4O2FsaWduLWl0ZW1zOmNlbnRlcjtqdXN0aWZ5LWNvbnRlbnQ6Y2VudGVyfQouYnRuLXByaW1hcnl7YmFja2dyb3VuZDp2YXIoLS1hY2NlbnQpO2NvbG9yOiNmZmZ9LmJ0bi1kYXJre2JhY2tncm91bmQ6dmFyKC0tcHJpbWFyeSk7Y29sb3I6I2ZmZn0uYnRuLXdoaXRle2JhY2tncm91bmQ6I2ZmZjtjb2xvcjp2YXIoLS1wcmltYXJ5KTtib3JkZXI6MXB4IHNvbGlkIHZhcigtLWJvcmRlcil9Ci5iYWRnZXtkaXNwbGF5OmlubGluZS1mbGV4O3BhZGRpbmc6NXB4IDEwcHg7Ym9yZGVyLXJhZGl1czo5OXB4O2ZvbnQtd2VpZ2h0OjgwMDtmb250LXNpemU6MTFweDtiYWNrZ3JvdW5kOnZhcigtLWFjY2VudCk7Y29sb3I6I2ZmZn0KLmJhZGdlLmdyZWVue2JhY2tncm91bmQ6dmFyKC0tb2spfQouZ3JpZHttYXgtd2lkdGg6MTEwMHB4O21hcmdpbjowIGF1dG87cGFkZGluZzowIDE2cHggMjRweDtkaXNwbGF5OmdyaWQ7Z2FwOjE0cHh9Ci5saXN0e2Rpc3BsYXk6ZmxleDtmbGV4LWRpcmVjdGlvbjpjb2x1bW47Z2FwOjhweH0KLml0ZW17ZGlzcGxheTpmbGV4O2p1c3RpZnktY29udGVudDpzcGFjZS1iZXR3ZWVuO2FsaWduLWl0ZW1zOmNlbnRlcjtwYWRkaW5nOjEycHg7Ym9yZGVyOjFweCBzb2xpZCB2YXIoLS1ib3JkZXIpO2JvcmRlci1yYWRpdXM6MTJweDtiYWNrZ3JvdW5kOiNmZmZ9Ci5zdWNjZXNze2JhY2tncm91bmQ6I2VhZmZmMjtib3JkZXI6MXB4IHNvbGlkIHJnYmEoMCwyMDEsODAsLjIpO2JvcmRlci1yYWRpdXM6MTRweDtwYWRkaW5nOjE0cHg7Zm9udC13ZWlnaHQ6NzAwfQouaGlkZGVue2Rpc3BsYXk6bm9uZX0KQG1lZGlhKG1heC13aWR0aDo4MDBweCl7Lmhlcm97Z3JpZC10ZW1wbGF0ZS1jb2x1bW5zOjFmcn0uaGVybyBoMXtmb250LXNpemU6MzRweH19Cjwvc3R5bGU+CjwvaGVhZD4KPGJvZHk+Cgo8ZGl2IGNsYXNzPSJuYXZiYXIiPgogIDxkaXYgY2xhc3M9ImxvZ28iPk1heFNob3AgPHNwYW4+JTwvc3Bhbj48L2Rpdj4KICA8ZGl2IHN0eWxlPSJkaXNwbGF5OmZsZXg7Z2FwOjhweDthbGlnbi1pdGVtczpjZW50ZXIiPgogICAgPGRpdiBjbGFzcz0iY2FyZCIgc3R5bGU9InBhZGRpbmc6OHB4IDEycHgiPlNhbGRvOiA8YiBpZD0ic2FsZG9DQiI+JDE4LjQ1MCBDJEI8L2I+PC9kaXY+CiAgPC9kaXY+CjwvZGl2PgoKPGRpdiBjbGFzcz0iaGVybyI+CiAgPGRpdj4KICAgIDxoMT5QYWfDoSByw6FwaWRvIGNvbiB0dXMgPGI+dGFyamV0YXMgYXNvY2lhZGFzPC9iPjwvaDE+CiAgICA8cCBzdHlsZT0ibWFyZ2luLXRvcDoxMHB4O2NvbG9yOnZhcigtLW11dGVkKSI+RXNjYW5lw6EgZWwgUVIgZGVsIHBvc25ldCBkZWwgY29tZXJjaW8geSBwYWfDoSBlbiAxIG1pbnV0by4gRWwgc2lzdGVtYSBkZXRlY3RhIGxhIGNvbXByYSB5IGFjcmVkaXRhIEMkQiBhdXRvbcOhdGljYW1lbnRlLjwvcD4KICAgIDxkaXYgc3R5bGU9Im1hcmdpbi10b3A6MTJweDtkaXNwbGF5OmZsZXg7Z2FwOjhweDtmbGV4LXdyYXA6d3JhcCI+CiAgICAgIDxzcGFuIGNsYXNzPSJiYWRnZSI+VGFyamV0YXMgYXNvY2lhZGFzPC9zcGFuPgogICAgICA8c3BhbiBjbGFzcz0iYmFkZ2UgZ3JlZW4iPkNvbXByYSBleGl0b3NhPC9zcGFuPgogICAgPC9kaXY+CiAgICA8ZGl2IGNsYXNzPSJjYXJkIiBzdHlsZT0ibWFyZ2luLXRvcDoxNHB4Ij4KICAgICAgPGI+VHVzIHRhcmpldGFzIGFzb2NpYWRhczwvYj4KICAgICAgPGRpdiBjbGFzcz0ibGlzdCIgc3R5bGU9Im1hcmdpbi10b3A6MTBweCI+CiAgICAgICAgPGRpdiBjbGFzcz0iaXRlbSI+PHNwYW4+VmlzYSBkw6liaXRvIOKAouKAoiAxMjM0PC9zcGFuPjxzcGFuIGNsYXNzPSJiYWRnZSBncmVlbiI+QWN0aXZhPC9zcGFuPjwvZGl2PgogICAgICAgIDxkaXYgY2xhc3M9Iml0ZW0iPjxzcGFuPk1hc3RlcmNhcmQg4oCi4oCiIDU2Nzg8L3NwYW4+PHNwYW4gY2xhc3M9ImJhZGdlIj5QcmluY2lwYWw8L3NwYW4+PC9kaXY+CiAgICAgIDwvZGl2PgogICAgICA8YnV0dG9uIGNsYXNzPSJidG4gYnRuLXdoaXRlIiBzdHlsZT0ibWFyZ2luLXRvcDoxMHB4O3dpZHRoOjEwMCUiPisgQXNvY2lhciB0YXJqZXRhPC9idXR0b24+CiAgICAgIDxzbWFsbCBzdHlsZT0iY29sb3I6dmFyKC0tbXV0ZWQpIj5UdXMgdGFyamV0YXMgcXVlZGFuIGd1YXJkYWRhcyBkZSBmb3JtYSBzZWd1cmEgcGFyYSBwYWdhciBtw6FzIHLDoXBpZG8uPC9zbWFsbD4KICAgIDwvZGl2PgogIDwvZGl2PgoKICA8ZGl2IGNsYXNzPSJjYXJkIj4KICAgIDxiPkNvbWVyY2lvcyBjZXJjYW5vczwvYj4KICAgIDxwIHN0eWxlPSJjb2xvcjp2YXIoLS1tdXRlZCk7Zm9udC1zaXplOjEzcHgiPkRldGVjdGFtb3MgcG9yIHR1IHViaWNhY2nDs246IEZlbGlwZSwgUGFuYWRlcsOtYSBQTSwgTG9taXRvcyBsby1tw6FzPC9wPgogICAgPGJ1dHRvbiBjbGFzcz0iYnRuIGJ0bi1kYXJrIiBvbmNsaWNrPSJidXNjYXJDZXJjYW5vcygpIiBzdHlsZT0ibWFyZ2luLXRvcDo4cHg7d2lkdGg6MTAwJSI+8J+TjSBEZXRlY3RhciBjb21lcmNpb3MgY2VyY2Fub3M8L2J1dHRvbj4KICAgIDxkaXYgaWQ9ImNlcmNhbm9zIiBjbGFzcz0ibGlzdCIgc3R5bGU9Im1hcmdpbi10b3A6MTBweCI+PC9kaXY+CiAgICAKICAgIDxkaXYgc3R5bGU9Im1hcmdpbi10b3A6MTRweDtib3JkZXItdG9wOjFweCBzb2xpZCB2YXIoLS1ib3JkZXIpO3BhZGRpbmctdG9wOjEycHgiPgogICAgICA8Yj5Fc2NhbmVhciBRUiBkZWwgcG9zbmV0IGRlbCBjb21lcmNpbzwvYj4KICAgICAgPHAgc3R5bGU9ImNvbG9yOnZhcigtLW11dGVkKTtmb250LXNpemU6MTNweCI+RWwgY29tZXJjaW8gZ2VuZXJhIFFSIGRpbsOhbWljbyBkZXNkZSBzdSBwb3NuZXQgY29uIGVsIG1vbnRvLiBWb3MgZXNjYW5lw6FzIHkgcGFnw6FzIGNvbiB0YXJqZXRhcyBhc29jaWFkYXMuPC9wPgogICAgICA8aW5wdXQgaWQ9Im1vbnRvIiB0eXBlPSJudW1iZXIiIHZhbHVlPSIxMDAwMCIgc3R5bGU9IndpZHRoOjEwMCU7cGFkZGluZzoxMHB4O2JvcmRlci1yYWRpdXM6MTBweDtib3JkZXI6MXB4IHNvbGlkIHZhcigtLWJvcmRlcik7bWFyZ2luLXRvcDo4cHgiIHBsYWNlaG9sZGVyPSJNb250byBkZXRlY3RhZG8iPgogICAgICA8c2VsZWN0IGlkPSJjb21lcmNpbyIgc3R5bGU9IndpZHRoOjEwMCU7cGFkZGluZzoxMHB4O2JvcmRlci1yYWRpdXM6MTBweDtib3JkZXI6MXB4IHNvbGlkIHZhcigtLWJvcmRlcik7bWFyZ2luLXRvcDo2cHgiPgogICAgICAgIDxvcHRpb24gdmFsdWU9ImZlbGlwZSI+RmVsaXBlIChhZGhlcmlkbyk8L29wdGlvbj4KICAgICAgICA8b3B0aW9uIHZhbHVlPSJwYW5hZGVyaWFfcG0iPlBhbmFkZXLDrWEgUE0gKGFkaGVyaWRvKTwvb3B0aW9uPgogICAgICAgIDxvcHRpb24gdmFsdWU9ImxvbWl0b3NfbG9fbWFzIj5Mb21pdG9zIGxvLW3DoXMgKGFkaGVyaWRvKTwvb3B0aW9uPgogICAgICAgIDxvcHRpb24gdmFsdWU9ImNhcnJlZm91cl9ub19hZGhlcmlkbyI+Q2FycmVmb3VyIChubyBhZGhlcmlkbyk8L29wdGlvbj4KICAgICAgICA8b3B0aW9uIHZhbHVlPSJtdXNpbXVuZG9fbm9fYWRoZXJpZG8iPk11c2ltdW5kbyAobm8gYWRoZXJpZG8pPC9vcHRpb24+CiAgICAgIDwvc2VsZWN0PgogICAgICA8YnV0dG9uIGNsYXNzPSJidG4gYnRuLXByaW1hcnkiIG9uY2xpY2s9InBhZ2FyKCkiIHN0eWxlPSJtYXJnaW4tdG9wOjhweDt3aWR0aDoxMDAlIj5QYWdhciBjb24gdGFyamV0YSBhc29jaWFkYTwvYnV0dG9uPgogICAgICA8ZGl2IGlkPSJyZXN1bHRhZG8iIGNsYXNzPSJoaWRkZW4iIHN0eWxlPSJtYXJnaW4tdG9wOjEwcHgiPjwvZGl2PgogICAgPC9kaXY+CiAgPC9kaXY+CjwvZGl2PgoKPGRpdiBjbGFzcz0iZ3JpZCI+CiAgPGRpdiBjbGFzcz0iY2FyZCI+CiAgICA8Yj7Cv0PDs21vIGZ1bmNpb25hPzwvYj4KICAgIDxkaXYgY2xhc3M9Imxpc3QiIHN0eWxlPSJtYXJnaW4tdG9wOjhweCI+CiAgICAgIDxkaXYgY2xhc3M9Iml0ZW0iPjxzcGFuPjEuIENvbWVyY2lvIGdlbmVyYSBRUiBkaW7DoW1pY28gZGVzZGUgc3UgcG9zbmV0IGNvbiBlbCBtb250bzwvc3Bhbj48L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0iaXRlbSI+PHNwYW4+Mi4gRXNjYW5lw6FzIGNvbiBNYXhTaG9wIHkgcGFnw6FzIGNvbiB0YXJqZXRhcyBhc29jaWFkYXM8L3NwYW4+PC9kaXY+CiAgICAgIDxkaXYgY2xhc3M9Iml0ZW0iPjxzcGFuPjMuIFNpc3RlbWEgZGV0ZWN0YSBwYWdvIGV4aXRvc28gYXV0b23DoXRpY2FtZW50ZTwvc3Bhbj48L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0iaXRlbSI+PHNwYW4+NC4gVmVzOiBDb21wcmEgZXhpdG9zYSwgcGFnYXN0ZSAkMTAuMDAwICsgQyRCIGFjcmVkaXRhZG88L3NwYW4+PC9kaXY+CiAgICA8L2Rpdj4KICA8L2Rpdj4KICA8ZGl2IGNsYXNzPSJjYXJkIj4KICAgIDxiPkJlbmVmaWNpb3M8L2I+CiAgICA8ZGl2IGNsYXNzPSJsaXN0IiBzdHlsZT0ibWFyZ2luLXRvcDo4cHgiPgogICAgICA8ZGl2IGNsYXNzPSJpdGVtIj48c3Bhbj5BZGhlcmlkbzo8L3NwYW4+PGI+KzEwJSBDJEIgcGFyYSB2b3MsICs1JSBDJEIgcGFyYSBjb21lcmNpbzwvYj48L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0iaXRlbSI+PHNwYW4+Tm8gYWRoZXJpZG86PC9zcGFuPjxiPis1JSBDJEIgcGFyYSB2b3M8L2I+PC9kaXY+CiAgICAgIDxkaXYgY2xhc3M9Iml0ZW0iPjxzcGFuPkNvbWlzacOzbjo8L3NwYW4+PGI+MS43JSBjb24gdGFyamV0YSBhc29jaWFkYTwvYj48L2Rpdj4KICAgIDwvZGl2PgogIDwvZGl2Pgo8L2Rpdj4KCjxzY3JpcHQ+CmNvbnN0IEFQSSA9IGxvY2F0aW9uLm9yaWdpbjsKYXN5bmMgZnVuY3Rpb24gYnVzY2FyQ2VyY2Fub3MoKXsKICBjb25zdCBlbD1kb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnY2VyY2Fub3MnKTsKICBlbC5pbm5lckhUTUw9J0RldGVjdGFuZG8uLi4nOwogIHRyeXsKICAgIGlmKG5hdmlnYXRvci5nZW9sb2NhdGlvbil7CiAgICAgIG5hdmlnYXRvci5nZW9sb2NhdGlvbi5nZXRDdXJyZW50UG9zaXRpb24oYXN5bmMgcG9zPT57CiAgICAgICAgY29uc3QgbGF0PXBvcy5jb29yZHMubGF0aXR1ZGUsIGxuZz1wb3MuY29vcmRzLmxvbmdpdHVkZTsKICAgICAgICBjb25zdCByZXM9YXdhaXQgZmV0Y2goYCR7QVBJfS9jb21lcmNpb3MvY2VyY2Fub3M/bGF0PSR7bGF0fSZsbmc9JHtsbmd9YCk7CiAgICAgICAgY29uc3QgZGF0YT1hd2FpdCByZXMuanNvbigpOwogICAgICAgIGVsLmlubmVySFRNTD1kYXRhLmNlcmNhbm9zLm1hcChjPT5gPGRpdiBjbGFzcz0naXRlbSc+PHNwYW4+JHtjLm5vbWJyZX0g4oCiICR7Yy5kaXN0YW5jaWF9PC9zcGFuPjxzcGFuIGNsYXNzPSdiYWRnZSAke2MuYWRoZXJpZG8/J2dyZWVuJzonJ30nPiR7Yy5wcm9tb308L3NwYW4+PC9kaXY+YCkuam9pbignJyk7CiAgICAgIH0sIGFzeW5jICgpPT57CiAgICAgICAgY29uc3QgcmVzPWF3YWl0IGZldGNoKGAke0FQSX0vY29tZXJjaW9zL2NlcmNhbm9zP2xhdD0tMjguNDY5NiZsbmc9LTY1Ljc4NTdgKTsKICAgICAgICBjb25zdCBkYXRhPWF3YWl0IHJlcy5qc29uKCk7CiAgICAgICAgZWwuaW5uZXJIVE1MPWRhdGEuY2VyY2Fub3MubWFwKGM9PmA8ZGl2IGNsYXNzPSdpdGVtJz48c3Bhbj4ke2Mubm9tYnJlfSDigKIgJHtjLmRpc3RhbmNpYX08L3NwYW4+PHNwYW4gY2xhc3M9J2JhZGdlICR7Yy5hZGhlcmlkbz8nZ3JlZW4nOicnfSc+JHtjLnByb21vfTwvc3Bhbj48L2Rpdj5gKS5qb2luKCcnKTsKICAgICAgfSk7CiAgICB9ZWxzZXsKICAgICAgY29uc3QgcmVzPWF3YWl0IGZldGNoKGAke0FQSX0vY29tZXJjaW9zL2NlcmNhbm9zP2xhdD0tMjguNDY5NiZsbmc9LTY1Ljc4NTdgKTsKICAgICAgY29uc3QgZGF0YT1hd2FpdCByZXMuanNvbigpOwogICAgICBlbC5pbm5lckhUTUw9ZGF0YS5jZXJjYW5vcy5tYXAoYz0+YDxkaXYgY2xhc3M9J2l0ZW0nPjxzcGFuPiR7Yy5ub21icmV9IOKAoiAke2MuZGlzdGFuY2lhfTwvc3Bhbj48c3BhbiBjbGFzcz0nYmFkZ2UgJHtjLmFkaGVyaWRvPydncmVlbic6Jyd9Jz4ke2MucHJvbW99PC9zcGFuPjwvZGl2PmApLmpvaW4oJycpOwogICAgfQogIH1jYXRjaChlKXsgZWwuaW5uZXJIVE1MPSdGZWxpcGUg4oCiIFBhbmFkZXLDrWEgUE0g4oCiIExvbWl0b3MgbG8tbcOhcyAoZWplbXBsbyknOyB9Cn0KCmFzeW5jIGZ1bmN0aW9uIHBhZ2FyKCl7CiAgY29uc3QgbW9udG89cGFyc2VGbG9hdChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbW9udG8nKS52YWx1ZSl8fDEwMDAwOwogIGNvbnN0IGNvbWVyY2lvPWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdjb21lcmNpbycpLnZhbHVlOwogIGNvbnN0IGVsPWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyZXN1bHRhZG8nKTsgZWwuY2xhc3NMaXN0LnJlbW92ZSgnaGlkZGVuJyk7IGVsLmlubmVySFRNTD0nUHJvY2VzYW5kby4uLiBEZXRlY3RhbmRvIHBhZ28gZXhpdG9zby4uLic7CiAgdHJ5ewogICAgY29uc3QgcmVzPWF3YWl0IGZldGNoKGAke0FQSX0vcGFnby9wcm9jZXNhcmAsewogICAgICBtZXRob2Q6J1BPU1QnLAogICAgICBoZWFkZXJzOnsnQ29udGVudC1UeXBlJzonYXBwbGljYXRpb24vanNvbid9LAogICAgICBib2R5OkpTT04uc3RyaW5naWZ5KHt1c2VyX2lkOid1c2VyX2RlbW8nLCBjb21lcmNpb19pZDpjb21lcmNpbywgbW9udG9fb3JpZ2luYWw6bW9udG8sIGNhcmRfdG9rZW46J2NhcmRfdG9rZW5fZGVtbycsIHFyX3Bvc25ldF9kYXRhOidwb3NuZXRfcXJfJyttb250b30pCiAgICB9KTsKICAgIGNvbnN0IGRhdGE9YXdhaXQgcmVzLmpzb24oKTsKICAgIGNvbnN0IHQ9ZGF0YS50cmFuc2FjY2lvbjsKICAgIGVsLmlubmVySFRNTD1gPGRpdiBjbGFzcz0nc3VjY2Vzcyc+4pyFICR7dC5tZW5zYWplX2V4aXRvfTxicj4KICAgIFBhZ2FzdGUgJCR7dC5tb250b19kZXRlY3RhZG8udG9Mb2NhbGVTdHJpbmcoKX0gZW4gJHt0LmNvbWVyY2lvX2lkfSAoJHt0LmVzX2FkaGVyaWRvPydhZGhlcmlkbyc6J25vIGFkaGVyaWRvJ30pPGJyPgogICAgJHt0LmVzX2FkaGVyaWRvP2BVc2FzdGUgJCR7dC5jc2JfZGVzY3VlbnRvX3VzYWRvfSBDJEIgwrcgR2FuYXN0ZSAkJHt0LmNzYl9jbGllbnRlX251ZXZvfSBDJEIgwrcgQ29tZXJjaW8gKyQke3QuY3NiX2NvbWVyY2lvfSBDJEJgOmBHYW5hc3RlICQke3QuY3NiX2NsaWVudGVfbnVldm99IEMkQiBwYXJhIHByw7N4aW1hYH08YnI+CiAgICBDb21pc2nDs24gMS43JTogJCR7dC5jb21pc2lvbl8xXzdfY29icmFkYX0gY29uIHRhcmpldGEgYXNvY2lhZGE8L2Rpdj5gOwogICAgY29uc3Qgc2FsZG9FbD1kb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnc2FsZG9DQicpOwogICAgY29uc3QgYWN0dWFsPXBhcnNlSW50KHNhbGRvRWwuaW5uZXJUZXh0LnJlcGxhY2UoL1teMC05XS9nLCcnKSl8fDE4NDUwOwogICAgc2FsZG9FbC5pbm5lclRleHQ9JyQnKyhhY3R1YWwrdC5jc2JfY2xpZW50ZV9udWV2bykudG9Mb2NhbGVTdHJpbmcoKSsnIEMkQic7CiAgfWNhdGNoKGUpewogICAgZWwuaW5uZXJIVE1MPWA8ZGl2IGNsYXNzPSdzdWNjZXNzJz7inIUgQ29tcHJhIGV4aXRvc2EgKGRlbW8pLCBwYWdhc3RlICQke21vbnRvLnRvTG9jYWxlU3RyaW5nKCl9PGJyPkdhbmFzdGUgJCR7KG1vbnRvKjAuMDUpLnRvRml4ZWQoMCl9IEMkQiDCtyBDb21pc2nDs24gMS43JSAkJHsobW9udG8qMC4wMTcpLnRvRml4ZWQoMCl9IGNvbiB0YXJqZXRhIGFzb2NpYWRhPC9kaXY+YDsKICB9Cn0KYnVzY2FyQ2VyY2Fub3MoKTsKPC9zY3JpcHQ+CjwvYm9keT4KPC9odG1sPgo="
-
-@app.get("/api")
-def api_status():
-    return {"msg": "MaxShop V5 TAP", "comision": "1.7% solo sobre servicio"}
 
 @app.get("/", response_class=HTMLResponse)
-def serve_frontend():
+def serve():
     try:
-        index_path = os.path.join(os.path.dirname(__file__), "index.html")
-        if os.path.exists(index_path):
-            with open(index_path, "r", encoding="utf-8") as f:
-                return HTMLResponse(content=f.read(), status_code=200)
+        with open(os.path.join(os.path.dirname(__file__), "index.html"), "r", encoding="utf-8") as f:
+            return HTMLResponse(f.read())
     except:
-        pass
-    html = base64.b64decode(INDEX_HTML_B64).decode("utf-8")
-    return HTMLResponse(content=html, status_code=200)
+        return HTMLResponse("<h1>MaxShop V7</h1><a href='/docs'>Docs</a>")
 
 @app.get("/comercios/cercanos")
-def comercios_cercanos(lat: float, lng: float):
-    return {
-        "cercanos": [
-            {"id": "felipe", "nombre": "Felipe", "adherido": True, "promo": "10% C$B", "distancia": "20m"},
-            {"id": "panaderia_pm", "nombre": "Panadería PM", "adherido": True, "promo": "10% C$B", "distancia": "35m"},
-            {"id": "lomitos_lo_mas", "nombre": "Lomitos lo-más", "adherido": True, "promo": "10% C$B", "distancia": "80m"},
-        ],
-        "tu_ubicacion": {"lat": lat, "lng": lng}
-    }
+def cercanos(lat: float, lng: float):
+    return {"cercanos": [
+        {"id": "felipe", "nombre": "Felipe", "adherido": True, "promo": "10% C$B", "distancia": "20m"},
+        {"id": "panaderia_pm", "nombre": "Panadería PM", "adherido": True, "promo": "10% C$B", "distancia": "35m"},
+        {"id": "lomitos_lo_mas", "nombre": "Lomitos lo-más", "adherido": True, "promo": "10% C$B", "distancia": "80m"},
+    ]}
 
 @app.post("/pago/procesar")
-def procesar_pago(req: PagoRequest):
-    qr_info = validar_qr_posnet(req.qr_posnet_data or "")
-    monto_detectado = qr_info.get("monto") or req.monto_original
-    if monto_detectado <= 0:
-        raise HTTPException(400, "Monto invalido")
+def pagar(req: PagoRequest):
+    import uuid, datetime
     es_adherido = req.comercio_id in COMERCIOS_ADHERIDOS
-    comision_1_7 = round(monto_detectado * COMISION, 2)
-    if es_adherido:
-        csb_cliente = round(monto_detectado * CSB_ADHERIDO_CLIENTE, 2)
-        csb_comercio = round(monto_detectado * CSB_COMERCIO, 2)
-        descuento_csb_usado = round(monto_detectado * 0.05, 2)
-    else:
-        csb_cliente = round(monto_detectado * CSB_NO_ADHERIDO_CLIENTE, 2)
-        csb_comercio = 0
-        descuento_csb_usado = 0
-    transaccion = {
+    monto = req.monto_original
+    comision = round(monto * 0.017, 2)
+    csb = round(monto * (0.10 if es_adherido else 0.05), 2)
+    return {"status": "aprobado", "transaccion": {
         "id": str(uuid.uuid4()),
-        "user_id": req.user_id,
-        "comercio_id": req.comercio_id,
+        "monto_detectado": monto,
         "es_adherido": es_adherido,
-        "monto_detectado": monto_detectado,
-        "monto_pagado_posnet": monto_detectado,
-        "comision_1_7_cobrada": comision_1_7,
-        "csb_descuento_usado": descuento_csb_usado,
-        "csb_cliente_nuevo": csb_cliente,
-        "csb_comercio": csb_comercio,
-        "mensaje_exito": f"Compra exitosa, pagaste ${monto_detectado:,.0f}",
-        "timestamp": datetime.utcnow().isoformat()
-    }
-    return {"status": "aprobado", "transaccion": transaccion}
-
-@app.post("/webhook/pago-exitoso")
-def webhook_pago_exitoso(data: WebhookPago):
-    if data.status != "approved":
-        raise HTTPException(400, "Pago no aprobado")
-    es_adherido = data.comercio_id in COMERCIOS_ADHERIDOS
-    comision = round(data.amount * COMISION, 2)
-    return {
-        "detectado": True,
-        "monto": data.amount,
-        "comercio_id": data.comercio_id,
-        "es_adherido": es_adherido,
-        "accion": f"Cobrar {comision} via tokenizada + acreditar C$B"
-    }
+        "comision_1_7_cobrada": comision,
+        "csb_cliente_nuevo": csb,
+        "mensaje_exito": f"Compra exitosa, pagaste ${monto:,.0f}",
+        "timestamp": datetime.datetime.utcnow().isoformat()
+    }}
