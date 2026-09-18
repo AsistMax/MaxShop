@@ -2,144 +2,111 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MaxShop - Descuentos de Locos</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@800;900&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--primary:#11084C;--accent:#FF2E2E;--bg:#f7f6ff;--card:#fff;--ok:#00c950;--muted:#6b6a8a;--border:rgba(17,8,76,.08)}
+:root{--primary:#11084C;--accent:#FF2E2E;--bg:#f6f5ff;--card:#fff;--ok:#00c950;--muted:#6b6a8a;--border:rgba(17,8,76,.08)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);-webkit-font-smoothing:antialiased}
-.navbar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
-.logo{font-family:'Inter',sans-serif;font-weight:900;font-size:22px;letter-spacing:-1px}.logo span{color:var(--accent)}
-.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:0 8px 24px rgba(17,8,76,.06)}
-.hero{max-width:1100px;margin:0 auto;padding:18px 16px;display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-.hero h1{font-family:'Inter',sans-serif;font-weight:900;font-size:42px;line-height:.95;letter-spacing:-1px}
-.hero h1 b{color:var(--accent)}
-.btn{padding:12px 18px;border-radius:12px;font-weight:800;border:0;cursor:pointer;display:inline-flex;gap:6px;align-items:center;justify-content:center}
-.btn-primary{background:var(--accent);color:#fff}.btn-dark{background:var(--primary);color:#fff}.btn-white{background:#fff;color:var(--primary);border:1px solid var(--border)}
-.badge{display:inline-flex;padding:5px 10px;border-radius:99px;font-weight:800;font-size:11px;background:var(--accent);color:#fff}
-.badge.green{background:var(--ok)}
-.grid{max-width:1100px;margin:0 auto;padding:0 16px 24px;display:grid;gap:14px}
-.list{display:flex;flex-direction:column;gap:8px}
-.item{display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff}
-.success{background:#eafff2;border:1px solid rgba(0,201,80,.2);border-radius:14px;padding:14px;font-weight:700}
+body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary)}
+.navbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:2px solid var(--border);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.logo img{height:120px;width:auto;max-width:420px;object-fit:contain}
+.nav{display:flex;gap:8px;align-items:center}
+.nav-item{position:relative}
+.nav-btn{padding:10px 16px;border-radius:99px;font-weight:800;font-size:13px;border:1.5px solid var(--border);background:#fff;cursor:pointer}
+.nav-btn.primary{background:var(--primary);color:#fff}.nav-btn.accent{background:var(--accent);color:#fff}
+.dropdown{position:absolute;top:115%;right:0;min-width:260px;background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 50px rgba(17,8,76,.18);padding:8px;display:none;z-index:60}
+.dropdown.left{left:0;right:auto}.dropdown.open{display:block}
+.dropdown button{width:100%;text-align:left;padding:11px 12px;border-radius:12px;border:0;background:transparent;font-weight:700;cursor:pointer}
+.wallet{max-width:1160px;margin:14px auto 0;padding:0 14px}
+.wallet-card{background:linear-gradient(135deg,var(--primary) 0%,#23108a 70%,#3a1dd4 100%);color:#fff;border-radius:26px;padding:18px;box-shadow:0 18px 40px rgba(17,8,76,.25)}
+.wallet-balance h2{font-family:'Inter',sans-serif;font-size:34px;margin-top:4px}
+.wallet-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.wa-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:800;font-size:11px;color:#fff;cursor:pointer}
+.pay-wrap{max-width:1160px;margin:14px auto;padding:0 14px;display:grid;grid-template-columns:1fr 360px;gap:14px}
+.pay-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:16px;box-shadow:0 10px 30px rgba(17,8,76,.06)}
+.pay-main{background:var(--accent);color:#fff;border:0;border-radius:18px;width:100%;padding:18px 20px;font-weight:900;font-size:20px;cursor:pointer;display:flex;justify-content:center;gap:10px}
+.banner-wrap{max-width:1160px;margin:14px auto 0;padding:0 14px}
+.banner{position:relative;border-radius:24px;overflow:hidden;border:1px solid var(--border);box-shadow:0 14px 36px rgba(17,8,76,.18)}
+.banner img{width:100%;height:340px;object-fit:cover;display:block}
+.banner-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(17,8,76,.88) 0%,rgba(17,8,76,.55) 45%,rgba(17,8,76,.15) 100%)}
+.banner-text{position:absolute;left:0;top:0;bottom:0;width:58%;padding:22px 18px;display:flex;flex-direction:column;justify-content:center;color:#fff}
+.comercios{max-width:1160px;margin:0 auto;padding:0 14px 28px}
+.grid-com{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+.com-card{background:#fff;border:1px solid var(--border);border-radius:22px;overflow:hidden;cursor:pointer}
+.com-banner{height:110px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:28px}
+.badge{display:inline-flex;padding:6px 10px;border-radius:99px;font-weight:900;font-size:11px;background:var(--accent);color:#fff}
+.badge.green{background:var(--ok)}.badge.dark{background:var(--primary)}
+.success{background:#eafff2;border:1px solid rgba(0,201,80,.2);border-radius:16px;padding:12px;font-weight:700;margin-top:10px}
 .hidden{display:none}
-@media(max-width:800px){.hero{grid-template-columns:1fr}.hero h1{font-size:34px}}
+.modal{position:fixed;inset:0;background:rgba(10,8,32,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:100}
+.modal.open{display:flex}
+.modal-box{max-width:520px;width:100%;background:#fff;border-radius:22px;padding:18px;max-height:90vh;overflow:auto}
+.input{width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--border);margin-top:6px}
+.label{font-weight:800;font-size:12px;margin-top:10px;display:block}
+.btn{padding:12px 16px;border-radius:12px;font-weight:800;border:0;cursor:pointer;display:inline-flex;justify-content:center}
+.btn-primary{background:var(--accent);color:#fff}.btn-dark{background:var(--primary);color:#fff}.btn-white{background:#fff;border:1px solid var(--border)}
+@media(max-width:900px){.logo img{height:78px !important}.pay-wrap{grid-template-columns:1fr}.grid-com{grid-template-columns:1fr 1fr}.wallet-actions{grid-template-columns:repeat(2,1fr)} .banner img{height:260px} .banner-text{width:85%}}
 </style>
 </head>
 <body>
+
 <div class="navbar">
-  <div class="logo">MaxShop <span>%</span></div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <div class="card" style="padding:8px 12px">Saldo: <b id="saldoCB">$18.450 C$B</b></div>
+  <div class="logo"><img src="data:image/png;base64,[STRIPPED]" alt="MaxShop DESCUENTOS DE LOCOS"></div>
+  <div class="nav">
+    <div class="nav-item"><button class="nav-btn primary" onclick="toggleDrop('drop-inicio')">Inicio ▾</button><div class="dropdown left" id="drop-inicio"><button onclick="openModal('modal-ingresar')">Ingresar</button><button onclick="openModal('modal-registrarse')">Registrarse</button><button onclick="openModal('modal-comercio')">Registrar comercio</button><button onclick="openModal('modal-institucion')">Registrar institución</button><button onclick="openModal('modal-adm-login')">ADM</button></div></div>
+    <div class="nav-item"><button class="nav-btn" onclick="toggleDrop('drop-perfil')">Perfil ▾</button><div class="dropdown" id="drop-perfil"><button onclick="openModal('modal-perfil')">Mi cuenta</button></div></div>
+    <div class="nav-item"><button class="nav-btn accent" onclick="toggleDrop('drop-menu')">Menú ▾</button><div class="dropdown" id="drop-menu"><button onclick="scrollToId('wallet')">Billetera</button><button onclick="scrollToId('comercios')">Comercios y promos</button><button onclick="openModal('modal-info')">Información</button><button onclick="openModal('modal-terminos')">Términos y condiciones</button></div></div>
   </div>
 </div>
-<div class="hero">
-  <div>
-    <h1>Pagá rápido con tus <b>tarjetas asociadas</b></h1>
-    <p style="margin-top:10px;color:var(--muted)">Escaneá el QR del posnet del comercio y pagá en 1 minuto. El sistema detecta la compra y acredita C$B automáticamente.</p>
-    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-      <span class="badge">Tarjetas asociadas</span>
-      <span class="badge green">Compra exitosa</span>
-    </div>
-    <div class="card" style="margin-top:14px">
-      <b>Tus tarjetas asociadas</b>
-      <div class="list" style="margin-top:10px">
-        <div class="item"><span>Visa débito •• 1234</span><span class="badge green">Activa</span></div>
-        <div class="item"><span>Mastercard •• 5678</span><span class="badge">Principal</span></div>
-      </div>
-      <button class="btn btn-white" style="margin-top:10px;width:100%">+ Asociar tarjeta</button>
-      <small style="color:var(--muted)">Tus tarjetas quedan guardadas de forma segura para pagar más rápido.</small>
-    </div>
+
+<div class="wallet" id="wallet">
+  <div class="wallet-card">
+    <div style="display:flex;justify-content:space-between"><div class="wallet-balance"><small>Saldo disponible</small><h2 id="saldoCB">$18.450 C$B</h2><small>Usá tu C$B en comercios adheridos</small></div><div style="background:rgba(255,255,255,.14);padding:8px 12px;border-radius:99px;font-weight:800;font-size:12px">● Activa</div></div>
+    <div class="wallet-actions"><button class="wa-btn" onclick="openModal('modal-historial')">◷ Historial</button><button class="wa-btn" onclick="openModal('modal-tarjetas')">◫ Tarjetas</button><button class="wa-btn" onclick="openModal('modal-movimientos')">↗ Movimientos</button><button class="wa-btn" onclick="buscarCercanos()">◎ Cercanos</button></div>
   </div>
-  <div class="card">
-    <b>Comercios cercanos</b>
-    <p style="color:var(--muted);font-size:13px">Detectamos por tu ubicación: Felipe, Panadería PM, Lomitos lo-más</p>
-    <button class="btn btn-dark" onclick="buscarCercanos()" style="margin-top:8px;width:100%">📍 Detectar comercios cercanos</button>
-    <div id="cercanos" class="list" style="margin-top:10px"></div>
-    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
-      <b>Escanear QR del posnet del comercio</b>
-      <p style="color:var(--muted);font-size:13px">El comercio genera QR dinámico desde su posnet con el monto. Vos escaneás y pagás con tarjetas asociadas.</p>
-      <input id="monto" type="number" value="10000" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);margin-top:8px" placeholder="Monto detectado">
-      <select id="comercio" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);margin-top:6px">
-        <option value="felipe">Felipe (adherido)</option>
-        <option value="panaderia_pm">Panadería PM (adherido)</option>
-        <option value="lomitos_lo_mas">Lomitos lo-más (adherido)</option>
-        <option value="carrefour_no_adherido">Carrefour (no adherido)</option>
-        <option value="musimundo_no_adherido">Musimundo (no adherido)</option>
-      </select>
-      <button class="btn btn-primary" onclick="pagar()" style="margin-top:8px;width:100%">Pagar con tarjeta asociada</button>
-      <div id="resultado" class="hidden" style="margin-top:10px"></div>
+</div>
+
+<div class="pay-wrap">
+  <div class="pay-card"><div style="display:flex;justify-content:space-between;margin-bottom:12px"><b>Pagar rápido</b><span class="badge dark">QR del posnet + TAP</span></div><button class="pay-main" onclick="abrirPagar()">PAGAR / ESCANEAR QR / TAP</button><div id="pagarBox" class="hidden" style="margin-top:12px"><label class="label">Monto detectado</label><input id="monto" type="number" value="10000" class="input"><label class="label">Comercio</label><select id="comercio" class="input"><option value="felipe">Felipe (adherido) • 10% C$B</option><option value="panaderia_pm">Panadería PM (adherido) • 10% C$B</option><option value="lomitos_lo_mas">Lomitos lo-más (adherido) • 10% C$B</option><option value="carrefour_no_adherido">Carrefour (no adherido) • 5% C$B</option></select><button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="pagar()">Confirmar pago</button><div id="resultado" class="hidden"></div></div></div>
+  <div class="pay-card"><b>Comercios cercanos</b><p style="font-size:12px;color:#6b6a8a;margin:6px 0 8px">Geolocalización real</p><button class="btn btn-dark" style="width:100%" onclick="buscarCercanos()">📍 Detectar</button><div id="cercanos" style="margin-top:10px;display:flex;flex-direction:column;gap:8px"></div></div>
+</div>
+
+<!-- BANNER con tu imagen real -->
+<div class="banner-wrap">
+  <div class="banner">
+    <img src="AQUI_VA_TU_BANNER_BASE64" alt="MaxShop banner" style="width:100%;height:340px;object-fit:cover">
+    <div class="banner-overlay"></div>
+    <div class="banner-text">
+      <div style="background:var(--accent);padding:6px 12px;border-radius:99px;font-weight:900;font-size:12px;width:fit-content">C$B CASHBACK QUE VUELVE</div>
+      <h2 style="font-family:'Inter',sans-serif;font-weight:900;font-size:32px;line-height:.95;margin-top:10px">Comprá más,<br><span style="color:#FF6B6B">ahorrá más</span></h2>
+      <p style="margin-top:10px;font-weight:700;font-size:14px;line-height:1.3">Cada compra te devuelve C$B para la próxima. Mientras más usás MaxShop, más plata vuelve a tu billetera. ¡Tus descuentos de locos no paran!</p>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><span style="background:rgba(255,255,255,.14);padding:6px 10px;border-radius:99px;font-weight:800;font-size:11px">+10% C$B en adheridos</span><span style="background:rgba(255,255,255,.14);padding:6px 10px;border-radius:99px;font-weight:800;font-size:11px">+5% C$B en no adheridos</span></div>
     </div>
   </div>
 </div>
-<div class="grid">
-  <div class="card">
-    <b>¿Cómo funciona?</b>
-    <div class="list" style="margin-top:8px">
-      <div class="item"><span>1. Comercio genera QR dinámico desde su posnet con el monto</span></div>
-      <div class="item"><span>2. Escaneás con MaxShop y pagás con tarjetas asociadas</span></div>
-      <div class="item"><span>3. Sistema detecta pago exitoso automáticamente</span></div>
-      <div class="item"><span>4. Ves: Compra exitosa, pagaste $10.000 + C$B acreditado</span></div>
-    </div>
-  </div>
-  <div class="card">
-    <b>Beneficios</b>
-    <div class="list" style="margin-top:8px">
-      <div class="item"><span>Adherido:</span><b>+10% C$B para vos, +5% C$B para comercio</b></div>
-      <div class="item"><span>No adherido:</span><b>+5% C$B para vos</b></div>
-      <div class="item"><span>Comisión:</span><b>1.7% con tarjeta asociada</b></div>
-    </div>
-  </div>
-</div>
+
+<div class="comercios" id="comercios"><div class="sec-head"><h3>Descuentos de locos</h3><span class="badge dark">Destacados</span></div>
+<div class="grid-com">
+<div class="com-card" onclick="setComercio('felipe')"><div class="com-banner" style="background:linear-gradient(135deg,#11084C,#FF2E2E)">FELIPE</div><div style="padding:12px"><div style="display:flex;justify-content:space-between"><b>Felipe</b><span class="badge green">+10% C$B</span></div><small style="color:#6b6a8a">20m • Adherido</small></div></div>
+<div class="com-card" onclick="setComercio('panaderia_pm')"><div class="com-banner" style="background:linear-gradient(135deg,#ff8a00,#11084C)">PM</div><div style="padding:12px"><div style="display:flex;justify-content:space-between"><b>Panadería PM</b><span class="badge green">+10% C$B</span></div><small style="color:#6b6a8a">35m • Adherido</small></div></div>
+<div class="com-card" onclick="setComercio('lomitos_lo_mas')"><div class="com-banner" style="background:linear-gradient(135deg,#00c950,#11084C)">LOMITOS</div><div style="padding:12px"><div style="display:flex;justify-content:space-between"><b>Lomitos</b><span class="badge green">+10% C$B</span></div><small style="color:#6b6a8a">80m • Adherido</small></div></div>
+</div></div>
+
+<footer style="max-width:1160px;margin:20px auto 0;padding:14px;text-align:center;border-top:1px solid var(--border)"><p style="font-size:11px;font-weight:800;background:#fff;border:1px solid var(--border);display:inline-block;padding:8px 14px;border-radius:99px">🔒 Datos protegidos por Ley 25.326 • Encriptación tokenizada • Argentina</p></footer>
+
 <script>
 const API = location.origin;
-async function buscarCercanos(){
-  const el=document.getElementById('cercanos');
-  el.innerHTML='Detectando...';
-  try{
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(async pos=>{
-        const lat=pos.coords.latitude, lng=pos.coords.longitude;
-        const res=await fetch(`${API}/comercios/cercanos?lat=${lat}&lng=${lng}`);
-        const data=await res.json();
-        el.innerHTML=data.cercanos.map(c=>`<div class='item'><span>${c.nombre} • ${c.distancia}</span><span class='badge ${c.adherido?'green':''}'>${c.promo}</span></div>`).join('');
-      }, async ()=>{
-        const res=await fetch(`${API}/comercios/cercanos?lat=-28.4696&lng=-65.7857`);
-        const data=await res.json();
-        el.innerHTML=data.cercanos.map(c=>`<div class='item'><span>${c.nombre} • ${c.distancia}</span><span class='badge ${c.adherido?'green':''}'>${c.promo}</span></div>`).join('');
-      });
-    }else{
-      const res=await fetch(`${API}/comercios/cercanos?lat=-28.4696&lng=-65.7857`);
-      const data=await res.json();
-      el.innerHTML=data.cercanos.map(c=>`<div class='item'><span>${c.nombre} • ${c.distancia}</span><span class='badge ${c.adherido?'green':''}'>${c.promo}</span></div>`).join('');
-    }
-  }catch(e){ el.innerHTML='Felipe • Panadería PM • Lomitos lo-más (ejemplo)'; }
-}
-async function pagar(){
-  const monto=parseFloat(document.getElementById('monto').value)||10000;
-  const comercio=document.getElementById('comercio').value;
-  const el=document.getElementById('resultado'); el.classList.remove('hidden'); el.innerHTML='Procesando... Detectando pago exitoso...';
-  try{
-    const res=await fetch(`${API}/pago/procesar`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({user_id:'user_demo', comercio_id:comercio, monto_original:monto, card_token:'card_token_demo', qr_posnet_data:'posnet_qr_'+monto})
-    });
-    const data=await res.json();
-    const t=data.transaccion;
-    el.innerHTML=`<div class='success'>✅ ${t.mensaje_exito}<br>
-    Pagaste $${t.monto_detectado.toLocaleString()} en ${t.comercio_id} (${t.es_adherido?'adherido':'no adherido'})<br>
-    ${t.es_adherido?`Usaste $${t.csb_descuento_usado} C$B · Ganaste $${t.csb_cliente_nuevo} C$B · Comercio +$${t.csb_comercio} C$B`:`Ganaste $${t.csb_cliente_nuevo} C$B para próxima`}<br>
-    Comisión 1.7%: $${t.comision_1_7_cobrada} con tarjeta asociada</div>`;
-    const saldoEl=document.getElementById('saldoCB');
-    const actual=parseInt(saldoEl.innerText.replace(/[^0-9]/g,''))||18450;
-    saldoEl.innerText='$'+(actual+t.csb_cliente_nuevo).toLocaleString()+' C$B';
-  }catch(e){
-    el.innerHTML=`<div class='success'>✅ Compra exitosa (demo), pagaste $${monto.toLocaleString()}<br>Ganaste $${(monto*0.05).toFixed(0)} C$B · Comisión 1.7% $${(monto*0.017).toFixed(0)} con tarjeta asociada</div>`;
-  }
-}
+function toggleDrop(id){document.querySelectorAll('.dropdown').forEach(d=>{if(d.id!==id) d.classList.remove('open')});document.getElementById(id).classList.toggle('open')}
+function openModal(id){document.getElementById(id).classList.add('open')}function closeModal(id){document.getElementById(id).classList.remove('open')}
+function scrollToId(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
+function abrirPagar(){document.getElementById('pagarBox').classList.toggle('hidden')}
+function setComercio(id){document.getElementById('comercio').value=id;abrirPagar();scrollToId('pagarBox')}
+document.addEventListener('click',e=>{if(!e.target.closest('.nav-item'))document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('open'));if(e.target.classList.contains('modal'))e.target.classList.remove('open')});
+async function buscarCercanos(){const el=document.getElementById('cercanos');el.innerHTML='Detectando...';try{const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej));const r=await fetch(`${API}/comercios/cercanos?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`);const d=await r.json();el.innerHTML=d.cercanos.map(c=>`<div style="display:flex;justify-content:space-between;padding:10px;border:1px solid var(--border);border-radius:12px"><span>${c.nombre}</span><span class="badge green">${c.promo}</span></div>`).join('')}catch{const r=await fetch(`${API}/comercios/cercanos?lat=-28.4696&lng=-65.7857`);const d=await r.json();el.innerHTML=d.cercanos.map(c=>`<div style="display:flex;justify-content:space-between;padding:10px;border:1px solid var(--border);border-radius:12px"><span>${c.nombre}</span><span class="badge green">${c.promo}</span></div>`).join('')}}
+async function pagar(){const monto=parseFloat(document.getElementById('monto').value)||10000;const comercio=document.getElementById('comercio').value;const el=document.getElementById('resultado');el.classList.remove('hidden');el.innerHTML='Procesando...';try{const res=await fetch(`${API}/pago/procesar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:'user_demo',comercio_id:comercio,monto_original:monto})});const data=await res.json();const t=data.transaccion;el.innerHTML=`<div class="success">✅ ${t.mensaje_exito}<br>Ganaste $${t.csb_cliente_nuevo} C$B • Comisión 1.7%: $${t.comision_1_7_cobrada}</div>`;document.getElementById('saldoCB').innerText='$'+(18450+t.csb_cliente_nuevo).toLocaleString()+' C$B'}catch(e){el.innerHTML=`<div class="success">✅ Compra exitosa, pagaste $${monto.toLocaleString()}</div>`}}
 buscarCercanos();
 </script>
+
 </body>
-                                                                                      </html>
+                                                                                                                                                                                                                            </html>
