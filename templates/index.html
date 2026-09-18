@@ -28,14 +28,12 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
 </style>
 </head>
 <body>
-
 <div class="navbar">
   <div class="logo">MaxShop <span>%</span></div>
   <div style="display:flex;gap:8px;align-items:center">
     <div class="card" style="padding:8px 12px">Saldo: <b id="saldoCB">$18.450 C$B</b></div>
   </div>
 </div>
-
 <div class="hero">
   <div>
     <h1>Pagá rápido con tus <b>tarjetas asociadas</b></h1>
@@ -54,13 +52,11 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
       <small style="color:var(--muted)">Tus tarjetas quedan guardadas de forma segura para pagar más rápido.</small>
     </div>
   </div>
-
   <div class="card">
     <b>Comercios cercanos</b>
     <p style="color:var(--muted);font-size:13px">Detectamos por tu ubicación: Felipe, Panadería PM, Lomitos lo-más</p>
     <button class="btn btn-dark" onclick="buscarCercanos()" style="margin-top:8px;width:100%">📍 Detectar comercios cercanos</button>
     <div id="cercanos" class="list" style="margin-top:10px"></div>
-    
     <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
       <b>Escanear QR del posnet del comercio</b>
       <p style="color:var(--muted);font-size:13px">El comercio genera QR dinámico desde su posnet con el monto. Vos escaneás y pagás con tarjetas asociadas.</p>
@@ -77,7 +73,6 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
     </div>
   </div>
 </div>
-
 <div class="grid">
   <div class="card">
     <b>¿Cómo funciona?</b>
@@ -97,7 +92,6 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
     </div>
   </div>
 </div>
-
 <script>
 const API = location.origin;
 async function buscarCercanos(){
@@ -122,7 +116,6 @@ async function buscarCercanos(){
     }
   }catch(e){ el.innerHTML='Felipe • Panadería PM • Lomitos lo-más (ejemplo)'; }
 }
-
 async function pagar(){
   const monto=parseFloat(document.getElementById('monto').value)||10000;
   const comercio=document.getElementById('comercio').value;
@@ -149,4 +142,4 @@ async function pagar(){
 buscarCercanos();
 </script>
 </body>
-  </html>
+                                                                                      </html>
