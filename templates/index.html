@@ -110,7 +110,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
     <div class="wallet-actions">
       <button class="wa-btn" onclick="abrirPerfil('historial')">Historial</button>
       <button class="wa-btn" onclick="abrirPerfil('tarjetas')">Tarjetas</button>
-      <button class="wa-btn" onclick="abrirModal('modal-transferir')">Transferir C$B</button>
+      <button class="wa-btn" onclick="abrirPerfil('transferir')">Transferir C$B</button>
       <button class="wa-btn" onclick="abrirPerfil('movimientos')">Movimientos</button>
       <button class="wa-btn" onclick="buscarCercanos()">Cercanos</button>
     </div>
@@ -193,7 +193,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
 <!-- LOGIN -->
 <div class="modal" id="modal-ingresar"><div class="modal-box">
   <h3>Ingresar a MaxShop</h3>
-  <p style="font-size:12px;color:var(--muted);margin-top:4px">Sesión expira a los 10 minutos por seguridad (todos los roles, incluido ADM)</p>
+  <p style="font-size:12px;color:var(--muted);margin-top:4px">Sesión expira a los 10 minutos por seguridad</p>
   <label class="label">Email registrado</label><input class="input" id="login-email" placeholder="tu@email.com">
   <label class="label">Contraseña</label><input class="input" id="login-pass" type="password" placeholder="••••••••">
   <button class="btn btn-dark" style="margin-top:12px" onclick="hacerLogin()">Ingresar</button>
@@ -209,7 +209,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
   <label class="label">DNI (para validar tarjetas)</label><input class="input" id="reg-dni" placeholder="12345678">
   <label class="label">Teléfono (para notificaciones)</label><input class="input" id="reg-tel" placeholder="+54 9 383 ..."><label class="label">Email</label><input class="input" id="reg-email" placeholder="tu@email.com">
   <label class="label">Contraseña</label><input class="input" id="reg-pass" type="password">
-  <div style="background:#eafff2;border:1px solid #b6f5c8;padding:10px;border-radius:12px;margin-top:10px;font-size:12px"><b>Regalo bienvenida:</b> 10.000 C$B válidos 7 días para tu primera compra. Luego saldo queda en 0 C$B hasta que compres.</div>
+  <div style="background:#eafff2;border:1px solid #b6f5c8;padding:10px;border-radius:12px;margin-top:10px;font-size:12px"><b>Regalo bienvenida:</b> 10.000 C$B válidos 7 días para tu primera compra. Luego solo expira el regalo, lo que ganaste comprando lo mantenés.</div>
   <button class="btn btn-primary" style="margin-top:12px" onclick="hacerRegistro('usuario')">Registrarme - 10.000 C$B</button>
   <button class="btn btn-white" style="margin-top:8px" onclick="closeModal('modal-registrarse')">Cerrar</button>
 </div></div>
@@ -230,7 +230,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
     <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:800;font-size:12px">Descuento C$B</span><span id="promo-valor" style="font-weight:900;font-size:18px;color:var(--accent)">10% C$B</span></div>
     <input type="range" id="com-promo" min="5" max="35" value="10" style="width:100%;margin-top:8px;accent-color:#FF2E2E" oninput="document.getElementById('promo-valor').innerText=this.value+'% C$B'">
     <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px"><span>Mín 5% C$B</span><span>Máx 35% C$B</span></div>
-    <small style="font-size:11px;color:var(--muted)">Barra anclada en 5% mínimo, desde allí movés para más %. Formato tarjeta que te gusta.</small>
+    <small style="font-size:11px;color:var(--muted)">Barra anclada en 5% mínimo, desde allí movés para más %. </small>
   </div>
   <div style="background:#fff7e6;border:1px solid #ffe1a8;padding:10px;border-radius:12px;margin-top:10px;font-size:12px">Luego en Perfil > Mis comercios vas a poder editar promo (barra 5%+), logo, banner, agregar sucursales y descargar informes/movimientos. Teléfono para notificaciones.</div>
   <button class="btn btn-dark" style="margin-top:10px" onclick="hacerRegistro('comercio')">Registrar comercio - Verificación pendiente</button>
@@ -275,7 +275,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
     </div>
     <div style="border:1px solid var(--border);border-radius:14px;padding:12px">
       <b>Seguridad</b>
-      <p style="font-size:12px">Todos los roles deben registrarse primera vez. Si salís +10min, pide iniciar sesión (incluido ADM).</p>
+      <p style="font-size:12px">Todos los roles deben registrarse primera vez. Si salís +10min, pide iniciar sesión .</p>
       <button class="btn btn-white" style="margin-top:6px" onclick="cerrarSesion()">Cerrar sesión (10min timeout)</button>
     </div>
   </div>
@@ -363,8 +363,8 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
 <p>Datos personales protegidos por Ley 25.326. Almacenados en Firebase (Google) con encriptación en reposo y tránsito. Tokens JWT, imágenes en Firebase Storage con reglas de acceso. Usuario puede editar/agregar datos en Perfil, pedir baja, descargar informe. No vendemos datos.</p>
 <h4>9. Ley 24.240 Defensa Consumidor y transparencia</h4>
 <p>Promociones publicadas por comercios son responsabilidad del comercio. MaxShop intermediario tecnológico. Reclamos por productos a comercio. Reclamos por C$B a MaxShop.</p>
-<h4>10. ADM - Control absoluto</h4>
-<p>Administrador tiene control absoluto: editar gráficamente banners publicitarios superiores, moderar comercios/instituciones, ver base datos, descargar informes, imprimir, suspender cuentas. También expira sesión 10min por seguridad.</p>
+<h4>10. Transferencia C$B entre usuarios</h4>
+<p>Podés transferir C$B a otro usuario verificado (madre a hijo, amigo a amigo). Mínimo 100 C$B, máximo 5.000 C$B por día. El regalo de bienvenida de 10.000 C$B no es transferible hasta tu primera compra. Solo C$B ganado con compras se puede transferir. C$B no es peso, solo descuento interno.</p>
 <h4>11. C$B no es $</h4>
 <p>Importante: C$B no es peso. No reclamable como $1000 pesos. Solo descuento interno. Si pagaste $10.000 y ganaste 1.000 C$B, no son $1000 pesos, son 1.000 unidades descuento. Así evitamos reclamos de dinero acumulado.</p>
 <h4>12. Jurisdicción</h4>
@@ -445,7 +445,7 @@ function cerrarSesion(expirada=false){
   document.getElementById('perfil-email').innerText='-';
   document.getElementById('perfil-saldo').innerText='0 C$B';
   document.getElementById('perfil-estado').innerText='No verificado';
-  if(expirada) alert('Sesión expiró por 10 min sin actividad por seguridad (incluido ADM). Iniciá sesión de nuevo.');
+  if(expirada) alert('Sesión expiró por 10 min sin actividad por seguridad . Iniciá sesión de nuevo.');
 }
 function actualizarUI(){
   if(!sesion) return;
@@ -473,21 +473,33 @@ document.addEventListener('click', e=>{ if(!e.target.closest('.nav-item')) docum
 
 function loginADM(){ const clave=document.getElementById("adm-clave").value; if(clave==="MaxShop2026!"){ document.getElementById("adm-login").classList.add("hidden"); document.getElementById("adm-panel").classList.remove("hidden"); guardarSesion({email:"admin@maxshop.com", nombre:"ADM Max", rol:"ADM", saldo:0, timestamp:Date.now()}); } else { alert("Clave incorrecta - Solo vos podés entrar"); } }
 function hacerLogin(){
-  const email = document.getElementById('login-email').value;
+  const email = document.getElementById('login-email').value.trim();
   const pass = document.getElementById('login-pass').value;
-  if(!email || !pass){ document.getElementById('login-msg').innerText='Ingresá email y pass'; return; }
-  guardarSesion({email, nombre: email.split('@')[0], rol:'usuario', saldo: 5000, timestamp: Date.now(), esNuevo:false});
+  if(!email || !pass){ document.getElementById('login-msg').innerText='Ingresá email y contraseña'; return; }
+  const u = findUsuario(email);
+  if(!u){ 
+    document.getElementById('login-msg').innerText='❌ Usuario no registrado. Registrate primero para obtener 10.000 C$B bienvenida';
+    setTimeout(()=>{ closeModal('modal-ingresar'); openModal('modal-registrarse'); }, 1200);
+    return; 
+  }
+  // Login ok - recupera saldo
+  guardarSesion({email: u.email, nombre: u.nombre, dni: u.dni, tel: u.tel, rol: u.rol||'usuario', saldo: u.saldo||0, saldoBienvenida: u.saldoBienvenida||0, saldoGanado: u.saldoGanado||0, fechaRegistro: u.fechaRegistro, esNuevo: (u.saldoBienvenida||0)>0, timestamp: Date.now()});
   document.getElementById('login-msg').innerText='✅ Logueado';
   setTimeout(()=>closeModal('modal-ingresar'), 800);
 }
 function hacerRegistro(tipo){
   if(tipo==='usuario'){
-    const nombre = document.getElementById('reg-nombre').value;
-    const email = document.getElementById('reg-email').value;
-    const dni = document.getElementById('reg-dni').value;
+    const nombre = document.getElementById('reg-nombre').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const dni = document.getElementById('reg-dni').value.trim();
+    const tel = document.getElementById('reg-tel')?.value.trim()||'';
     if(!nombre || !email || !dni){ alert('Completá nombre, DNI y email verificable para tarjetas'); return; }
-    guardarSesion({email, nombre, dni, rol:'usuario', saldo:10000, esNuevo:true, timestamp: Date.now()});
-    alert('✅ Cuenta creada - Ganaste 10.000 C$B bienvenida (7 días). Luego saldo 0 hasta comprar. Ya podés usar billetera.');
+    if(findUsuario(email)){ alert('Este email ya está registrado. Iniciá sesión'); closeModal('modal-registrarse'); openModal('modal-ingresar'); return; }
+    const ahora = Date.now();
+    const nuevo = {email, nombre, dni, tel, rol:'usuario', saldo:10000, saldoBienvenida:10000, saldoGanado:0, fechaRegistro: ahora, timestamp: ahora};
+    saveUsuario(nuevo);
+    guardarSesion({...nuevo, esNuevo:true});
+    alert('✅ Cuenta creada - Ganaste 10.000 C$B bienvenida (7 días). Lo que ganes comprando en esa semana lo mantenés, solo expira el regalo. Ya podés usar billetera.');
     closeModal('modal-registrarse');
   } else if(tipo==='comercio'){
     const nombre = document.getElementById('com-nombre').value;
@@ -496,24 +508,42 @@ function hacerRegistro(tipo){
     const promo = document.getElementById('com-promo').value;
     if(!nombre || !cuit){ alert('CUIT/CUIL/DNI y titular obligatorio'); return; }
     if(!tel){ alert('Teléfono muy importante para notificaciones'); return; }
-    guardarSesion({email: document.getElementById('com-email').value, nombre, rol:'comercio', saldo:0, timestamp: Date.now()});
-    alert('✅ Comercio registrado - Verificación pendiente. En Perfil > Mis comercios podés editar promo/logo/banner y agregar más comercios + descargar informes.');
+    const email = document.getElementById('com-email').value;
+    const nuevo = {email, nombre, rol:'comercio', saldo:0, saldoBienvenida:0, saldoGanado:0, fechaRegistro: Date.now(), tel, promo};
+    saveUsuario(nuevo);
+    guardarSesion({...nuevo, timestamp: Date.now()});
+    alert('✅ Comercio registrado - Verificación pendiente. En Perfil > Mis comercios podés editar promo, logo, banner y agregar más comercios.');
     closeModal('modal-comercio');
   } else if(tipo==='institucion'){
     const nombre = document.getElementById('inst-nombre').value;
     const cuit = document.getElementById('inst-cuit').value;
     if(!nombre || !cuit){ alert('CUIT y constancia obligatoria para verificar que sos institución/club real'); return; }
-    guardarSesion({email: document.getElementById('inst-email').value, nombre, rol:'institucion', saldo:0, timestamp: Date.now()});
-    alert('✅ Institución registrada - Verificación estricta pendiente para evitar fraude. Luego en Perfil > Mi institución cargás socios.');
+    const email = document.getElementById('inst-email').value;
+    const tel = document.getElementById('inst-tel')?.value||'';
+    const nuevo = {email, nombre, rol:'institucion', saldo:0, saldoBienvenida:0, saldoGanado:0, fechaRegistro: Date.now(), tel};
+    saveUsuario(nuevo);
+    guardarSesion({...nuevo, timestamp: Date.now()});
+    alert('✅ Institución registrada - Verificación pendiente para evitar fraude.');
     closeModal('modal-institucion');
   }
 }
 
-function editarDatos(){ alert('Panel edición datos - Aquí podés editar todos los datos, agregar datos, como cualquier web/app'); }
-function agregarComercio(){ const nombre=prompt('Nombre nuevo comercio (si tenés más de 1, hasta 3+)'); if(nombre){ const lista=document.getElementById('lista-comercios'); const div=document.createElement('div'); div.style.cssText='border:1px solid var(--border);padding:10px;border-radius:12px;display:flex;justify-content:space-between'; div.innerHTML=`<span>${nombre} - 10% C$B</span><button class="btn btn-white" style="width:auto;padding:6px 10px;font-size:11px">Editar</button>`; lista.appendChild(div); alert('Comercio agregado - Luego Firebase'); } }
-function editarComercio(id){ alert('Editar promoción, logo, banner de '+id+' - Firebase Storage'); }
-function descargarInforme(tipo){ alert('Descargando informe/movimientos de '+tipo+' - Luego PDF listo para imprimir, base de datos lista'); }
-function agregarTarjeta(){ alert('Tarjeta adherida solo a tu nombre y datos verificables - Tokenizada segura - Para débito 1.7%'); closeModal('modal-tarjetas'); }
+function editarDatos(){
+  if(!sesion){ alert('Registrate primero'); return; }
+  const nuevoNombre = prompt('Nombre completo (actual: '+sesion.nombre+')', sesion.nombre);
+  const nuevoTel = prompt('Teléfono para notificaciones (actual: '+(sesion.tel||'')+')', sesion.tel||'');
+  const nuevoEmail = prompt('Email (actual: '+sesion.email+')', sesion.email);
+  if(nuevoNombre) sesion.nombre = nuevoNombre;
+  if(nuevoTel) sesion.tel = nuevoTel;
+  if(nuevoEmail) sesion.email = nuevoEmail;
+  const u = findUsuario(sesion.email); if(u){ u.nombre=sesion.nombre; u.tel=sesion.tel; u.email=sesion.email; saveUsuario(u); }
+  guardarSesion(sesion);
+  alert('✅ Datos actualizados - Teléfono para notificaciones guardado');
+}
+function agregarComercio(){ const nombre=prompt('Nombre nuevo comercio (si tenés más de 1, hasta 3+)'); if(!nombre) return; const promo=prompt('Promo % C$B mínimo 5%', '10'); if(!sesion){ alert('Registrate como comercio primero'); return; } const lista=document.getElementById('lista-comercios'); const div=document.createElement('div'); div.style.cssText='border:1px solid var(--border);padding:10px;border-radius:12px;display:flex;justify-content:space-between'; div.innerHTML=`<span>${nombre} - ${promo}% C$B</span><button class="btn btn-white" style="width:auto;padding:6px 10px;font-size:11px" onclick="editarComercio('${nombre}')">Editar promo/logo/banner</button>`; lista.appendChild(div); const comercios = JSON.parse(localStorage.getItem('maxshop_mis_comercios')||'[]'); comercios.push({nombre, promo, tel: sesion.tel}); localStorage.setItem('maxshop_mis_comercios', JSON.stringify(comercios)); alert('✅ Comercio '+nombre+' agregado - Luego Firebase Storage'); }
+function editarComercio(id){ const nuevaPromo=prompt('Nueva promo % C$B para '+id+' (mín 5% máx 35%)', '10'); if(!nuevaPromo) return; const val=parseInt(nuevaPromo); if(val<5 || val>35){ alert('Mín 5% máx 35% C$B'); return; } alert('✅ Promo '+id+' actualizada a '+val+'% C$B - Logo/banner en Firebase Storage luego'); }
+function descargarInforme(tipo){ if(!sesion){ alert('Registrate primero'); return; } const datos={tipo, usuario: sesion.email, nombre: sesion.nombre, saldo: sesion.saldo, saldoGanado: sesion.saldoGanado, saldoBienvenida: sesion.saldoBienvenida, fecha: new Date().toLocaleString(), comercios: JSON.parse(localStorage.getItem('maxshop_mis_comercios')||'[]')}; const blob=new Blob([JSON.stringify(datos, null, 2)], {type: 'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='MaxShop_'+tipo+'_'+sesion.email+'.json'; a.click(); URL.revokeObjectURL(url); alert('✅ Informe '+tipo+' descargado - Base de datos lista para imprimir'); }
+function agregarTarjeta(){ const tarjetas=JSON.parse(localStorage.getItem('maxshop_tarjetas')||'[]'); tarjetas.push({titular: sesion.nombre, fecha: new Date().toLocaleString(), verificada:true}); localStorage.setItem('maxshop_tarjetas', JSON.stringify(tarjetas)); alert('✅ Tarjeta adherida a tu nombre y datos verificables - Tokenizada segura - Para débito 1.7% comisión. Solo tu persona.'); closeModal('modal-tarjetas'); }
 
 async function transferirCSB(){
   if(!verificarSesion()){ alert('Sesión expirada 10min - Inicia sesión de nuevo por seguridad'); openModal('modal-ingresar'); return; }
@@ -531,14 +561,9 @@ async function transferirCSB(){
     const res = await fetch(`${API}/transferir/csb`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({origen_id:sesion.email,destino_id:destino,monto: monto, mensaje: mensaje})});
     const data = await res.json();
     el.innerHTML=`<div class="success">✅ Transferiste <b>${monto} C$B</b> a ${destino}<br>${mensaje? 'Mensaje: '+mensaje+'<br>':''}Notificación enviada al teléfono del destinatario<br>Saldo restante: ${(sesion.saldo - monto).toLocaleString()} C$B</div>`;
-    sesion.saldo = sesion.saldo - monto;
-    sesion.timestamp = Date.now();
-    guardarSesion(sesion);
+    let restante = monto; let bienv = sesion.saldoBienvenida||0; let ganado = sesion.saldoGanado||0; if(ganado>=restante){ ganado-=restante; } else { restante-=ganado; ganado=0; bienv=Math.max(0,bienv-restante); } sesion.saldoGanado=ganado; sesion.saldoBienvenida=bienv; sesion.saldo=bienv+ganado; sesion.timestamp=Date.now(); const uu=findUsuario(sesion.email); if(uu){ uu.saldoGanado=ganado; uu.saldoBienvenida=bienv; uu.saldo=sesion.saldo; saveUsuario(uu); } guardarSesion(sesion);
   }catch(e){
-    el.innerHTML=`<div class="success">✅ Transferiste <b>${monto} C$B</b> a ${destino} (demo)<br>Notificación enviada al teléfono<br>Saldo restante: ${(sesion.saldo - monto).toLocaleString()} C$B</div>`;
-    sesion.saldo = sesion.saldo - monto;
-    sesion.timestamp = Date.now();
-    guardarSesion(sesion);
+    let restante = monto; let bienv = sesion.saldoBienvenida||0; let ganado = sesion.saldoGanado||0; if(ganado>=restante){ ganado-=restante; } else { restante-=ganado; ganado=0; bienv=Math.max(0,bienv-restante); } sesion.saldoGanado=ganado; sesion.saldoBienvenida=bienv; sesion.saldo=bienv+ganado; sesion.timestamp=Date.now(); const uu=findUsuario(sesion.email); if(uu){ uu.saldoGanado=ganado; uu.saldoBienvenida=bienv; uu.saldo=sesion.saldo; saveUsuario(uu); } guardarSesion(sesion); el.innerHTML=`<div class="success">✅ Transferiste <b>${monto} C$B</b> a ${destino} (demo)<br>Notificación enviada al teléfono<br>Saldo restante: ${sesion.saldo.toLocaleString()} C$B</div>`;
   }
 }
 
@@ -550,7 +575,7 @@ function initMap(lat=-28.4696,lng=-65.7857){ if(map) map.remove(); map=L.map('ma
 
 async function buscarCercanos(){ const el=document.getElementById('cercanos'); el.innerHTML='Detectando...'; try{ const pos=await new Promise((res,rej)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true}):rej()); const lat=pos.coords.latitude,lng=pos.coords.longitude; initMap(lat,lng); const r=await fetch(`${API}/comercios/cercanos?lat=${lat}&lng=${lng}`); const d=await r.json(); el.innerHTML=d.cercanos.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--border);border-radius:12px"><span>${c.nombre} • ${c.distancia}</span><span class="badge green">${c.promo}</span></div>`).join(''); }catch{ initMap(-28.4696,-65.7857); const r=await fetch(`${API}/comercios/cercanos?lat=-28.4696&lng=-65.7857`); const d=await r.json(); el.innerHTML=d.cercanos.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--border);border-radius:12px"><span>${c.nombre} • ${c.distancia}</span><span class="badge green">${c.promo}</span></div>`).join(''); } }
 
-async function pagar(){ if(!verificarSesion()){ alert('Sesión expirada 10min - Inicia sesión de nuevo por seguridad'); openModal('modal-ingresar'); return; } const monto=parseFloat(document.getElementById('monto').value)||10000; const comercio=document.getElementById('comercio').value; const el=document.getElementById('resultado'); el.classList.remove('hidden'); el.innerHTML='Procesando...'; try{ const res=await fetch(`${API}/pago/procesar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:sesion?.email||'user_demo',comercio_id:comercio,monto_original:monto})}); const data=await res.json(); const t=data.transaccion; el.innerHTML=`<div class="success">✅ ${t.mensaje_exito}<br>Pagaste ${monto.toLocaleString()} pesos en ${comercio}<br>Ganaste <b>${t.csb_cliente_nuevo} C$B</b> (no $ pesos)<br>Comisión servicio 1.7%: ${t.comision_1_7_cobrada} pesos</div>`; if(sesion){ const nuevoSaldo=(sesion.saldo||0)+t.csb_cliente_nuevo; sesion.saldo=nuevoSaldo; sesion.esNuevo=false; sesion.timestamp=Date.now(); guardarSesion(sesion); } }catch(e){ el.innerHTML=`<div class="success">✅ Compra exitosa<br>Ganaste 1.000 C$B (no $1000 pesos)</div>`; } }
+async function pagar(){ if(!verificarSesion()){ alert('Sesión expirada 10min - Inicia sesión de nuevo por seguridad'); openModal('modal-ingresar'); return; } if(!sesion){ alert('Registrate primero para pagar - Ganá 10.000 C$B bienvenida'); openModal('modal-registrarse'); return; } const monto=parseFloat(document.getElementById('monto').value)||10000; const comercio=document.getElementById('comercio').value; const el=document.getElementById('resultado'); el.classList.remove('hidden'); el.innerHTML='Procesando pago...'; try{ const res=await fetch(`${API}/pago/procesar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:sesion?.email||'user_demo',comercio_id:comercio,monto_original:monto})}); const data=await res.json(); const t=data.transaccion; el.innerHTML=`<div class="success">✅ ${t.mensaje_exito}<br>Pagaste ${monto.toLocaleString()} pesos en ${comercio}<br>Ganaste <b>${t.csb_cliente_nuevo} C$B</b> (no $ pesos)<br>Comisión servicio 1.7%: ${t.comision_1_7_cobrada} pesos</div>`; const ganado=(sesion.saldoGanado||0)+t.csb_cliente_nuevo; const bienv=sesion.saldoBienvenida||0; sesion.saldoGanado=ganado; sesion.saldo=bienv+ganado; sesion.timestamp=Date.now(); const u=findUsuario(sesion.email); if(u){ u.saldoGanado=ganado; u.saldo=sesion.saldo; saveUsuario(u); } guardarSesion(sesion); }catch(e){ const ganado=(sesion.saldoGanado||0)+1000; const bienv=sesion.saldoBienvenida||0; sesion.saldoGanado=ganado; sesion.saldo=bienv+ganado; const u=findUsuario(sesion.email); if(u){ u.saldoGanado=ganado; u.saldo=sesion.saldo; saveUsuario(u); } guardarSesion(sesion); el.innerHTML=`<div class="success">✅ Compra exitosa demo<br>Ganaste 1.000 C$B (no $1000 pesos)<br>Saldo total: ${sesion.saldo.toLocaleString()} C$B</div>`; } }
 
 // Init
 (function(){ const s=localStorage.getItem('maxshop_sesion'); if(s){ sesion=JSON.parse(s); if(Date.now()-sesion.timestamp > 10*60*1000){ cerrarSesion(true); } else { actualizarUI(); } } else { document.getElementById('saldoCB').innerText='0 C$B'; } buscarCercanos(); initMap(); })();
