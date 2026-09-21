@@ -21,6 +21,12 @@ class PagoRequest(BaseModel):
     comercio_id: str
     monto_original: float
 
+class TransferRequest(BaseModel):
+    origen_id: str
+    destino_id: str
+    monto: int
+    mensaje: str = ""
+
 @app.get("/", response_class=HTMLResponse)
 def serve():
     # Busca index.html en la raiz (donde esta main.py)
@@ -59,6 +65,24 @@ def cercanos(lat: float, lng: float):
             {"id": "panaderia_pm", "nombre": "Panaderia PM", "promo": "10% C$B", "distancia": "35m"},
             {"id": "lomitos_lo_mas", "nombre": "Lomitos lo-mas", "promo": "10% C$B", "distancia": "80m"},
         ]
+    }
+
+@app.post("/transferir/csb")
+def transferir_csb(req: TransferRequest):
+    # Validacion basica - en prod con Firebase transaction atomica
+    if req.monto < 100 or req.monto > 5000:
+        return {"status": "error", "msg": "Monto entre 100 y 5000 C$B"}
+    return {
+        "status": "ok",
+        "transferencia": {
+            "id": str(uuid.uuid4()),
+            "origen": req.origen_id,
+            "destino": req.destino_id,
+            "monto": req.monto,
+            "mensaje": req.mensaje,
+            "timestamp": datetime.utcnow().isoformat(),
+            "notificacion": f"Enviada a telefono de {req.destino_id}",
+        },
     }
 
 @app.post("/pago/procesar")
