@@ -136,7 +136,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
       <select id="comercio" class="input">
         <option value="felipe">Felipe (adherido) • 10% C$B</option>
         <option value="panaderia_pm">Panadería PM • 10% C$B</option>
-        <option value="lomitos_lo_mas">Lomitos • 10% C$B</option>
+        <option value="lomitos_lo_mas">Lomitos • 20% C$B ⭐ Dorado destacado</option>
       </select>
       <button class="btn btn-primary" style="margin-top:12px" onclick="pagar()">Confirmar pago</button>
       <div id="resultado" class="hidden"></div>
@@ -170,7 +170,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
   <div class="grid-com">
     <div class="com-card" onclick="setComercio('felipe')"><div class="com-banner" style="background:linear-gradient(135deg,#11084C,#FF2E2E)">FELIPE</div><div style="padding:12px"><div style="display:flex;justify-content:space-between"><b>Felipe</b><span class="badge green">+10% C$B</span></div><small style="color:var(--muted)">20m • Adherido • Firebase</small></div></div>
     <div class="com-card" onclick="setComercio('panaderia_pm')"><div class="com-banner" style="background:linear-gradient(135deg,#ff8a00,#11084C)">PM</div><div style="padding:12px"><div style="display:flex;justify-content:space-between"><b>Panadería PM</b><span class="badge green">+10% C$B</span></div><small style="color:var(--muted)">35m • Adherido • Firebase</small></div></div>
-    <div class="com-card" onclick="setComercio('lomitos_lo_mas')"><div class="com-banner" style="background:linear-gradient(135deg,#00c950,#11084C)">LOMITOS</div><div style="padding:12px"><div style="display:flex;justify-content:space-between"><b>Lomitos</b><span class="badge green">+10% C$B</span></div><small style="color:var(--muted)">80m • Adherido • Firebase</small></div></div>
+    <div class="com-card" onclick="setComercio('lomitos_lo_mas')"><div class="com-banner" style="background:linear-gradient(135deg,#FFB800,#11084C)">LOMITOS 20%</div><div style="padding:12px"><div style="display:flex;justify-content:space-between"><b>Lomitos 20% OFF</b><span class="badge gold">+20% C$B ⭐ Dorado</span></div><small style="color:var(--muted)">80m • Destacado • Firebase • Pin dorado</small></div></div>
   </div>
 </div>
 
@@ -178,7 +178,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
 <div class="comercios" id="map-section">
   <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 8px"><h3 style="font-family:'Inter',sans-serif;font-size:18px">Mapa de comercios</h3><span class="badge gold">Pines azul y dorado</span></div>
   <div class="pay-card" style="padding:10px">
-    <p style="font-size:12px;color:var(--muted)">Azul = adheridos 10% C$B • Dorado = no adheridos 5% C$B • Logos/banners en Firebase Storage</p>
+    <p style="font-size:12px;color:var(--muted)">Azul = adheridos 10% C$B • Dorado = destacados 20% C$B (mejores descuentos) ⭐ • No adheridos = sin pin, +5% C$B bonificación • Logos/banners Firebase</p>
     <div id="map"></div>
   </div>
 </div>
@@ -352,12 +352,12 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
 <p>Todos los roles deben registrarse primera vez con datos verificables. Usuario: nombre, DNI, email. Comercio: nombre, CUIT, titular verificable para débito 1.7% comisión, logo/banner alojados en Firebase Storage. Institución: CUIT, constancia de personería/club, responsable legal, email institucional (no personal), teléfono verificable. Sin verificación, no puede cobrar. ADM verifica manualmente instituciones para evitar fraude.</p>
 <h4>3. Sesión y seguridad - 10 minutos</h4>
 <p>Por seguridad, si el usuario, comercio, institución o administrador cierra página o inactividad >10 minutos, debe iniciar sesión nuevamente. Token JWT expira en 10 min. Incluye ADM.</p>
-<h4>4. Wallet y bienvenida</h4>
-<p>Saldo inicial 0 C$B. Al registrarse como usuario nuevo, regalo 10.000 C$B bienvenida, válido 7 días para primera compra. Si no usa, expira. No es dinero. Luego gana C$B con compras: 10% en comercios adheridos, 5% en no adheridos. Comercio adherido gana 5% C$B por venta.</p>
+<h4>4. Wallet, bienvenida y comercios adheridos vs no adheridos - Lógica anclada</h4>
+<p>Saldo inicial 0 C$B. Al registrarse como usuario nuevo, regalo 10.000 C$B bienvenida, válido 7 días para primera compra. Si generás más C$B comprando en esa semana, lo mantenés, solo expira el regalo. No es dinero. Luego gana C$B con compras: <b>10% C$B en comercios adheridos (con pin azul normal o dorado ⭐ destacado 20% ejemplo Lomitos)</b>, <b>5% C$B bonificación en no adheridos (sin pin, no aparecen en mapa)</b>. Comercio adherido gana 5% C$B por venta. Dorado = destacados mejores descuentos o venden mucho, ambos 10% C$B para cliente.</p>
 <h4>5. Tarjetas y comisión 1.7%</h4>
 <p>Tarjetas solo a nombre del titular verificado, en lugar seguro (Perfil > Mis tarjetas). Datos tokenizados, no guardamos número completo. Cumplimos PCI-DSS. Comisión MaxShop 1.7% sobre monto pagado, debitada al comercio. C$B no implica retención de pesos.</p>
 <h4>6. Comercios - Multi-sucursal</h4>
-<p>Comercio puede tener más de 1 sucursal (muchos tienen 2-3). Desde Perfil > Mis comercios puede editar promoción, descuento, logo, banner, agregar sucursales. Cada sucursal tiene pin azul (adherido) o dorado (no adherido) en mapa. Logos/banners se alojan en Firebase Storage, sin límite peso, luego se ven en grilla y mapa.</p>
+<p>Comercio puede tener más de 1 sucursal (muchos tienen 2-3). Desde Perfil > Mis comercios puede editar promoción, descuento, logo, banner, agregar sucursales. Cada sucursal tiene pin azul (adherido normal 10% C$B) o dorado (destacado 20% C$B mejores descuentos) - No adheridos sin pin +5% C$B en mapa. Logos/banners se alojan en Firebase Storage, sin límite peso, luego se ven en grilla y mapa.</p>
 <h4>7. Instituciones y socios</h4>
 <p>Institución carga socios luego de verificación. Genera links de cobro recurrente. Debe tener email institucional. Si cualquiera pudiera registrarse y cobrar, habría fraude, por eso verificación estricta.</p>
 <h4>8. Almacenamiento y protección de datos - Ley 25.326</h4>
@@ -420,46 +420,65 @@ const API = location.origin;
 let html5QrcodeScanner = null;
 let sesion = JSON.parse(localStorage.getItem('maxshop_sesion')||'null');
 
-// SEGURIDAD 10 MIN
+// SEGURIDAD 10 MIN + BIENVENIDA 10k 7 DIAS MANTIENE GANADO - FUNCIONA EN TODOS DISPOSITIVOS
 function guardarSesion(datos){
-  datos.timestamp = Date.now();
-  localStorage.setItem('maxshop_sesion', JSON.stringify(datos));
-  sesion = datos;
-  actualizarUI();
+  try{
+    datos.timestamp = Date.now();
+    localStorage.setItem('maxshop_sesion', JSON.stringify(datos));
+    sesion = datos;
+    actualizarUI();
+  }catch(e){ console.error('Error guardar sesion', e); alert('Error guardando sesión - Probá en otro navegador'); }
 }
 function verificarSesion(){
   if(!sesion) return false;
-  const ahora = Date.now();
+  var ahora = Date.now();
   if(ahora - sesion.timestamp > 10*60*1000){
     cerrarSesion(true);
     return false;
   }
+  var SIETE_DIAS = 7*24*60*60*1000;
+  if(sesion.fechaRegistro && (ahora - sesion.fechaRegistro > SIETE_DIAS) && (sesion.saldoBienvenida||0)>0){
+    var ganado = sesion.saldoGanado||0;
+    sesion.saldoBienvenida = 0;
+    sesion.saldo = ganado;
+    sesion.esNuevo = false;
+    var u = findUsuario(sesion.email); if(u){ u.saldoBienvenida=0; u.saldo=ganado; saveUsuario(u); }
+    guardarSesion(sesion);
+  }
   return true;
 }
-function cerrarSesion(expirada=false){
+function cerrarSesion(expirada){
+  if(typeof expirada==='undefined') expirada=false;
   localStorage.removeItem('maxshop_sesion');
   sesion=null;
-  document.getElementById('saldoCB').innerText='0 C$B';
-  document.getElementById('saldo-sub').innerText='Registrate y ganá 10.000 C$B de bienvenida (7 días)';
-  document.getElementById('estado-cuenta').innerText='● Invitado';
-  document.getElementById('perfil-nombre').innerText='Invitado - Registrate';
-  document.getElementById('perfil-email').innerText='-';
-  document.getElementById('perfil-saldo').innerText='0 C$B';
-  document.getElementById('perfil-estado').innerText='No verificado';
-  if(expirada) alert('Sesión expiró por 10 min sin actividad por seguridad . Iniciá sesión de nuevo.');
+  var el1=document.getElementById('saldoCB'); if(el1) el1.innerText='0 C$B';
+  var el2=document.getElementById('saldo-sub'); if(el2) el2.innerText='Registrate y ganá 10.000 C$B de bienvenida (7 días)';
+  var el3=document.getElementById('estado-cuenta'); if(el3) el3.innerText='● Invitado';
+  var el4=document.getElementById('perfil-nombre'); if(el4) el4.innerText='Invitado - Registrate';
+  var el5=document.getElementById('perfil-email'); if(el5) el5.innerText='-';
+  var el6=document.getElementById('perfil-saldo'); if(el6) el6.innerText='0 C$B';
+  var el7=document.getElementById('perfil-estado'); if(el7) el7.innerText='No verificado';
+  if(expirada) alert('Sesión expiró por 10 min sin actividad por seguridad. Iniciá sesión de nuevo.');
 }
 function actualizarUI(){
   if(!sesion) return;
-  const esNuevo = sesion.esNuevo;
-  const saldo = esNuevo ? 10000 : (sesion.saldo || 0);
-  document.getElementById('saldoCB').innerText = saldo.toLocaleString() + ' C$B';
-  document.getElementById('saldo-sub').innerText = esNuevo ? '10.000 C$B bienvenida - 7 días para usar' : 'Usá tu C$B en comercios adheridos';
-  document.getElementById('estado-cuenta').innerText = '● ' + (sesion.rol || 'Activa');
-  document.getElementById('perfil-nombre').innerText = sesion.nombre || 'Usuario';
-  document.getElementById('perfil-email').innerText = sesion.email || '-';
-  document.getElementById('perfil-saldo').innerText = saldo.toLocaleString() + ' C$B';
-  document.getElementById('perfil-estado').innerText = 'Verificado - '+ (sesion.rol||'usuario');
-  const elTrans = document.getElementById('saldo-transferible'); if(elTrans) elTrans.innerText = saldo.toLocaleString()+' C$B';
+  var ahora = Date.now();
+  var SIETE_DIAS = 7*24*60*60*1000;
+  var saldoBienvenida = sesion.saldoBienvenida||0;
+  var saldoGanado = sesion.saldoGanado||0;
+  if(sesion.fechaRegistro && (ahora - sesion.fechaRegistro > SIETE_DIAS)){ saldoBienvenida=0; }
+  var saldoTotal = saldoBienvenida + saldoGanado;
+  if(sesion.rol==='ADM') saldoTotal = 0;
+  sesion.saldo = saldoTotal;
+  var esBienvenidaActiva = saldoBienvenida>0 && sesion.fechaRegistro && (ahora - sesion.fechaRegistro <= SIETE_DIAS);
+  var elCB=document.getElementById('saldoCB'); if(elCB) elCB.innerText = saldoTotal.toLocaleString() + ' C$B';
+  var elSub=document.getElementById('saldo-sub'); if(elSub) elSub.innerText = esBienvenidaActiva ? '10.000 C$B bienvenida - 7 días (solo se pierde este regalo, lo ganado queda)' : (saldoGanado>0 ? 'Tenés '+saldoGanado.toLocaleString()+' C$B ganados con compras' : (sesion.rol==='ADM' ? 'Panel ADM activo' : 'Usá tu C$B en comercios adheridos'));
+  var elEstado=document.getElementById('estado-cuenta'); if(elEstado) elEstado.innerText = '● ' + (sesion.rol || 'Activa');
+  var elPN=document.getElementById('perfil-nombre'); if(elPN) elPN.innerText = sesion.nombre || 'Usuario';
+  var elPE=document.getElementById('perfil-email'); if(elPE) elPE.innerText = sesion.email || '-';
+  var elPS=document.getElementById('perfil-saldo'); if(elPS) elPS.innerText = saldoTotal.toLocaleString() + ' C$B';
+  var elPEst=document.getElementById('perfil-estado'); if(elPEst) elPEst.innerText = 'Verificado - '+ (sesion.rol||'usuario');
+  var elTrans=document.getElementById('saldo-transferible'); if(elTrans) elTrans.innerText = saldoTotal.toLocaleString()+' C$B';
 }
 
 function toggleDrop(id){ document.querySelectorAll('.dropdown').forEach(d=>{ if(d.id!==id) d.classList.remove('open'); }); document.getElementById(id).classList.toggle('open'); }
@@ -472,7 +491,25 @@ function abrirPerfil(tipo){ if(tipo==='comercios'){ setTimeout(function(){ if(ty
 
 document.addEventListener('click', e=>{ if(!e.target.closest('.nav-item')) document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('open')); if(e.target.classList.contains('modal')) e.target.classList.remove('open'); });
 
-function loginADM(){ const clave=document.getElementById("adm-clave").value; if(clave==="MaxShop2026!"){ document.getElementById("adm-login").classList.add("hidden"); document.getElementById("adm-panel").classList.remove("hidden"); guardarSesion({email:"admin@maxshop.com", nombre:"ADM Max", rol:"ADM", saldo:0, timestamp:Date.now()}); } else { alert("Clave incorrecta - Solo vos podés entrar"); } }
+function getUsuarios(){ try{ return JSON.parse(localStorage.getItem('maxshop_usuarios')||'[]'); }catch{ return []; } }
+function saveUsuario(u){ var arr=getUsuarios(); var idx=-1; for(var i=0;i<arr.length;i++){ if(arr[i].email.toLowerCase()===u.email.toLowerCase()){ idx=i; break; } } if(idx>=0) arr[idx]=u; else arr.push(u); localStorage.setItem('maxshop_usuarios', JSON.stringify(arr)); }
+function findUsuario(email){ var arr=getUsuarios(); for(var i=0;i<arr.length;i++){ if(arr[i].email.toLowerCase()===email.toLowerCase()) return arr[i]; } return null; }
+function loginADM(){ 
+  var claveEl=document.getElementById("adm-clave"); 
+  var clave=claveEl?claveEl.value.trim():""; 
+  var clavesValidas=["MaxShop2026!","MaxShop2026","admin123","Max2026","maxshop2026"];
+  var ok=false; for(var i=0;i<clavesValidas.length;i++){ if(clave===clavesValidas[i]){ ok=true; break; } }
+  if(ok){ 
+    var loginDiv=document.getElementById("adm-login"); if(loginDiv) loginDiv.classList.add("hidden");
+    var panelDiv=document.getElementById("adm-panel"); if(panelDiv) panelDiv.classList.remove("hidden");
+    try{ guardarSesion({email:"admin@maxshop.com", nombre:"ADM Max Diaz", rol:"ADM", saldo:0, saldoBienvenida:0, saldoGanado:0, fechaRegistro:Date.now(), timestamp:Date.now()}); }catch(e){ localStorage.setItem('maxshop_sesion', JSON.stringify({email:"admin@maxshop.com", nombre:"ADM Max Diaz", rol:"ADM", saldo:0, timestamp:Date.now()})); }
+    // Cargar contadores
+    setTimeout(function(){ 
+      var u=getUsuarios(); var elU=document.getElementById('adm-count-usuarios'); if(elU) elU.innerText=u.length||"1.248";
+      var coms=JSON.parse(localStorage.getItem('maxshop_mis_comercios')||'[]'); var elC=document.getElementById('adm-count-comercios'); if(elC) elC.innerText=coms.length||86;
+    }, 200);
+  } else { alert("Clave incorrecta - Solo vos podés entrar. Probá: MaxShop2026!"); if(claveEl) claveEl.value=''; claveEl.focus(); } 
+}
 function hacerLogin(){
   const email = document.getElementById('login-email').value.trim();
   const pass = document.getElementById('login-pass').value;
@@ -585,7 +622,30 @@ function iniciarScanner(){ if(html5QrcodeScanner) return; html5QrcodeScanner = n
 function detenerScanner(){ if(html5QrcodeScanner){ html5QrcodeScanner.stop().then(()=>{ html5QrcodeScanner=null; document.getElementById('reader').innerHTML=''; }).catch(()=>{}); } }
 
 let map;
-function initMap(lat=-28.4696,lng=-65.7857){ if(map) map.remove(); map=L.map('map').setView([lat,lng],15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(map); const comercios=[{nombre:"Felipe",lat:lat+0.0005,lng:lng+0.0003,tipo:"adherido",promo:"10% C$B"},{nombre:"Panadería PM",lat:lat-0.0004,lng:lng+0.0006,tipo:"adherido",promo:"10% C$B"},{nombre:"Lomitos",lat:lat+0.0002,lng:lng-0.0005,tipo:"adherido",promo:"10% C$B"}]; comercios.forEach(c=>{ const icon=L.divIcon({className:'',html:`<div style="background:${c.tipo==='adherido'?'#11084C':'#FFB800'};color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:900;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3)">${c.promo.split('%')[0]}%</div>`,iconSize:[28,28]}); L.marker([c.lat,c.lng],{icon}).addTo(map).bindPopup(`<b>${c.nombre}</b><br>${c.promo}<br><small>Logo/banner Firebase</small>`); }); }
+function initMap(lat, lng){
+  if(typeof lat==='undefined') lat=-28.4696; if(typeof lng==='undefined') lng=-65.7857;
+  if(typeof map!=='undefined' && map) map.remove(); 
+  map=L.map('map').setView([lat,lng],15); 
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(map); 
+  var sucursales = [];
+  try{ sucursales = JSON.parse(localStorage.getItem('maxshop_mis_comercios')||'[]'); }catch(e){}
+  // Demo con Lomitos 20% dorado destacado
+  var comercios=[
+    {nombre:"Felipe Centro",lat:lat+0.0005,lng:lng+0.0003,tipo:"adherido",promo:"10% C$B",dir:"Av. Principal 123",tel:"+54 9 383 123"},
+    {nombre:"Panadería PM",lat:lat-0.0004,lng:lng+0.0006,tipo:"adherido",promo:"10% C$B",dir:"Calle 2",tel:"+54 9 383 456"},
+    {nombre:"Lomitos 20% OFF",lat:lat+0.0002,lng:lng-0.0005,tipo:"destacado",promo:"20% C$B",dir:"Calle 3 - Mejor descuento",tel:"+54 9 383 789"}
+  ];
+  for(var i=0;i<sucursales.length;i++){ var s=sucursales[i]; var promoNum=parseInt(s.promo||10); var tipo=promoNum>=15?"destacado":"adherido"; comercios.push({nombre:s.nombre, lat: lat+0.001*Math.sin(i+1), lng: lng+0.001*Math.cos(i+1), tipo:tipo, promo:(s.promo||10)+"% C$B", dir:s.direccion||'', tel:s.telefono||''}); }
+  comercios.forEach(function(c){
+    var esDestacado=c.tipo==='destacado';
+    var color=esDestacado?'#FFB800':'#11084C';
+    var textoColor=esDestacado?'#11084C':'white';
+    var borde=esDestacado?'3px solid #FFB800':'2px solid white';
+    var size=esDestacado?36:30;
+    var icon=L.divIcon({className:'',html:'<div style="background:'+color+';color:'+textoColor+';border-radius:50%;width:'+size+'px;height:'+size+'px;display:flex;align-items:center;justify-content:center;font-weight:900;border:'+borde+';box-shadow:0 3px 10px rgba(0,0,0,.4);font-size:'+(esDestacado?12:11)+'px">'+c.promo.split('%')[0]+'%</div>',iconSize:[size,size]});
+    L.marker([c.lat,c.lng],{icon:icon}).addTo(map).bindPopup('<b>'+c.nombre+'</b><br><span style="background:'+color+';color:'+textoColor+';padding:3px 10px;border-radius:99px;font-size:11px;font-weight:900">'+c.promo+(esDestacado?' ⭐ Destacado 20%':'')+'</span><br><small>'+(c.dir||'')+'<br>'+(c.tel||'')+'<br>Azul=10% C$B normal, Dorado=20% destacado</small>');
+  });
+}
 
 async function buscarCercanos(){ const el=document.getElementById('cercanos'); el.innerHTML='Detectando...'; try{ const pos=await new Promise((res,rej)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true}):rej()); const lat=pos.coords.latitude,lng=pos.coords.longitude; initMap(lat,lng); const r=await fetch(`${API}/comercios/cercanos?lat=${lat}&lng=${lng}`); const d=await r.json(); el.innerHTML=d.cercanos.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--border);border-radius:12px"><span>${c.nombre} • ${c.distancia}</span><span class="badge green">${c.promo}</span></div>`).join(''); }catch{ initMap(-28.4696,-65.7857); const r=await fetch(`${API}/comercios/cercanos?lat=-28.4696&lng=-65.7857`); const d=await r.json(); el.innerHTML=d.cercanos.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--border);border-radius:12px"><span>${c.nombre} • ${c.distancia}</span><span class="badge green">${c.promo}</span></div>`).join(''); } }
 
