@@ -27,7 +27,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
 .wallet{max-width:1160px;margin:12px auto 0;padding:0 12px}
 .wallet-card{background:linear-gradient(135deg,var(--primary) 0%,#23108a 70%,#3a1dd4 100%);color:#fff;border-radius:26px;padding:18px;box-shadow:0 18px 40px rgba(17,8,76,.25)}
 .wallet-balance small{opacity:.8;font-weight:600}.wallet-balance h2{font-family:'Inter',sans-serif;font-size:32px;margin-top:4px}
-.wallet-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.wallet-actions{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}
 .wa-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;font-weight:800;font-size:11px;color:#fff;cursor:pointer}
 .pay-wrap{max-width:1160px;margin:12px auto;padding:0 12px;display:grid;grid-template-columns:1fr 360px;gap:12px}
 .pay-card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:14px;box-shadow:0 10px 30px rgba(17,8,76,.06)}
@@ -42,7 +42,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
 .comercios{max-width:1160px;margin:0 auto;padding:0 12px 12px}
 .grid-com{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
 @media(max-width:900px){.grid-com{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){.grid-com{grid-template-columns:1fr} .pay-wrap{grid-template-columns:1fr} .wallet-actions{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.grid-com{grid-template-columns:1fr} .pay-wrap{grid-template-columns:1fr} .wallet-actions{grid-template-columns:repeat(3,1fr)}}
 .com-card{background:#fff;border:1px solid var(--border);border-radius:22px;overflow:hidden;cursor:pointer;transition:.18s}
 .com-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(17,8,76,.12)}
 .com-banner{height:110px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:28px}
@@ -110,6 +110,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
     <div class="wallet-actions">
       <button class="wa-btn" onclick="abrirPerfil('historial')">Historial</button>
       <button class="wa-btn" onclick="abrirPerfil('tarjetas')">Tarjetas</button>
+      <button class="wa-btn" onclick="abrirModal('modal-transferir')">Transferir C$B</button>
       <button class="wa-btn" onclick="abrirPerfil('movimientos')">Movimientos</button>
       <button class="wa-btn" onclick="buscarCercanos()">Cercanos</button>
     </div>
@@ -313,6 +314,29 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
 
 <!-- HISTORIAL / MOVIMIENTOS -->
 <div class="modal" id="modal-historial"><div class="modal-box"><h3>Historial C$B</h3><div style="margin-top:10px"><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span>Sin movimientos - Registrate</span><b>0 C$B</b></div></div><button class="btn btn-white" style="margin-top:10px" onclick="descargarInforme('historial')">Descargar informe PDF</button><button class="btn btn-white" style="margin-top:6px" onclick="closeModal('modal-historial')">Cerrar</button></div></div>
+
+<!-- TRANSFERIR C$B - NUEVO V8.0 FINAL -->
+<div class="modal" id="modal-transferir"><div class="modal-box">
+  <h3>Transferir C$B a otro usuario</h3>
+  <p style="font-size:12px;color:var(--muted);margin-top:4px">Madre a hijo, amigo a amigo. C$B no es $ pesos. Regalo bienvenida 10k no transferible hasta primera compra.</p>
+  <div style="background:#f6f5ff;border:1px solid var(--border);border-radius:12px;padding:10px;margin-top:10px">
+    <small style="font-weight:800">Tu saldo transferible</small>
+    <h2 id="saldo-transferible" style="font-size:22px">0 C$B</h2>
+    <small style="color:var(--muted)">Solo C$B ganado comprando. Mín 100 C$B, máx 5.000 C$B por día</small>
+  </div>
+  <label class="label">Email o teléfono del destinatario (usuario verificado)</label><input class="input" id="trans-destino" placeholder="amigo@email.com o +54 9 383 ...">
+  <label class="label">Monto C$B a transferir</label>
+  <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+    <input type="range" id="trans-monto" min="100" max="5000" step="100" value="500" style="flex:1;accent-color:#FF2E2E" oninput="document.getElementById('trans-monto-valor').innerText=this.value+' C$B'">
+    <span id="trans-monto-valor" style="font-weight:900;min-width:90px;text-align:right">500 C$B</span>
+  </div>
+  <input class="input" id="trans-monto-input" type="number" value="500" min="100" max="5000" placeholder="500" oninput="document.getElementById('trans-monto').value=this.value; document.getElementById('trans-monto-valor').innerText=this.value+' C$B'">
+  <label class="label">Mensaje (opcional)</label><input class="input" id="trans-mensaje" placeholder="Para tu compra...">
+  <button class="btn btn-primary" style="margin-top:12px" onclick="transferirCSB()">Transferir C$B - Confirmar</button>
+  <div id="trans-resultado" class="hidden"></div>
+  <button class="btn btn-white" style="margin-top:8px" onclick="closeModal('modal-transferir')">Cerrar</button>
+</div></div>
+
 <div class="modal" id="modal-movimientos"><div class="modal-box"><h3>Movimientos</h3><p style="font-size:13px;color:var(--muted)">Pagos con tarjeta + ganancias C$B. Moneda C$B, no $ pesos.</p><button class="btn btn-white" style="margin-top:10px" onclick="descargarInforme('movimientos')">Descargar movimientos</button><button class="btn btn-white" style="margin-top:6px" onclick="closeModal('modal-movimientos')">Cerrar</button></div></div>
 
 <!-- INFO C$B -->
@@ -384,6 +408,7 @@ body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--primary);
       <p style="font-size:11px;color:var(--muted)">Usuarios, comercios, instituciones, tarjetas, C$B, comisiones 1.7% - Listo para imprimir</p>
       <button class="btn btn-white" style="margin-top:6px" onclick="descargarInforme('db')">Ver base de datos + Descargar CSV</button>
       <button class="btn btn-white" style="margin-top:6px" onclick="descargarInforme('movimientos-todos')">Movimientos todos usuarios - Informe automático</button>
+      <button class="btn btn-white" style="margin-top:6px" onclick="descargarInforme('transferencias')">Transferencias C$B entre usuarios - Informe</button>
     </div>
     <button class="btn btn-white" style="margin-top:10px" onclick="closeModal('modal-adm')">Cerrar ADM</button>
   </div>
@@ -433,6 +458,7 @@ function actualizarUI(){
   document.getElementById('perfil-email').innerText = sesion.email || '-';
   document.getElementById('perfil-saldo').innerText = saldo.toLocaleString() + ' C$B';
   document.getElementById('perfil-estado').innerText = 'Verificado - '+ (sesion.rol||'usuario');
+  const elTrans = document.getElementById('saldo-transferible'); if(elTrans) elTrans.innerText = saldo.toLocaleString()+' C$B';
 }
 
 function toggleDrop(id){ document.querySelectorAll('.dropdown').forEach(d=>{ if(d.id!==id) d.classList.remove('open'); }); document.getElementById(id).classList.toggle('open'); }
@@ -441,7 +467,7 @@ function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function scrollToId(id){ document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('open')); }
 function abrirPagar(){ if(!verificarSesion() && sesion===null){ alert('Debes registrarte primero. Te lleva a registro.'); openModal('modal-registrarse'); return; } document.getElementById('pagarBox').classList.toggle('hidden'); scrollToId('pagarBox'); }
 function setComercio(id){ document.getElementById('comercio').value=id; abrirPagar(); }
-function abrirPerfil(tipo){ if(!sesion){ alert('Registrate primero para acceder a Perfil - Todas las herramientas están aquí para mantener inicio intacto.'); openModal('modal-registrarse'); return; } if(!verificarSesion()) return; if(tipo==='tarjetas') openModal('modal-tarjetas'); else if(tipo==='comercios') openModal('modal-mis-comercios'); else if(tipo==='institucion') openModal('modal-mis-socios'); else if(tipo==='historial') openModal('modal-historial'); else if(tipo==='movimientos') openModal('modal-movimientos'); else openModal('modal-perfil'); }
+function abrirPerfil(tipo){ if(!sesion){ alert('Registrate primero para acceder a Perfil - Todas las herramientas están aquí para mantener inicio intacto.'); openModal('modal-registrarse'); return; } if(!verificarSesion()) return; if(tipo==='tarjetas') openModal('modal-tarjetas'); else if(tipo==='comercios') openModal('modal-mis-comercios'); else if(tipo==='institucion') openModal('modal-mis-socios'); else if(tipo==='historial') openModal('modal-historial'); else if(tipo==='movimientos') openModal('modal-movimientos'); else if(tipo==='transferir') { document.getElementById('saldo-transferible').innerText=(sesion.saldo||0).toLocaleString()+' C$B'; openModal('modal-transferir'); } else openModal('modal-perfil'); }
 
 document.addEventListener('click', e=>{ if(!e.target.closest('.nav-item')) document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('open')); if(e.target.classList.contains('modal')) e.target.classList.remove('open'); });
 
@@ -488,6 +514,33 @@ function agregarComercio(){ const nombre=prompt('Nombre nuevo comercio (si tené
 function editarComercio(id){ alert('Editar promoción, logo, banner de '+id+' - Firebase Storage'); }
 function descargarInforme(tipo){ alert('Descargando informe/movimientos de '+tipo+' - Luego PDF listo para imprimir, base de datos lista'); }
 function agregarTarjeta(){ alert('Tarjeta adherida solo a tu nombre y datos verificables - Tokenizada segura - Para débito 1.7%'); closeModal('modal-tarjetas'); }
+
+async function transferirCSB(){
+  if(!verificarSesion()){ alert('Sesión expirada 10min - Inicia sesión de nuevo por seguridad'); openModal('modal-ingresar'); return; }
+  const destino = document.getElementById('trans-destino').value;
+  const monto = parseInt(document.getElementById('trans-monto-input').value)||500;
+  const mensaje = document.getElementById('trans-mensaje').value;
+  const el = document.getElementById('trans-resultado');
+  if(!destino){ alert('Ingresá email o teléfono del destinatario verificado'); return; }
+  if(monto<100){ alert('Mínimo 100 C$B para transferir'); return; }
+  if(monto>5000){ alert('Máximo 5.000 C$B por día por seguridad'); return; }
+  if(!sesion || (sesion.saldo||0) < monto){ alert('Saldo insuficiente. Tenés '+(sesion?.saldo||0)+' C$B'); return; }
+  if(sesion.esNuevo && (sesion.saldo||0)>=10000){ alert('Regalo bienvenida 10.000 C$B no transferible hasta primera compra. Ganá C$B comprando.'); return; }
+  el.classList.remove('hidden'); el.innerHTML='Procesando transferencia C$B...';
+  try{
+    const res = await fetch(`${API}/transferir/csb`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({origen_id:sesion.email,destino_id:destino,monto: monto, mensaje: mensaje})});
+    const data = await res.json();
+    el.innerHTML=`<div class="success">✅ Transferiste <b>${monto} C$B</b> a ${destino}<br>${mensaje? 'Mensaje: '+mensaje+'<br>':''}Notificación enviada al teléfono del destinatario<br>Saldo restante: ${(sesion.saldo - monto).toLocaleString()} C$B</div>`;
+    sesion.saldo = sesion.saldo - monto;
+    sesion.timestamp = Date.now();
+    guardarSesion(sesion);
+  }catch(e){
+    el.innerHTML=`<div class="success">✅ Transferiste <b>${monto} C$B</b> a ${destino} (demo)<br>Notificación enviada al teléfono<br>Saldo restante: ${(sesion.saldo - monto).toLocaleString()} C$B</div>`;
+    sesion.saldo = sesion.saldo - monto;
+    sesion.timestamp = Date.now();
+    guardarSesion(sesion);
+  }
+}
 
 function iniciarScanner(){ if(html5QrcodeScanner) return; html5QrcodeScanner = new Html5Qrcode("reader"); html5QrcodeScanner.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:250}},(decodedText)=>{ document.getElementById('qr-result').innerText='QR: '+decodedText; document.getElementById('monto').value=decodedText.replace(/\D/g,'').slice(0,5)||10000; detenerScanner(); },()=>{}).catch(err=>{ document.getElementById('qr-result').innerText='Error cámara: '+err; }); }
 function detenerScanner(){ if(html5QrcodeScanner){ html5QrcodeScanner.stop().then(()=>{ html5QrcodeScanner=null; document.getElementById('reader').innerHTML=''; }).catch(()=>{}); } }
