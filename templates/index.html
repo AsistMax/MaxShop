@@ -216,7 +216,7 @@ body{background:#f6f5ff!important;color:#11084C!important}
 
 <!-- MAPA PINES AZUL/DORADO ANCLADO - VERSION QUE SI SE VE EN VISOR - FINAL LIMPIO -->
 <div class="comercios" id="map-section" style="display:block!important">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 8px"><h3 style="font-family:'Inter',sans-serif;font-size:18px">Mapa de comercios</h3><span class="badge gold">Pines azul y dorado</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 8px"><h3 style="font-family:'Inter',sans-serif;font-size:18px">Mapa de comercios</h3><span class="badge gold">Pin azul = adherido • Pin dorado = destacado</span></div>
   <div class="pay-card" style="padding:10px;overflow:visible!important">
     <p style="font-size:12px;color:var(--muted)">Pines azules = comercios adheridos • Pines dorados = comercios destacados esta semana</p>
     <div id="map" style="height:420px!important;min-height:420px!important;display:block!important;width:100%!important;background:#dbeafe!important;border-radius:18px!important;border:2px solid #e6e6ff!important;z-index:1!important;position:relative!important;margin-top:10px;overflow:hidden">
@@ -276,7 +276,7 @@ body{background:#f6f5ff!important;color:#11084C!important}
   <label class="label">Email comercio</label><input class="input" id="com-email" placeholder="felipe@comercio.com">
   <label class="label">Logo (Verificado Storage)</label><input class="input" type="file" accept="image/*">
   <label class="label">Banner publicitario</label><input class="input" type="file" accept="image/*">
-  <label class="label">Promoción C$B que ofrece - Mínimo 5% (deslizá para más)</label>
+  <label class="label">Promoción C$B que ofrece - Mínimo 5% (deslizá para más) - Se muestra como Pin azul/dorado sin % para no confundir</label>
   <div style="background:#f6f5ff;border:1px solid var(--border);border-radius:16px;padding:12px;margin-top:6px">
     <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:800;font-size:12px">Descuento C$B</span><span id="promo-valor" style="font-weight:900;font-size:18px;color:var(--accent)">10% C$B</span></div>
     <input type="range" id="com-promo" min="5" max="70" value="10" style="width:100%;margin-top:8px;accent-color:#FF2E2E" oninput="document.getElementById('promo-valor').innerText=this.value+'% C$B'">
@@ -422,9 +422,9 @@ body{background:#f6f5ff!important;color:#11084C!important}
 <h4>3. Sesión y seguridad - 10 minutos</h4>
 <p>Por seguridad, si el usuario, comercio, institución o administrador cierra página o inactividad >10 minutos, debe iniciar sesión nuevamente. Token JWT expira en 10 min. Incluye ADM.</p>
 <h4>4. Wallet, bienvenida y comercios adheridos vs no adheridos - Lógica anclada</h4>
-<p>Saldo inicial 0 C$B. Al registrarse como usuario nuevo, regalo 10.000 C$B bienvenida, válido 7 días para primera compra. Si generás más C$B comprando en esa semana, lo mantenés, solo expira el regalo. No es dinero. Luego gana C$B con compras: <b>10% C$B en comercios adheridos (con pin azul normal o dorado ⭐ destacado 20% ejemplo Lomitos)</b>, <b>5% C$B bonificación en no adheridos (sin pin, no aparecen en mapa)</b>. Comercio adherido gana 5% C$B por venta. Dorado = destacados mejores descuentos o venden mucho, ambos 10% C$B para cliente.</p>
+<p>Saldo inicial 0 C$B. Al registrarse como usuario nuevo, regalo 10.000 C$B bienvenida, válido 7 días para primera compra. Si generás más C$B comprando en esa semana, lo mantenés, solo expira el regalo. No es dinero. Luego gana C$B con compras: <b>5% mínimo obligatorio en comercios adheridos (pin azul) + promo del comercio. Si usa C$B acumulado para pagar descuento, le vuelve 5% del total sin descuento. 5% C$B en no adheridos para próxima compra.</b> Comercio adherido gana 5% C$B final (no dinero real) como pozo acumulable. Dorado = destacados de la semana según máximo semanal: si max semana 35%, ese 35% = 100% nominal, 60% = 21% umbral dorado.</p>
 <h4>5. Tarjetas y comisión 1.7%</h4>
-<p>Tarjetas solo a nombre del titular verificado, en lugar seguro (Perfil > Mis tarjetas). Datos tokenizados, no guardamos número completo. Cumplimos PCI-DSS. Comisión MaxShop 1.7% sobre monto pagado, debitada al comercio. C$B no implica retención de pesos.</p>
+<p>Tarjetas solo a nombre del titular verificado, en lugar seguro (Perfil > Mis tarjetas). Datos tokenizados, no guardamos número completo. Cumplimos PCI-DSS. Comisión MaxShop 1.7% en $ pesos argentinos reales descontada al CLIENTE en el momento de confirmar la compra, acreditada a cuenta MP de MaxShop. No es en C$B. C$B no implica retención de pesos, solo es pozo acumulable digital. Comercio gana 5% final en C$B (no dinero real) como pozo acumulable para comprar en otros comercios.</p>
 <h4>6. Comercios - Multi-sucursal</h4>
 <p>Comercio puede tener más de 1 sucursal (muchos tienen 2-3). Desde Perfil > Mis comercios puede editar promoción, descuento, logo, banner, agregar sucursales. Cada sucursal tiene pin azul (adherido normal 10% C$B) o dorado (destacado 20% C$B mejores descuentos)s sin pin +5% C$B en mapa. Logos/banners se alojan en Verificado Storage, sin límite peso, luego se ven en grilla y mapa.</p>
 <h4>7. Instituciones y socios</h4>
@@ -918,29 +918,32 @@ async function hacerRegistro(tipo){
   }
 }
 
-// ANCLADO: PAGAR REAL - UN SOLO CLICK - PROFESIONAL - NO DEMO VIEJA BLOQUEADA
+// ANCLADO: PAGAR REAL - DETECCION POSNET COMPLETA - 100% FUNCIONAL MAÑANA
 function abrirPagar(){
   var ses=JSON.parse(localStorage.getItem('maxshop_sesion')||'null');
   if(!ses){ alert('Registrate primero - ganás 10.000 C$B'); openModal('modal-registrarse'); return; }
   var box=document.getElementById('pagarBox');
   if(box){ box.classList.remove('hidden'); box.scrollIntoView({behavior:'smooth'}); }
-  // REAL - no bloqueado - un solo click
+  // SEGURIDAD: vacio hasta detectar del posnet QR/NFC - nombre comercio + monto + fecha + hora
   var montoEl=document.getElementById('monto');
-  if(montoEl){ montoEl.value='1500'; montoEl.placeholder='Monto REAL $1500 - Listo para pagar'; }
+  if(montoEl){ montoEl.value=''; montoEl.placeholder='Esperando QR/NFC del posnet...'; }
   var origen=document.getElementById('monto-origen');
-  if(origen) origen.innerHTML='✅ <b>Felipe - Adherido • Indumentaria • Pin azul - Verificado ✅ - Listo para pagar REAL</b> - $1500 - Seguridad Ley 25.326';
+  if(origen) origen.innerHTML='🔍 Esperando detección segura del posnet: nombre comercio + monto + fecha + hora - No se puede pagar sin escanear';
   var comSelect=document.getElementById('comercio');
-  if(comSelect) comSelect.innerHTML='<option value="felipe">Felipe - Adherido • Indumentaria • Pin azul</option>';
+  if(comSelect) comSelect.innerHTML='<option value="">Esperando detección QR/NFC o geolocalización...</option>';
   var btn=document.getElementById('btn-confirmar-pago');
-  if(btn){ btn.disabled=false; btn.style.opacity='1'; btn.style.background='#00c950'; btn.innerText='✅ Confirmar pago REAL $1500 - Un solo click - Profesional'; }
-  window.montoDetectadoSeguro=true;
-  window.datosPagoActual={monto:1500,comercio:'Felipe',comercioId:'felipe',fecha:new Date().toLocaleDateString('es-AR'),hora:new Date().toLocaleTimeString('es-AR'),transId:'TX-'+Date.now().toString().slice(-8)};
-  setTimeout(buscarCercanos,500);
+  if(btn){ btn.disabled=true; btn.style.opacity='0.5'; btn.style.background='#11084C'; btn.innerText='🔒 Confirmar pago (bloqueado hasta detectar posnet)'; }
+  window.montoDetectadoSeguro=false;
+  window.datosPagoActual=null;
+  // Para prueba mañana: si estas en Felipe, al escanear QR del posnet detecta automatico
+  setTimeout(function(){ try{ iniciarScanner(); }catch(e){} buscarCercanos(); },500);
 }
 async function pagar(){
   var ses=JSON.parse(localStorage.getItem('maxshop_sesion')||'null');
   if(!ses){ alert('Registrate'); return; }
-  var datos=window.datosPagoActual || {monto:1500,comercio:'Felipe',comercioId:'felipe',fecha:new Date().toLocaleDateString('es-AR'),hora:new Date().toLocaleTimeString('es-AR'),transId:'TX-'+Date.now().toString().slice(-8)};
+  var datos=window.datosPagoActual;
+  if(!datos || !datos.monto){ alert('Primero escaneá el QR o hacé TAP del posnet para detectar comercio, monto, fecha y hora'); return; }
+  
   var tarjetas=JSON.parse(localStorage.getItem('maxshop_tarjetas')||'[]');
   var sel=document.querySelector('input[name="tarjeta_pago"]:checked');
   var tarjetaSel=null; if(sel) tarjetaSel=tarjetas[parseInt(sel.value)];
