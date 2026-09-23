@@ -118,8 +118,8 @@ body{background:#f6f5ff!important;color:#11084C!important}
     </div>
     <div class="nav-item"><button class="nav-btn accent" onclick="toggleDrop('drop-menu')">Menú ▾</button>
       <div class="dropdown" id="drop-menu">
-      <button onclick="window.open('https://wa.me/5493834607740','_blank')" style="color:#25D366;font-weight:900">💬 WhatsApp 3834-607740</button>
-      <button onclick="window.location.href='mailto:asistmax.cliente@gmail.com'" style="font-weight:800">📧 asistmax.cliente@gmail.com</button>
+      <button onclick="window.open('https://wa.me/5493834607740','_blank')" style="color:#25D366;font-weight:900">Ayuda</button>
+      <button onclick="window.location.href='mailto:asistmax.cliente@gmail.com'" style="font-weight:800">Atención al cliente</button>
       <hr style="margin:8px 0;border:0;border-top:1px solid var(--border)">
 
         <button onclick="scrollToId('wallet')">Billetera</button>
@@ -229,7 +229,7 @@ body{background:#f6f5ff!important;color:#11084C!important}
   <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 8px"><h3 style="font-family:'Inter',sans-serif;font-size:18px">Mapa de comercios</h3><span class="badge gold">Pines azul y dorado</span></div>
   <div class="pay-card" style="padding:10px">
     <p style="font-size:12px;color:var(--muted)">Pines azules = comercios adheridos • Pines dorados = comercios destacados esta semana ⭐</p>
-    <div id="map"></div>
+    <div id="map" style="height:420px;min-height:420px;background:#dbeafe;display:block;width:100%;border-radius:18px"></div>
   </div>
 </div>
 
@@ -245,7 +245,7 @@ body{background:#f6f5ff!important;color:#11084C!important}
   <h3>Ingresar a MaxShop</h3>
   <p style="font-size:12px;color:var(--muted);margin-top:4px">Sesión expira a los 10 minutos por seguridad</p>
   <label class="label">Email registrado</label><input class="input" id="login-email" placeholder="tu@email.com">
-  <label class="label">Contraseña</label><div class="input-wrap"><input class="input" id="login-pass" type="password" placeholder="••••••••"><button type="button" class="eye-btn" onclick="togglePass(\'login-pass\', this)" title="Ver clave">👁</button></div>
+  <label class="label">Contraseña</label><div class="input-wrap"><input class="input" id="login-pass" type="password" placeholder="••••••••"><button type="button" class="eye-btn" onclick="togglePass('login-pass', this)" title="Ver clave">👁</button></div>
   <button class="btn btn-dark" style="margin-top:12px" onclick="hacerLogin()">Ingresar</button>
   <p id="login-msg" style="font-size:12px;margin-top:8px"></p>
   <p style="font-size:12px;margin-top:8px">¿Sos nuevo? <a href="#" onclick="closeModal('modal-ingresar');openModal('modal-registrarse')">Registrate y ganá 10.000 C$B</a></p>
@@ -259,7 +259,7 @@ body{background:#f6f5ff!important;color:#11084C!important}
   <label class="label">DNI (para validar tarjetas)</label><input class="input" id="reg-dni" placeholder="12345678">
   <label class="label">Teléfono (para notificaciones)</label><input class="input" id="reg-tel" placeholder="+54 9 383 ...">
   <label class="label">Email</label><input class="input" id="reg-email" placeholder="tu@email.com">
-  <label class="label">Contraseña</label><div class="input-wrap"><input class="input" id="reg-pass" type="password"><button type="button" class="eye-btn" onclick="togglePass(\'reg-pass\', this)" title="Ver clave">👁</button></div>
+  <label class="label">Contraseña</label><div class="input-wrap"><input class="input" id="reg-pass" type="password"><button type="button" class="eye-btn" onclick="togglePass('reg-pass', this)" title="Ver clave">👁</button></div>
   <div style="background:#eafff2;border:1px solid #b6f5c8;padding:10px;border-radius:12px;margin-top:10px;font-size:12px"><b>Regalo bienvenida:</b> 10.000 C$B válidos 7 días para tu primera compra. Luego solo expira el regalo, lo que ganaste comprando lo mantenés.</div>
   <button class="btn btn-primary" style="margin-top:12px" onclick="hacerRegistro('usuario')">Registrarme - 10.000 C$B</button>
   <button class="btn btn-white" style="margin-top:8px" onclick="closeModal('modal-registrarse')">Cerrar</button>
@@ -370,7 +370,7 @@ body{background:#f6f5ff!important;color:#11084C!important}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px">
       <div><label class="label">Vencimiento MM/AA</label><input class="input" id="tarj-venc" placeholder="12/28" maxlength="5" oninput="formatearVencimiento(this)"></div>
-      <div><label class="label">CVV (seguridad)</label><div class="input-wrap"><input class="input" id="tarj-cvv" type="password" placeholder="123" maxlength="4" type="password"><button type="button" class="eye-btn" onclick="togglePass(\'tarj-cvv\', this)" title="Ver CVV">👁</button></div></div>
+      <div><label class="label">CVV (seguridad)</label><div class="input-wrap"><input class="input" id="tarj-cvv" type="password" placeholder="123" maxlength="4" type="password"><button type="button" class="eye-btn" onclick="togglePass('tarj-cvv', this)" title="Ver CVV">👁</button></div></div>
       <div><label class="label">Tipo</label><input class="input" id="tarj-tipo-input" placeholder="Visa detectada" readonly style="background:#f6f5ff"></div>
     </div>
     <div style="background:#eafff2;border:1px solid #b6f5c8;border-radius:10px;padding:8px;margin-top:8px;font-size:11px">
@@ -756,7 +756,7 @@ function initMap(lat,lng){
       var h='';
       comercios.forEach(function(c){
         var badge=c.dest?'gold':'green';
-        h+='<div class="com-card" onclick="abrirComercio(\''+c.nombre+'\')"><div class="com-banner" style="background:'+c.banner+'"><span>'+c.nombre.toUpperCase()+'<br><small style="font-size:12px">'+c.rubro+'</small></span></div><div style="padding:12px"><div style="display:flex;justify-content:space-between"><b>'+c.nombre+'</b><span class="badge '+badge+'">+'+c.promo+'</span></div><small style="color:var(--muted)">'+c.rubro+' • '+(c.dest?'Destacado esta semana • Pin dorado ⭐':'Adherido • Pin azul')+'</small></div></div>';
+        h+='<div class="com-card" onclick="abrirComercio(''+c.nombre+'')"><div class="com-banner" style="background:'+c.banner+'"><span>'+c.nombre.toUpperCase()+'<br><small style="font-size:12px">'+c.rubro+'</small></span></div><div style="padding:12px"><div style="display:flex;justify-content:space-between"><b>'+c.nombre+'</b><span class="badge '+badge+'">+'+c.promo+'</span></div><small style="color:var(--muted)">'+c.rubro+' • '+(c.dest?'Destacado esta semana • Pin dorado ⭐':'Adherido • Pin azul')+'</small></div></div>';
       });
       grid.innerHTML=h;
     }
@@ -1008,6 +1008,186 @@ document.addEventListener('DOMContentLoaded', function(){
   try{ initMap(-28.4696,-65.7857); }catch(e){ console.error('initMap', e); }
   setTimeout(function(){ try{ buscarCercanos(); }catch(e){} try{ if(window.map) window.map.invalidateSize(); }catch(e){} },1200);
   document.addEventListener('click', function(e){ if(!e.target.closest('.nav-item')){ document.querySelectorAll('.dropdown').forEach(function(d){ d.classList.remove('open'); }); } });
+});
+</script>
+
+
+<script>
+// === V27 FIX - BOTONES FUNCIONAN - OJO CLAVE - LOGIN REGISTRO - PERFIL - ADM - MAPA - AYUDA - ATENCION CLIENTE ===
+console.log('V27 FIX - Botones OK, ojo clave, login registro, perfil, ADM, mapa, ayuda');
+
+// FIX OJO CLAVE - MOSTRAR Y DEJAR DE MOSTRAR
+function togglePass(inputId, btn){
+  var inp=document.getElementById(inputId);
+  if(!inp){ console.warn('No existe input', inputId); return; }
+  if(inp.type==='password'){
+    inp.type='text';
+    btn.innerText='🙈';
+    btn.title='Ocultar clave';
+  } else {
+    inp.type='password';
+    btn.innerText='👁';
+    btn.title='Mostrar clave';
+  }
+  console.log('togglePass', inputId, 'ahora', inp.type);
+}
+
+// FIX LOGIN / REGISTRO - QUE ACCIONEN BOTON INGRESAR/REGISTRARSE
+function hacerLogin(){
+  var emailEl=document.getElementById('login-email');
+  var passEl=document.getElementById('login-pass');
+  var msgEl=document.getElementById('login-msg');
+  var email=emailEl?emailEl.value.trim():'';
+  var pass=passEl?passEl.value:'';
+  console.log('hacerLogin intento', email);
+  if(!email){ if(msgEl) msgEl.innerText='Ingresá email'; alert('Ingresá email'); return; }
+  var usuarios=JSON.parse(localStorage.getItem('maxshop_usuarios')||'[]');
+  var u=usuarios.find(function(x){ return x.email===email; });
+  if(!u){ if(msgEl) msgEl.innerText='Usuario no encontrado - Registrate primero'; alert('Usuario no encontrado - Registrate y ganá 10.000 C$B'); openModal('modal-registrarse'); return; }
+  // Seguridad: verificar pass si existe
+  if(u.password && pass && u.password!==pass){ if(msgEl) msgEl.innerText='Contraseña incorrecta'; alert('Contraseña incorrecta'); return; }
+  // Guardar sesion
+  u.timestamp=Date.now();
+  localStorage.setItem('maxshop_sesion', JSON.stringify(u));
+  try{ sesion=u; if(typeof actualizarUI==='function') actualizarUI(); }catch(e){}
+  if(msgEl) msgEl.innerText='✅ Ingreso OK';
+  closeModal('modal-ingresar');
+  alert('✅ Bienvenido '+u.nombre+' - Saldo '+((u.saldoBienvenida||0)+(u.saldoGanado||0))+' C$B');
+}
+function hacerRegistro(tipo){
+  var nombreEl=document.getElementById('reg-nombre');
+  var emailEl=document.getElementById('reg-email');
+  var passEl=document.getElementById('reg-pass');
+  var dniEl=document.getElementById('reg-dni');
+  var telEl=document.getElementById('reg-tel');
+  var nombre=nombreEl?nombreEl.value.trim():'';
+  var email=emailEl?emailEl.value.trim():'';
+  var pass=passEl?passEl.value:'';
+  var dni=dniEl?dniEl.value.trim():'';
+  var tel=telEl?telEl.value.trim():'';
+  console.log('hacerRegistro', tipo, nombre, email);
+  if(!nombre || !email){ alert('Completá nombre y email'); return; }
+  if(!email.includes('@')){ alert('Email inválido'); return; }
+  var usuarios=JSON.parse(localStorage.getItem('maxshop_usuarios')||'[]');
+  if(usuarios.find(function(x){ return x.email===email; })){ alert('Email ya registrado - Ingresá'); openModal('modal-ingresar'); return; }
+  var nuevo={nombre:nombre,email:email,password:pass,dni:dni,tel:tel,saldo:10000,saldoBienvenida:10000,saldoGanado:0,fechaRegistro:Date.now(),rol:tipo||'usuario',timestamp:Date.now()};
+  usuarios.push(nuevo);
+  localStorage.setItem('maxshop_usuarios', JSON.stringify(usuarios));
+  localStorage.setItem('maxshop_sesion', JSON.stringify(nuevo));
+  try{ sesion=nuevo; if(typeof actualizarUI==='function') actualizarUI(); }catch(e){}
+  closeModal('modal-registrarse');
+  alert('✅ Registro OK - Ganaste 10.000 C$B bienvenida (7 días) - Ya podés pagar');
+}
+
+// FIX PERFIL - BOTONES CON FUNCIONES DIFERENTES SEGUN ROL - BASE DE DATOS - IMPRESION Y DESCARGA
+function editarDatos(){
+  var sesion=JSON.parse(localStorage.getItem('maxshop_sesion')||'null');
+  if(!sesion){ alert('Registrate primero'); openModal('modal-registrarse'); return; }
+  var nuevoNombre=prompt('Editar nombre:', sesion.nombre);
+  if(nuevoNombre===null) return;
+  var nuevoEmail=prompt('Editar email:', sesion.email);
+  if(nuevoEmail===null) return;
+  sesion.nombre=nuevoNombre||sesion.nombre;
+  sesion.email=nuevoEmail||sesion.email;
+  // Actualizar en usuarios
+  var usuarios=JSON.parse(localStorage.getItem('maxshop_usuarios')||'[]');
+  var idx=usuarios.findIndex(function(x){ return x.email===sesion.email; });
+  if(idx>=0){ usuarios[idx]=sesion; localStorage.setItem('maxshop_usuarios', JSON.stringify(usuarios)); }
+  localStorage.setItem('maxshop_sesion', JSON.stringify(sesion));
+  if(typeof actualizarUI==='function') actualizarUI();
+  document.getElementById('perfil-nombre').innerText=sesion.nombre;
+  document.getElementById('perfil-email').innerText=sesion.email;
+  document.getElementById('perfil-saldo').innerText=((sesion.saldoBienvenida||0)+(sesion.saldoGanado||0))+' C$B';
+  alert('✅ Datos actualizados');
+}
+function descargarInforme(tipo){
+  var sesion=JSON.parse(localStorage.getItem('maxshop_sesion')||'null');
+  var data='';
+  if(tipo==='movimientos' || tipo==='comercio'){
+    var movs=JSON.parse(localStorage.getItem('maxshop_movimientos')||'[]');
+    data='Tipo,Fecha,Hora,Comercio,Monto,C$B,ID\n';
+    movs.forEach(function(m){ data+=tipo+','+(m.fecha||'')+','+(m.hora||'')+','+(m.comercio||'')+','+(m.monto||0)+','+(m.csb||0)+','+(m.id||'')+'\n'; });
+  } else if(tipo==='institucion'){
+    data='Institucion,Socios,Cobros\nEjemplo,10,50000\n';
+  } else {
+    data='Informe '+tipo+' - '+new Date().toLocaleString()+'\n';
+  }
+  var blob=new Blob([data],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download='informe_'+tipo+'_'+Date.now()+'.csv'; a.click();
+  URL.revokeObjectURL(url);
+  alert('✅ Informe '+tipo+' descargado - CSV');
+}
+function agregarComercio(){
+  var nombre=prompt('Nombre nuevo comercio:');
+  if(!nombre) return;
+  var promo=prompt('Promo C$B % (5-70):','10');
+  var mis=JSON.parse(localStorage.getItem('maxshop_mis_comercios')||'[]');
+  mis.push({nombre:nombre,promo:(promo||10)+'%',rubro:'Indumentaria'});
+  localStorage.setItem('maxshop_mis_comercios', JSON.stringify(mis));
+  alert('✅ Comercio '+nombre+' agregado - Aparecerá en mapa como pin azul');
+  location.reload();
+}
+function editarComercio(id){
+  var nuevaPromo=prompt('Nueva promo C$B % para '+id+' (5-70):','15');
+  if(!nuevaPromo) return;
+  alert('✅ Promo actualizada a '+nuevaPromo+'% C$B - Lógica: azul ≤60% del máximo, dorado >60% hasta 70% liquidación');
+}
+
+// FIX ADM - TODO EL PODER DE CONTROL Y SUPERVISION
+function abrirADM(){
+  var clave=prompt('Clave maestra ADM:');
+  if(clave!=='max2024'){ alert('Clave incorrecta - Solo administrador'); return; }
+  openModal('modal-adm');
+  cargarADM();
+}
+function cargarADM(){
+  var usuarios=JSON.parse(localStorage.getItem('maxshop_usuarios')||'[]');
+  var movs=JSON.parse(localStorage.getItem('maxshop_movimientos')||'[]');
+  var cont=document.getElementById('adm-stats');
+  if(cont){
+    cont.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="padding:12px;background:#f6f5ff;border-radius:12px"><b>Usuarios:</b> '+usuarios.length+'</div><div style="padding:12px;background:#eafff2;border-radius:12px"><b>Movimientos:</b> '+movs.length+'</div><div style="padding:12px;background:#fff7e6;border-radius:12px"><b>Comercios:</b> 3 + personalizados</div><div style="padding:12px;background:#fef3f2;border-radius:12px"><b>Seguridad:</b> Sesiones 10min timeout activo</div></div>';
+  }
+  var lista=document.getElementById('adm-usuarios');
+  if(lista){
+    var h='';
+    usuarios.forEach(function(u){
+      h+='<div style="padding:8px;border:1px solid var(--border);border-radius:12px;margin-top:6px;display:flex;justify-content:space-between"><span><b>'+u.nombre+'</b> - '+u.email+' - '+((u.saldoBienvenida||0)+(u.saldoGanado||0))+' C$B - Rol:'+u.rol+'</span><button onclick="eliminarUsuario(\''+u.email+'\')" style="background:#FF2E2E;color:#fff;border:0;padding:4px 8px;border-radius:99px;font-size:11px">Eliminar</button></div>';
+    });
+    lista.innerHTML=h||'<small>Sin usuarios</small>';
+  }
+}
+function eliminarUsuario(email){
+  if(!confirm('Eliminar usuario '+email+'? - ADM poder total')) return;
+  var usuarios=JSON.parse(localStorage.getItem('maxshop_usuarios')||'[]');
+  usuarios=usuarios.filter(function(x){ return x.email!==email; });
+  localStorage.setItem('maxshop_usuarios', JSON.stringify(usuarios));
+  cargarADM();
+  alert('✅ Usuario eliminado por ADM');
+}
+
+// FIX AYUDA Y ATENCION CLIENTE
+function abrirAyuda(){ window.open('https://wa.me/5493834607740','_blank'); }
+function abrirAtencionCliente(){ window.location.href='mailto:asistmax.cliente@gmail.com'; }
+
+// FIX TEXTOS COHERENTES SEGUN LOGICAS ANCLADAS
+document.addEventListener('DOMContentLoaded', function(){
+  // Corregir textos con % coherentes
+  var bannerTexts=document.querySelectorAll('.banner-text small');
+  // Mapa forzar visible
+  setTimeout(function(){
+    var mapEl=document.getElementById('map');
+    if(mapEl){
+      mapEl.style.display='block';
+      mapEl.style.height='420px';
+      mapEl.style.minHeight='420px';
+      mapEl.style.background='#dbeafe';
+      console.log('V27 mapa forzado visible - fondo blanco original');
+      try{ if(window.map) window.map.invalidateSize(); }catch(e){}
+      try{ initMap(-28.4696,-65.7857); }catch(e){ console.error('initMap error', e); }
+    }
+  },1000);
+  setTimeout(function(){ try{ if(window.map) window.map.invalidateSize(); console.log('V27 mapa invalidate 2'); }catch(e){} },2000);
 });
 </script>
 
