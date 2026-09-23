@@ -64,12 +64,13 @@ class AuthRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 def serve():
-    for ruta in ["index.html", "./index.html", "templates/index.html", "/opt/render/project/src/index.html", "maxshop/index.html"]:
+    for ruta in ["templates/index.html", "/opt/render/project/src/templates/index.html", "index.html", "./index.html", "/opt/render/project/src/index.html", "maxshop/index.html", "./templates/index.html"]:
         if os.path.exists(ruta):
             try:
                 with open(ruta, "r", encoding="utf-8") as f:
                     c = f.read()
                     if len(c) > 5000:
+                        logger.info(f"Sirviendo {ruta} - {len(c)} bytes - mapa incluido")
                         return HTMLResponse(c)
             except Exception as e:
                 logger.error(f"Error leyendo {ruta}: {e}")
