@@ -276,8 +276,8 @@ body{background:#f6f5ff!important;color:#11084C!important}
   <label class="label">Titular - Nombre completo</label><input class="input" id="com-titular" placeholder="Nombre completo del titular">
   <label class="label">Teléfono (para notificaciones)</label><input class="input" id="com-tel" placeholder="+54 9 383 ...">
   <label class="label">Email comercio</label><input class="input" id="com-email" placeholder="felipe@comercio.com">
-  <label class="label">Logo (Verificado Storage)</label><input class="input" type="file" accept="image/*">
-  <label class="label">Banner publicitario</label><input class="input" type="file" accept="image/*">
+  <label class="label">Logo (auto-ajustable - subí desde tu cel) - Se ajusta solo</label><input class="input" type="file" accept="image/*" id="com-logo-file"><div id="com-logo-preview" style="margin-top:8px"></div><small style="font-size:11px;color:var(--muted)">Si se ve chico, subí otra con más zoom - Auto ajustable a 300x300</small>
+  <label class="label">Banner publicitario (auto-ajustable 800x400)</label><input class="input" type="file" accept="image/*" id="com-banner-file"><div id="com-banner-preview" style="margin-top:8px"></div><small style="font-size:11px;color:var(--muted)">Subí la que tengas, se ajusta sola - Si se ve pequeña, cambiá imagen</small>
   <label class="label">Promoción C$B que ofrece - Mínimo 5% (deslizá para más) - Se muestra como Pin azul/dorado sin % para no confundir</label>
   <div style="background:#f6f5ff;border:1px solid var(--border);border-radius:16px;padding:12px;margin-top:6px">
     <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:800;font-size:12px">Descuento C$B</span><span id="promo-valor" style="font-weight:900;font-size:18px;color:var(--accent)">10% C$B</span></div>
@@ -1052,6 +1052,128 @@ document.addEventListener('DOMContentLoaded', function(){
   setTimeout(function(){ try{ if(window.map) window.map.invalidateSize(); }catch(e){} },2600);
 });
 </script>
+
+
+
+
+
+<!-- FIREBASE - LOGOS Y BANNERS COMERCIOS - FIRESTORE ONLY - SPARK GRATIS SIN TARJETA - SIN TRABAR BACKEND -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDQwyhq9ctYbE69ETD8szD7WTP-dBnA7Cs",
+  authDomain: "maxshop365-c45e0.firebaseapp.com",
+  projectId: "maxshop365-c45e0",
+  storageBucket: "maxshop365-c45e0.firebasestorage.app",
+  messagingSenderId: "1872812990",
+  appId: "1:1872812990:web:33f2c59cc38b7306bb77ef",
+  measurementId: "G-9TJ0NPEBHD"
+};
+let firebaseApp, db;
+try{
+  if(!firebase.apps.length){ firebaseApp = firebase.initializeApp(firebaseConfig); } else { firebaseApp = firebase.app(); }
+  db = firebase.firestore();
+  console.log('Firebase MaxShop Firestore ONLY - Spark gratis sin tarjeta - No necesita Storage Blaze - No traba pagina');
+}catch(e){ console.warn('Firebase error', e); }
+window.comercioImgs = {logoUrl:null, bannerUrl:null};
+function autoResizeImage(file, maxW, maxH, quality, callback){
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      let w = img.width, h = img.height;
+      if(w > maxW || h > maxH){ const ratio = Math.min(maxW / w, maxH / h); w = Math.round(w * ratio); h = Math.round(h * ratio); }
+      const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      callback(dataUrl, w, h);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+document.addEventListener('DOMContentLoaded', function(){
+  const logoInput = document.getElementById('com-logo-file');
+  const bannerInput = document.getElementById('com-banner-file');
+  if(logoInput){
+    logoInput.addEventListener('change', function(e){
+      const file = e.target.files[0]; if(!file) return;
+      if(file.size > 15*1024*1024){ alert('Muy grande'); return; }
+      const preview = document.getElementById('com-logo-preview');
+      if(preview) preview.innerHTML = '⏳ Auto-ajustando 300x300...';
+      autoResizeImage(file, 300, 300, 0.8, function(dataUrl, w, h){
+        window.comercioImgs.logoUrl = dataUrl;
+        if(preview) preview.innerHTML = '<img src="'+dataUrl+'" style="width:80px;height:80px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Logo '+w+'x'+h+' - Firestore gratis sin tarjeta</div>';
+      });
+    });
+  }
+  if(bannerInput){
+    bannerInput.addEventListener('change', function(e){
+      const file = e.target.files[0]; if(!file) return;
+      if(file.size > 15*1024*1024){ alert('Muy grande'); return; }
+      const preview = document.getElementById('com-banner-preview');
+      if(preview) preview.innerHTML = '⏳ Auto-ajustando 800x400...';
+      autoResizeImage(file, 800, 400, 0.75, function(dataUrl, w, h){
+        window.comercioImgs.bannerUrl = dataUrl;
+        if(preview) preview.innerHTML = '<img src="'+dataUrl+'" style="width:100%;max-width:320px;height:90px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Banner '+w+'x'+h+' - Si se ve pequeño, subí otra con más zoom</div>';
+      });
+    });
+  }
+});
+const originalHacerRegistroComercio = window.hacerRegistro;
+window.hacerRegistro = async function(tipo){
+  if(tipo === 'comercio'){
+    try{
+      const datos = {
+        nombre: document.getElementById('com-nombre')?.value || '',
+        email: document.getElementById('com-email')?.value || '',
+        rubro: document.getElementById('com-rubro')?.value || '',
+        cuit: document.getElementById('com-cuit')?.value || '',
+        titular: document.getElementById('com-titular')?.value || '',
+        tel: document.getElementById('com-tel')?.value || '',
+        promo: document.getElementById('com-promo')?.value || '10',
+        logoUrl: window.comercioImgs?.logoUrl || null,
+        bannerUrl: window.comercioImgs?.bannerUrl || null,
+        estado: 'pendiente_verificacion',
+        fecha: firebase.firestore ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+      };
+      if(!datos.nombre){ alert('Poné nombre'); return; }
+      if(db){
+        try{
+          const docRef = await db.collection('comercios').add(datos);
+          console.log('Guardado Firestore Spark sin tarjeta', docRef.id);
+          try{ await fetch('/comercio/registrar', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nombre: datos.nombre, promo: datos.promo, idFirestore: docRef.id, tieneLogo: !!datos.logoUrl, tieneBanner: !!datos.bannerUrl})}); }catch(e){}
+          alert('✅ Comercio '+datos.nombre+' registrado - Imágenes en Firestore gratis sin tarjeta - No traba página');
+          try{ closeModal('modal-comercio'); }catch(e){}
+          agregarComercioAGridFirebase(datos); return;
+        }catch(err){ console.error(err); alert('Error: '+err.message); }
+      }
+    }catch(e){ console.error(e); }
+    return;
+  }
+  if(typeof originalHacerRegistroComercio === 'function'){ return originalHacerRegistroComercio(tipo); }
+};
+function agregarComercioAGridFirebase(datos){
+  try{
+    const grid = document.querySelector('.grid-com'); if(!grid) return;
+    const div = document.createElement('div'); div.className = 'com-card';
+    const bannerStyle = datos.bannerUrl ? 'background-image:url('+datos.bannerUrl+');background-size:cover;background-position:center' : 'background:linear-gradient(135deg,#11084C,#FF2E2E)';
+    const logoHtml = datos.logoUrl ? '<img src="'+datos.logoUrl+'" style="width:32px;height:32px;border-radius:8px;object-fit:cover;position:absolute;top:8px;left:8px;border:2px solid #fff">' : '';
+    div.innerHTML = '<div class="com-banner" style="'+bannerStyle+';position:relative">'+logoHtml+'<span style="position:relative;z-index:1">'+(datos.nombre||'Comercio')+'</span></div><div style="padding:12px"><b>'+(datos.nombre||'Comercio')+'</b><br><span class="badge green">+'+(datos.promo||10)+'% C$B</span> <small>Firestore gratis</small></div>';
+    grid.prepend(div);
+  }catch(e){}
+}
+async function cargarComerciosFirebase(){
+  if(!db) return;
+  try{
+    const snap = await db.collection('comercios').where('estado','in',['pendiente_verificacion','verificado']).limit(20).get();
+    snap.forEach(doc=>{ const d = doc.data(); if(d.logoUrl || d.bannerUrl){ try{ agregarComercioAGridFirebase(d); }catch(e){} } });
+  }catch(e){ console.warn(e); }
+}
+setTimeout(cargarComerciosFirebase, 1500);
+</script>
+
 
 </body>
 </html>
