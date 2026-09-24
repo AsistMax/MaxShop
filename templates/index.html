@@ -871,16 +871,8 @@ function descargarInforme(tipo){
   URL.revokeObjectURL(url);
   alert('✅ Informe '+tipo+' descargado - CSV - Listo para imprimir - Base de datos');
 }
-function agregarComercio(){
-  var nombre=prompt('Nombre nuevo comercio:');
-  if(!nombre) return;
-  var promo=prompt('Promo C$B % (5-70):','10');
-  var mis=JSON.parse(localStorage.getItem('maxshop_mis_comercios')||'[]');
-  mis.push({nombre:nombre,promo:(promo||10)+'%',rubro:'Indumentaria'});
-  localStorage.setItem('maxshop_mis_comercios', JSON.stringify(mis));
-  alert('✅ Comercio '+nombre+' agregado - Pin azul - Aparecerá en mapa');
-}
-function editarComercio(id){ var np=prompt('Nueva promo C$B % para '+id+' (5-70):','15'); if(!np) return; alert('✅ Promo actualizada a '+np+'% C$B'); }
+
+
 function abrirAyuda(){ window.open('https://wa.me/5493834607740','_blank'); }
 function abrirAtencionCliente(){ window.location.href='mailto:asistmax.cliente@gmail.com'; }
 
@@ -1122,7 +1114,7 @@ document.addEventListener('DOMContentLoaded', function(){
       if(preview) preview.innerHTML = '⏳ Auto-ajustando 800x400...';
       autoResizeImage(file, 800, 400, 0.75, function(dataUrl, w, h){
         window.comercioImgs.bannerUrl = dataUrl;
-        if(preview) preview.innerHTML = '<img src="'+dataUrl+'" style="width:100%;max-width:320px;height:90px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Banner '+w+'x'+h+' - Si se ve pequeño, subí otra con más zoom</div>';
+        if(preview) preview.innerHTML = '<img src="'+dataUrl+'" style="width:100%;max-width:320px;height:90px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Banner ajustado - Si se ve pequeño, subí otra con más zoom</div>';
       });
     });
   }
@@ -1210,7 +1202,7 @@ function editarComercio(id){
     if(prev) prev.innerHTML='⏳ Auto-ajustando...';
     autoResizeImage(f,300,300,0.82,(data,w,h)=>{
       window.editLogoUrl=data;
-      if(prev) prev.innerHTML='<img src="'+data+'" style="width:80px;height:80px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Nuevo logo '+w+'x'+h+'</div>';
+      if(prev) prev.innerHTML='<img src="'+data+'" style="width:80px;height:80px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Nuevo logo ajustado</div>';
     });
   });
   const eBanner = document.getElementById('edit-banner-file');
@@ -1220,7 +1212,7 @@ function editarComercio(id){
     if(prev) prev.innerHTML='⏳ Auto-ajustando 800x400...';
     autoResizeImage(f,800,400,0.78,(data,w,h)=>{
       window.editBannerUrl=data;
-      if(prev) prev.innerHTML='<img src="'+data+'" style="width:100%;max-width:320px;height:90px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Nuevo banner '+w+'x'+h+'</div>';
+      if(prev) prev.innerHTML='<img src="'+data+'" style="width:100%;max-width:320px;height:90px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Nuevo banner ajustado</div>';
     });
   });
 }
@@ -1242,7 +1234,7 @@ async function guardarEdicionComercio(nombre){
         if(window.editBannerUrl) update.bannerUrl=window.editBannerUrl;
         if(sucDir) update.sucursal_nueva={direccion:sucDir, tel:sucTel, fecha:new Date().toISOString()};
         await doc.ref.update(update);
-        alert('✅ Comercio '+nombre+' actualizado - Nuevo logo/banner/promo/sucursal guardado en Firestore - No se borra al pasar a Storage');
+        alert('✅ Comercio actualizado');
         document.getElementById('modal-editar-comercio').remove();
         location.reload();
         return;
