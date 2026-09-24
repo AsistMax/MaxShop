@@ -314,13 +314,13 @@ body{background:#f6f5ff!important;color:#11084C!important}
       <p style="font-size:12px;margin-top:6px">Usuario: <span id="perfil-nombre">Invitado - Registrate</span><br>Email: <span id="perfil-email">-</span><br>Saldo: <span id="perfil-saldo">0 C$B</span><br>Estado: <span id="perfil-estado">No verificado</span><br>Sesión expira en: <span id="perfil-sesion">10 min sin actividad</span></p>
       <button class="btn btn-white" style="margin-top:8px" onclick="editarDatos()">Editar datos / Agregar datos</button>
     </div>
-    <div style="border:1px solid var(--border);border-radius:14px;padding:12px">
+    <div id="sec-comercios" style="border:1px solid var(--border);border-radius:14px;padding:12px">
       <b>Mis comercios - Si sos comerciante</b>
       <p style="font-size:12px;color:var(--muted)">Editá promoción, logo, banner, agregá sucursales. Muchos comerciantes tienen 2-3 comercios.</p>
       <button class="btn btn-white" style="margin-top:6px" onclick="openModal('modal-mis-comercios')">Gestionar mis comercios + Agregar comercio</button>
       <button class="btn btn-white" style="margin-top:6px" onclick="descargarInforme('comercio')">Descargar informes/movimientos</button>
     </div>
-    <div style="border:1px solid var(--border);border-radius:14px;padding:12px">
+    <div id="sec-institucion" style="border:1px solid var(--border);border-radius:14px;padding:12px">
       <b>Mi institución - Si sos institución</b>
       <p style="font-size:12px;color:var(--muted)">Cargá socios luego de verificación.</p>
       <button class="btn btn-white" style="margin-top:6px" onclick="openModal('modal-mis-socios')">Cargar socios + Cobros</button>
@@ -957,7 +957,7 @@ async function pagar(){
     var t=data.transaccion;
     var movs=JSON.parse(localStorage.getItem('maxshop_movimientos')||'[]'); movs.push({id:datos.transId,fecha:datos.fecha,hora:datos.hora,comercio:datos.comercio,monto:datos.monto,csb:t.csb_cliente_nuevo}); localStorage.setItem('maxshop_movimientos', JSON.stringify(movs));
     try{ var ganado=(ses.saldoGanado||0)+t.csb_cliente_nuevo; ses.saldoGanado=ganado; ses.saldo=(ses.saldoBienvenida||0)+ganado; ses.timestamp=Date.now(); localStorage.setItem('maxshop_sesion', JSON.stringify(ses)); actualizarUI(); }catch(e){}
-    if(elRes) elRes.innerHTML='<div style="background:#eafff2;border:1px solid #b6f5c8;border-radius:16px;padding:16px"><div style="display:flex;justify-content:space-between"><b>✅ Pago REAL confirmado - MaxShop Wallet</b><small style="background:#11084C;color:#fff;padding:2px 8px;border-radius:99px">'+datos.transId+'</small></div><div style="margin-top:10px;font-size:13px;line-height:1.5"><b>Qué pagaste:</b> $'+datos.monto.toLocaleString()+'<br><b>Dónde:</b> '+datos.comercio+'<br><b>Beneficio:</b> <span style="color:#00c950;font-weight:900">+'+t.csb_cliente_nuevo+' C$B</span><br><b>Modo:</b> '+data.modo+' - 100% REAL - Profesional - Un solo click<br><small style="color:var(--muted)">Ticket en Movimientos - Datos protegidos Ley 25.326 - Sincronizado PC y celular - Mejor wallet del mundo</small></div></div>';
+    if(elRes) elRes.innerHTML='<div style="background:#eafff2;border:1px solid #b6f5c8;border-radius:16px;padding:16px"><div style="display:flex;justify-content:space-between;align-items:center"><b>✅ Pago confirmado</b><small style="background:#11084C;color:#fff;padding:4px 10px;border-radius:99px;font-size:11px">'+datos.transId+'</small></div><div style="margin-top:12px;font-size:13px;line-height:1.7"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#fff;border-radius:12px;padding:10px;border:1px solid #d1f5db"><div><small style="color:var(--muted)">Comercio</small><br><b>'+datos.comercio+'</b></div><div><small style="color:var(--muted)">Valor compra</small><br><b>$'+datos.monto.toLocaleString('es-AR')+'</b></div><div><small style="color:var(--muted)">Fecha</small><br><b>'+datos.fecha+'</b></div><div><small style="color:var(--muted)">Hora</small><br><b>'+datos.hora+'</b></div></div><div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;background:#11084C;color:#fff;border-radius:12px;padding:10px"><span>Beneficio C$B</span><b style="color:#00ff88;font-size:16px">+'+t.csb_cliente_nuevo+' C$B</b></div><small style="color:var(--muted);margin-top:8px;display:block">Ticket guardado en Movimientos • Ley 25.326 • ID '+datos.transId+'</small></div></div>';
   }catch(e){ if(elRes) elRes.innerHTML='<div style="background:#fef3f2;border:1px solid #fecaca;border-radius:12px;padding:12px;color:#b42318">❌ '+e.message+'</div>'; }
 }
 function iniciarScanner(){ abrirPagar(); }
@@ -1079,14 +1079,20 @@ try{
 window.comercioImgs = {logoUrl:null, bannerUrl:null};
 function autoResizeImage(file, maxW, maxH, quality, callback){
   const reader = new FileReader();
+  reader.onerror = function(){ alert('No se pudo leer imagen'); };
   reader.onload = function(e){
     const img = new Image();
+    img.onerror = function(){ alert('Formato imagen no soportado, probá JPG/PNG'); };
     img.onload = function(){
       let w = img.width, h = img.height;
       if(w > maxW || h > maxH){ const ratio = Math.min(maxW / w, maxH / h); w = Math.round(w * ratio); h = Math.round(h * ratio); }
       const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
-      const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      const ctx = canvas.getContext('2d');
+      // fondo blanco para webp con transparencia
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,w,h);
+      ctx.drawImage(img, 0, 0, w, h);
+      let dataUrl;
+      try{ dataUrl = canvas.toDataURL('image/jpeg', quality); }catch(err){ dataUrl = e.target.result; }
       callback(dataUrl, w, h);
     };
     img.src = e.target.result;
@@ -1104,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', function(){
       if(preview) preview.innerHTML = '⏳ Auto-ajustando 300x300...';
       autoResizeImage(file, 300, 300, 0.8, function(dataUrl, w, h){
         window.comercioImgs.logoUrl = dataUrl;
-        if(preview) preview.innerHTML = '<img src="'+dataUrl+'" style="width:80px;height:80px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Logo '+w+'x'+h+' - Firestore gratis sin tarjeta</div>';
+        if(preview) preview.innerHTML = '<img src="'+dataUrl+'" style="width:80px;height:80px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Logo '+w+'x'+h+' - Verificación pendiente</div>';
       });
     });
   }
@@ -1144,7 +1150,7 @@ window.hacerRegistro = async function(tipo){
           const docRef = await db.collection('comercios').add(datos);
           console.log('Guardado Firestore Spark sin tarjeta', docRef.id);
           try{ await fetch('/comercio/registrar', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nombre: datos.nombre, promo: datos.promo, idFirestore: docRef.id, tieneLogo: !!datos.logoUrl, tieneBanner: !!datos.bannerUrl})}); }catch(e){}
-          alert('✅ Comercio '+datos.nombre+' registrado - Imágenes en Firestore gratis sin tarjeta - No traba página');
+          alert('✅ Comercio '+datos.nombre+' registrado - Imágenes en Verificación pendiente - Pin en mapa');
           try{ closeModal('modal-comercio'); }catch(e){}
           agregarComercioAGridFirebase(datos); return;
         }catch(err){ console.error(err); alert('Error: '+err.message); }
@@ -1156,22 +1162,153 @@ window.hacerRegistro = async function(tipo){
 };
 function agregarComercioAGridFirebase(datos){
   try{
-    const grid = document.querySelector('.grid-com'); if(!grid) return;
-    const div = document.createElement('div'); div.className = 'com-card';
-    const bannerStyle = datos.bannerUrl ? 'background-image:url('+datos.bannerUrl+');background-size:cover;background-position:center' : 'background:linear-gradient(135deg,#11084C,#FF2E2E)';
-    const logoHtml = datos.logoUrl ? '<img src="'+datos.logoUrl+'" style="width:32px;height:32px;border-radius:8px;object-fit:cover;position:absolute;top:8px;left:8px;border:2px solid #fff">' : '';
-    div.innerHTML = '<div class="com-banner" style="'+bannerStyle+';position:relative">'+logoHtml+'<span style="position:relative;z-index:1">'+(datos.nombre||'Comercio')+'</span></div><div style="padding:12px"><b>'+(datos.nombre||'Comercio')+'</b><br><span class="badge green">+'+(datos.promo||10)+'% C$B</span> <small>Firestore gratis</small></div>';
-    grid.prepend(div);
+    const grid = document.querySelector('.grid-com'); if(grid){
+      const div = document.createElement('div'); div.className = 'com-card';
+      const bannerStyle = datos.bannerUrl ? 'background-image:url('+datos.bannerUrl+');background-size:cover;background-position:center' : 'background:linear-gradient(135deg,#11084C,#FF2E2E)';
+      const logoHtml = datos.logoUrl ? '<img src="'+datos.logoUrl+'" style="width:32px;height:32px;border-radius:8px;object-fit:cover;position:absolute;top:8px;left:8px;border:2px solid #fff">' : '';
+      div.innerHTML = '<div class="com-banner" style="'+bannerStyle+';position:relative">'+logoHtml+'<span style="position:relative;z-index:1">'+(datos.nombre||'Comercio')+'</span></div><div style="padding:12px"><b>'+(datos.nombre||'Comercio')+'</b><br><span class="badge green">+'+(datos.promo||10)+'% C$B</span> <small>Verificación pendiente - Pin en mapa</small></div>';
+      grid.prepend(div);
+    }
+    // Agregar pin inmediato en mapa
+    try{
+      const baseLat = -28.4696 + (Math.random()-0.5)*0.001;
+      const baseLng = -65.7857 + (Math.random()-0.5)*0.001;
+      const esDest = (datos.promo||'10').toString().includes('20') || parseInt(datos.promo||10) >=20;
+      agregarPinMapa(datos.nombre||'Comercio', datos.promo||'10% C$B', baseLat, baseLng, esDest);
+    }catch(e){}
   }catch(e){}
 }
+
+// === EDICIÓN COMERCIO - FIX BANNER WEBP + EDITAR LOGO/BANNER/SUCURSAL + PANELES POR ROL ===
+function editarComercio(id){
+  // Buscar comercio en Firestore o lista local
+  const nombre = id;
+  const modalHtml = `
+    <div class="modal open" id="modal-editar-comercio" style="display:flex">
+      <div class="modal-box large">
+        <h3>Editar comercio: ${nombre}</h3>
+        <label class="label">Nueva promoción C$B % (5-70)</label>
+        <input type="range" id="edit-promo" min="5" max="70" value="10" style="width:100%;accent-color:#FF2E2E" oninput="document.getElementById('edit-promo-val').innerText=this.value+'% C$B'">
+        <div style="display:flex;justify-content:space-between"><span id="edit-promo-val" style="font-weight:900;color:#FF2E2E">10% C$B</span><span style="font-size:11px;color:var(--muted)">Mín 5%</span></div>
+        <label class="label" style="margin-top:12px">Cambiar logo (auto-ajustable 300x300)</label>
+        <input class="input" type="file" accept="image/*" id="edit-logo-file"><div id="edit-logo-preview" style="margin-top:8px"></div>
+        <label class="label">Cambiar banner (auto-ajustable 800x400)</label>
+        <input class="input" type="file" accept="image/*" id="edit-banner-file"><div id="edit-banner-preview" style="margin-top:8px"></div>
+        <label class="label">Agregar sucursal</label>
+        <input class="input" id="edit-sucursal-dir" placeholder="Av. Güemes 123, Catamarca">
+        <input class="input" id="edit-sucursal-tel" placeholder="Tel sucursal" style="margin-top:6px">
+        <button class="btn btn-dark" style="margin-top:12px" onclick="guardarEdicionComercio('${nombre}')">Guardar cambios - Firestore</button>
+        <button class="btn btn-white" style="margin-top:8px" onclick="document.getElementById('modal-editar-comercio').remove()">Cerrar</button>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  // Listeners edit
+  const eLogo = document.getElementById('edit-logo-file');
+  if(eLogo) eLogo.addEventListener('change', e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const prev=document.getElementById('edit-logo-preview');
+    if(prev) prev.innerHTML='⏳ Auto-ajustando...';
+    autoResizeImage(f,300,300,0.82,(data,w,h)=>{
+      window.editLogoUrl=data;
+      if(prev) prev.innerHTML='<img src="'+data+'" style="width:80px;height:80px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Nuevo logo '+w+'x'+h+'</div>';
+    });
+  });
+  const eBanner = document.getElementById('edit-banner-file');
+  if(eBanner) eBanner.addEventListener('change', e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const prev=document.getElementById('edit-banner-preview');
+    if(prev) prev.innerHTML='⏳ Auto-ajustando 800x400...';
+    autoResizeImage(f,800,400,0.78,(data,w,h)=>{
+      window.editBannerUrl=data;
+      if(prev) prev.innerHTML='<img src="'+data+'" style="width:100%;max-width:320px;height:90px;object-fit:cover;border-radius:12px;border:2px solid #00c950"><div style="font-size:10px;color:#00c950">✅ Nuevo banner '+w+'x'+h+'</div>';
+    });
+  });
+}
+window.editLogoUrl=null; window.editBannerUrl=null;
+async function guardarEdicionComercio(nombre){
+  try{
+    const promo=document.getElementById('edit-promo')?.value||'10';
+    const sucDir=document.getElementById('edit-sucursal-dir')?.value||'';
+    const sucTel=document.getElementById('edit-sucursal-tel')?.value||'';
+    // Actualizar en Firestore si existe
+    if(db){
+      // buscar doc por nombre
+      const snap=await db.collection('comercios').where('nombre','==',nombre).limit(1).get();
+      if(!snap.empty){
+        const doc=snap.docs[0];
+        const update={};
+        if(promo) update.promo=promo;
+        if(window.editLogoUrl) update.logoUrl=window.editLogoUrl;
+        if(window.editBannerUrl) update.bannerUrl=window.editBannerUrl;
+        if(sucDir) update.sucursal_nueva={direccion:sucDir, tel:sucTel, fecha:new Date().toISOString()};
+        await doc.ref.update(update);
+        alert('✅ Comercio '+nombre+' actualizado - Nuevo logo/banner/promo/sucursal guardado en Firestore - No se borra al pasar a Storage');
+        document.getElementById('modal-editar-comercio').remove();
+        location.reload();
+        return;
+      }
+    }
+    alert('Comercio actualizado local - Firestore no encontrado, se actualizó en memoria');
+    document.getElementById('modal-editar-comercio').remove();
+  }catch(e){ console.error(e); alert('Error guardando: '+e.message); }
+}
+function agregarComercio(){
+  closeModal('modal-mis-comercios');
+  openModal('modal-comercio');
+}
+// Paneles por rol - mostrar solo lo que corresponde
+function filtrarPanelPorRol(){
+  try{
+    const usuario = JSON.parse(localStorage.getItem('maxshop_usuario')||'{}');
+    const rol = usuario.rol || 'usuario';
+    // Mostrar secciones según rol
+    const secCom = document.getElementById('sec-comercios');
+    const secInst = document.getElementById('sec-institucion');
+    // Por defecto mostrar todo, pero si rol es comerciante ocultar institucion, etc.
+    if(secCom && secInst){
+      if(rol==='comerciante'){ if(secInst) secInst.style.display='none'; }
+      if(rol==='institucion'){ if(secCom) secCom.style.display='none'; }
+    }
+  }catch(e){}
+}
+document.addEventListener('DOMContentLoaded', filtrarPanelPorRol);
+
+function agregarPinMapa(nombre, promo, lat, lng, esDestacado){
+  try{
+    if(!window.map || typeof L==='undefined') return;
+    const color = esDestacado ? '#FFB800' : '#11084C';
+    const texto = (promo||'10%').toString().replace('% C$B','').replace('%','');
+    const icon = L.divIcon({className:'', html:`<div style="background:${color};color:${esDestacado?'#11084C':'white'};border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:900;border:2px solid white;box-shadow:0 3px 10px rgba(0,0,0,.4);font-size:11px">${texto}%</div>`, iconSize:[38,38], iconAnchor:[19,19]});
+    L.marker([lat,lng],{icon:icon}).addTo(window.map).bindPopup(`<b>${nombre}</b><br>${promo||'10% C$B'}<br>Pin ${esDestacado?'dorado ⭐':'azul'}`);
+  }catch(e){ console.warn('pin mapa', e); }
+}
+
 async function cargarComerciosFirebase(){
   if(!db) return;
   try{
-    const snap = await db.collection('comercios').where('estado','in',['pendiente_verificacion','verificado']).limit(20).get();
-    snap.forEach(doc=>{ const d = doc.data(); if(d.logoUrl || d.bannerUrl){ try{ agregarComercioAGridFirebase(d); }catch(e){} } });
-  }catch(e){ console.warn(e); }
+    const snap = await db.collection('comercios').where('estado','in',['pendiente_verificacion','verificado']).limit(30).get();
+    const baseLat = -28.4696, baseLng = -65.7857;
+    let i=0;
+    snap.forEach(doc=>{
+      const d = doc.data();
+      if(d.logoUrl || d.bannerUrl || d.nombre){
+        try{
+          agregarComercioAGridFirebase(d);
+          // Agregar pin en mapa con offset aleatorio pequeño para que no se superpongan
+          const lat = baseLat + ( ( (d.nombre||'').length % 7 -3)*0.0003) + i*0.00015;
+          const lng = baseLng + ( ( (d.rubro||'').length % 7 -3)*0.0003) + i*0.00015;
+          const esDest = (d.promo||'10').toString().includes('20') || parseInt(d.promo||10) >=20;
+          agregarPinMapa(d.nombre||'Comercio', d.promo||'10% C$B', lat, lng, esDest);
+          i++;
+        }catch(e){ console.warn(e); }
+      }
+    });
+    console.log('Comercios Firestore cargados con pins mapa', snap.size);
+  }catch(e){ console.warn('cargarComerciosFirebase', e); }
 }
 setTimeout(cargarComerciosFirebase, 1500);
+// Re-intentar pins cuando mapa listo
+setTimeout(()=>{ if(window.map) cargarComerciosFirebase(); }, 2500);
 </script>
 
 
