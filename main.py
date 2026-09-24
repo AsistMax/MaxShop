@@ -77,6 +77,21 @@ def serve():
                 continue
     return HTMLResponse("<h1>MaxShop V12 - Mejor Wallet del Mundo - 100% Funcional</h1>")
 
+@app.get("/mapa-calles-real.html", response_class=HTMLResponse)
+def serve_mapa():
+    for ruta in ["templates/mapa-calles-real.html", "mapa-calles-real.html", "./templates/mapa-calles-real.html", "/opt/render/project/src/templates/mapa-calles-real.html", "maxshop/mapa-calles-real.html"]:
+        if os.path.exists(ruta):
+            try:
+                with open(ruta, "r", encoding="utf-8") as f:
+                    c = f.read()
+                    if len(c) > 100:
+                        logger.info(f"Sirviendo mapa calles {ruta} - {len(c)} bytes - Calles reales visibles")
+                        return HTMLResponse(c)
+            except Exception as e:
+                logger.error(f"Error mapa {ruta}: {e}")
+                continue
+    return HTMLResponse("<h1>Mapa no encontrado</h1>", status_code=404)
+
 @app.get("/api")
 def api():
     mp_configurado = bool(MP_ACCESS_TOKEN and MP_PUBLIC_KEY)
