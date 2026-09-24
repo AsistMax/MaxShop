@@ -109,6 +109,43 @@ def api():
         "pagar": "Un solo click - Real - Profesional - No demo bloqueado"
     }
 
+
+@app.get("/comercios")
+def listar_comercios():
+    comercios_file = "/tmp/maxshop_comercios.json"
+    if os.path.exists(comercios_file):
+        try:
+            import json as _json
+            with open(comercios_file, "r") as f:
+                return {"comercios": _json.load(f)}
+        except:
+            return {"comercios": []}
+    return {"comercios": []}
+
+@app.post("/comercio/registrar")
+def registrar_comercio(data: dict):
+    try:
+        import json as _json, os, uuid
+        from datetime import datetime
+        comercios_file = "/tmp/maxshop_comercios.json"
+        comercios = []
+        if os.path.exists(comercios_file):
+            try:
+                with open(comercios_file, "r") as f:
+                    comercios = _json.load(f)
+            except:
+                comercios = []
+        data["id"] = str(uuid.uuid4())
+        data["fecha"] = datetime.utcnow().isoformat()
+        data["estado"] = "pendiente_verificacion"
+        comercios.append(data)
+        with open(comercios_file, "w") as f:
+            _json.dump(comercios, f)
+        return {"status": "ok", "comercio": data, "msg": "Comercio registrado con imagenes auto-ajustables"}
+    except Exception as e:
+        from fastapi.responses import JSONResponse
+        return JSONResponse({"status": "error", "msg": str(e)}, status_code=500)
+
 @app.get("/config/mp")
 def mp_config():
     return {
