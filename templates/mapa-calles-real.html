@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa MaxShop - Calles Reales Catamarca</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>if(typeof L==="undefined"){document.write('<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"><\/script>');}</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Manrope,sans-serif;background:#f6f5ff}
+#map{height:420px;width:100%;border-radius:18px;border:2px solid #e6e6ff}
+.leaflet-popup-content{font-family:Manrope,sans-serif;font-size:12px}
+.pin{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.4);color:#fff}
+.pin.dorado{background:#FFB800;color:#11084C;width:44px;height:44px}
+.pin.azul{background:#11084C}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+console.log('MaxShop Mapa Real Calles - Catamarca');
+var lat=-28.4696, lng=-65.7857;
+var map=null;
+function crearMapa(){
+  var el=document.getElementById('map');
+  if(!el) return;
+  try{ if(map){ map.remove(); map=null; } }catch(e){}
+  map=L.map('map',{zoomControl:true}).setView([lat,lng],15);
+  var osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM | MaxShop - Calles e instituciones visibles', maxZoom:19}).addTo(map);
+  osm.on('tileerror', function(){
+    try{ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© OSM © CARTO | MaxShop'}).addTo(map); }catch(e){}
+  });
+  setTimeout(function(){ try{ map.invalidateSize(); }catch(e){} },300);
+  setTimeout(function(){ try{ map.invalidateSize(); console.log('Mapa real con calles visible - anclado'); }catch(e){} },1000);
+  setTimeout(function(){ try{ map.invalidateSize(); }catch(e){} },2000);
+  
+  var comercios=[
+    {nombre:"Felipe",lat:lat+0.0005,lng:lng+0.0003,rubro:"Indumentaria",promo:"Adherido",color:"#11084C",texto:"10%"},
+    {nombre:"Panadería PM",lat:lat-0.0004,lng:lng+0.0006,rubro:"Panadería",promo:"Adherido",color:"#11084C",texto:"10%"},
+    {nombre:"Lomitos 20% OFF",lat:lat+0.0002,lng:lng-0.0005,rubro:"Gastronomía",promo:"Destacado semana",color:"#FFB800",texto:"20%",dorado:true}
+  ];
+  comercios.forEach(function(c){
+    try{
+      var cls=c.dorado?'pin dorado':'pin azul';
+      var icon=L.divIcon({className:'',html:'<div class="'+cls+'">'+c.texto+'</div>',iconSize:[c.dorado?44:38,c.dorado?44:38],iconAnchor:[c.dorado?22:19,c.dorado?22:19]});
+      L.marker([c.lat,c.lng],{icon:icon}).addTo(map).bindPopup('<b>'+c.nombre+'</b><br>'+c.rubro+'<br>'+c.promo+'<br><small>Pin '+(c.dorado?'dorado ⭐':'azul')+'</small>');
+    }catch(e){ console.error(e); }
+  });
+  
+  // Geolocalizacion para cercanos reales
+  try{
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(function(p){
+        try{
+          var ulat=p.coords.latitude, ulng=p.coords.longitude;
+          L.marker([ulat,ulng],{icon:L.divIcon({className:'',html:'<div style="background:#FF2E2E;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;font-size:12px">📍</div>',iconSize:[28,28]})}).addTo(map).bindPopup('Vos estás acá');
+          // No recentrar automatico para no perder comercios, solo si esta lejos
+        }catch(e){}
+      });
+    }
+  }catch(e){}
+}
+document.addEventListener('DOMContentLoaded', crearMapa);
+window.initMapReal = crearMapa;
+</script>
+</body>
+</html>
