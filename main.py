@@ -10,7 +10,7 @@ from typing import Optional, Dict
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("maxshop")
 
-app = FastAPI(title="MaxShop V12 FINAL - Mejor Wallet del Mundo - 100% Real Profesional")
+app = FastAPI(title="MaxShop API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN", "")
@@ -227,13 +227,18 @@ def pagar(req: PagoRequest):
         if req.mp_token:
             try:
                 headers = {"Authorization": f"Bearer {MP_ACCESS_TOKEN}", "Content-Type": "application/json", "X-Idempotency-Key": trans_id}
-                payload = {"transaction_amount": float(monto), "token": req.mp_token, "description": f"MaxShop - {comercio_nombre_real} - {trans_id}", "installments": 1, "payer": {"email": req.email_cliente or req.user_id or "cliente@maxshop.com"}, "external_reference": trans_id, "statement_descriptor": "MaxShop"}
+                payload = {"transaction_amount": float(monto), "token": req.mp_token, "description": f"MaxShop - {comercio_nombre_real} - {trans_id}", "installments": 1, "payer": {"email": req.email_cliente or req.user_id or "cliente@maxshop.com"}, "external_reference": f"{req.comercio_id}|sucursal_01|caja_01|{trans_id}", "statement_descriptor": "MaxShop"}
                 logger.info(f"Intentando pago REAL MP: ${monto} en {comercio_nombre_real}")
                 response = requests.post("https://api.mercadopago.com/v1/payments", json=payload, headers=headers, timeout=20)
                 mp_result = response.json()
                 logger.info(f"MP response {response.status_code}: {mp_result}")
                 if response.status_code in [200, 201]:
                     mp_payment_id = mp_result.get("id")
+                    # Captura promo bancaria/MP si viene confirmada
+                    mp_promo_descuento = mp_result.get("coupon_amount", 0) or mp_result.get("transaction_details", {}).get("coupon_amount", 0) or 0
+                    mp_campaign = mp_result.get("campaign_id") or mp_result.get("coupon_id")
+                    mp_discount_detail = mp_result.get("discount_amount", 0)
+                    logger.info(f"MP promo capturada descuento={mp_promo_descuento} campaign={mp_campaign} discount_detail={mp_discount_detail}")
                     status = mp_result.get("status")
                     if status == "approved":
                         modo = "REAL_APROBADO"
@@ -266,7 +271,7 @@ def pagar(req: PagoRequest):
         guardar_db()
         logger.info(f"Saldo actualizado {email_key}: +{csb} C$B - Total {usuario['saldo']}")
 
-    TRANSACCIONES_DB.append({"id": trans_id, "user_id": email_key, "comercio": comercio_nombre_real, "monto": monto, "csb": csb, "fecha": fecha, "hora": hora, "modo": modo, "timestamp": datetime.utcnow().isoformat()})
+    TRANSACCIONES_DB.append({"id": trans_id, "user_id": email_key, "comercio": comercio_nombre_real, "monto": monto, "csb": csb, "fecha": fecha, "hora": hora, "modo": modo, "mp_promo_descuento": locals().get('mp_promo_descuento',0), "mp_campaign": locals().get('mp_campaign'), "timestamp": datetime.utcnow().isoformat()})
     guardar_db()
 
     return {"status": "aprobado", "modo": modo, "_interno_mp_id": mp_payment_id, "_interno_comision": comision, "transaccion": {"id": trans_id, "monto_detectado": monto, "monto_real": monto, "fecha": fecha, "hora": hora, "trans_id": trans_id, "comercio_id": req.comercio_id, "comercio_nombre": comercio_nombre_real, "comercio_nombre_real": comercio_nombre_real, "metodo": "TAP/QR posnet - MaxShop Wallet - Un solo click - Profesional", "es_adherido": es_adherido, "es_destacado": es_destacado, "pin": "dorado" if es_destacado else ("azul" if es_adherido else "sin pin"), "tarjeta_usada": req.tarjeta or "No especificada", "tipo_tarjeta": req.tipo_tarjeta or "Visa/Mastercard", "csb_cliente_nuevo": csb, "comision_interna": comision, "mensaje_exito": f"Pago confirmado en {comercio_nombre_real}", "seguridad": f"Transaccion verificada - {fecha} {hora} - ID {trans_id} - MaxShop Wallet - Ley 25.326", "timestamp": datetime.utcnow().isoformat(), "modo": modo}}
