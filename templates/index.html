@@ -309,7 +309,7 @@ body{background:#f6f5ff!important;color:#11084C!important}
   <h3>Mi perfil - Centro de control</h3>
   <p style="font-size:12px;color:var(--muted)">Aquí están todas las herramientas de todos los roles para mantener la página de inicio intacta.</p>
   <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
-    <div style="border:1px solid var(--border);border-radius:14px;padding:12px">
+    <div id="sec-usuario" style="border:1px solid var(--border);border-radius:14px;padding:12px">
       <b>Datos personales - Editable</b>
       <p style="font-size:12px;margin-top:6px">Usuario: <span id="perfil-nombre">Invitado - Registrate</span><br>Email: <span id="perfil-email">-</span><br>Saldo: <span id="perfil-saldo">0 C$B</span><br>Estado: <span id="perfil-estado">No verificado</span><br>Sesión expira en: <span id="perfil-sesion">10 min sin actividad</span></p>
       <button class="btn btn-white" style="margin-top:8px" onclick="editarDatos()">Editar datos / Agregar datos</button>
@@ -326,7 +326,7 @@ body{background:#f6f5ff!important;color:#11084C!important}
       <button class="btn btn-white" style="margin-top:6px" onclick="openModal('modal-mis-socios')">Cargar socios + Cobros</button>
       <button class="btn btn-white" style="margin-top:6px" onclick="descargarInforme('institucion')">Descargar informes socios</button>
     </div>
-    <div style="border:1px solid var(--border);border-radius:14px;padding:12px">
+    <div id="sec-seguridad" style="border:1px solid var(--border);border-radius:14px;padding:12px">
       <b>Seguridad</b>
       <p style="font-size:12px">Todos los roles deben registrarse primera vez. Si salís +10min, pide iniciar sesión .</p>
       <button class="btn btn-white" style="margin-top:6px" onclick="cerrarSesion()">Cerrar sesión (10min timeout)</button>
@@ -832,14 +832,30 @@ function abrirPerfil(tipo){
     }
   }
   else {
-    openModal('modal-perfil');
-    var sesion2=JSON.parse(localStorage.getItem('maxshop_sesion')||'null');
-    if(sesion2){
-      var n=document.getElementById('perfil-nombre'); if(n) n.innerText=sesion2.nombre;
-      var e=document.getElementById('perfil-email'); if(e) e.innerText=sesion2.email;
-      var s=document.getElementById('perfil-saldo'); if(s) s.innerText=((sesion2.saldoBienvenida||0)+(sesion2.saldoGanado||0))+' C$B';
-      var es=document.getElementById('perfil-estado'); if(es) es.innerText=sesion2.rol==='admin'?'Admin - Poder total':(sesion2.rol==='comercio'?'Comerciante verificado':'Usuario verificado');
+    var sesion2=getSesionActual();
+    if(!sesion2){
+      // No logueado - invitar a registrarse, no mostrar paneles de roles
+      openModal('modal-perfil');
+      filtrarPanelPorRol();
+      var btnEdit=document.querySelector('#sec-usuario button');
+      if(btnEdit){ btnEdit.innerText='Registrate / Iniciar sesión'; btnEdit.onclick=function(){ closeModal('modal-perfil'); openModal('modal-registrarse'); }; }
+      return;
     }
+    openModal('modal-perfil');
+    var n=document.getElementById('perfil-nombre'); if(n) n.innerText=sesion2.nombre||'Usuario';
+    var e=document.getElementById('perfil-email'); if(e) e.innerText=sesion2.email||'-';
+    var s=document.getElementById('perfil-saldo'); if(s) s.innerText=((sesion2.saldoBienvenida||0)+(sesion2.saldoGanado||0)).toLocaleString()+' C$B';
+    var es=document.getElementById('perfil-estado'); 
+    if(es){
+      var rolTxt = (sesion2.rol||'usuario').toLowerCase();
+      if(rolTxt==='admin') es.innerText='Admin - Poder total';
+      else if(rolTxt==='comerciante' || rolTxt==='comercio') es.innerText='Comerciante verificado - Acceso a Mis comercios';
+      else if(rolTxt==='institucion') es.innerText='Institución verificada - Acceso a Socios';
+      else es.innerText='Usuario verificado - Acceso a Mi cuenta';
+    }
+    var btnEdit2=document.querySelector('#sec-usuario button');
+    if(btnEdit2){ btnEdit2.innerText='Editar datos / Agregar datos'; btnEdit2.onclick=function(){ editarDatos(); }; }
+    filtrarPanelPorRol();
   }
 }
 function abrirHistorial(){ abrirPerfil('historial'); }
@@ -1248,20 +1264,61 @@ function agregarComercio(){
   closeModal('modal-mis-comercios');
   openModal('modal-comercio');
 }
-// Paneles por rol - mostrar solo lo que corresponde
+// Paneles por rol - solo logueados ven su panel correspondiente
+function getSesionActual(){
+  try{
+    let s = localStorage.getItem('maxshop_sesion');
+    if(s) return JSON.parse(s);
+    let u = localStorage.getItem('maxshop_usuario');
+    if(u) return JSON.parse(u);
+  }catch(e){}
+  return null;
+}
 function filtrarPanelPorRol(){
   try{
-    const usuario = JSON.parse(localStorage.getItem('maxshop_usuario')||'{}');
-    const rol = usuario.rol || 'usuario';
-    // Mostrar secciones según rol
+    const ses = getSesionActual();
     const secCom = document.getElementById('sec-comercios');
     const secInst = document.getElementById('sec-institucion');
-    // Por defecto mostrar todo, pero si rol es comerciante ocultar institucion, etc.
-    if(secCom && secInst){
-      if(rol==='comerciante'){ if(secInst) secInst.style.display='none'; }
-      if(rol==='institucion'){ if(secCom) secCom.style.display='none'; }
+    const secUsuario = document.getElementById('sec-usuario');
+    const secSeg = document.getElementById('sec-seguridad');
+    const rol = ses ? (ses.rol||'usuario').toLowerCase() : null;
+
+    if(!ses){
+      // Invitado - no mostrar comercios ni institucion, solo invitar a registrarse
+      if(secCom) secCom.style.display='none';
+      if(secInst) secInst.style.display='none';
+      if(secUsuario){
+        secUsuario.querySelector('b').innerText='Mi cuenta';
+        document.getElementById('perfil-nombre').innerText='Invitado - Registrate';
+        document.getElementById('perfil-email').innerText='-';
+        document.getElementById('perfil-saldo').innerText='0 C$B';
+        document.getElementById('perfil-estado').innerText='No verificado - Registrate para acceder';
+      }
+      if(secSeg) secSeg.style.display='none';
+      return;
     }
-  }catch(e){}
+
+    // Logueado - mostrar segun rol
+    if(secCom) secCom.style.display='none';
+    if(secInst) secInst.style.display='none';
+    if(secUsuario) secUsuario.style.display='block';
+    if(secSeg) secSeg.style.display='block';
+
+    if(rol==='admin'){
+      if(secCom) secCom.style.display='block';
+      if(secInst) secInst.style.display='block';
+    } else if(rol==='comerciante' || rol==='comercio'){
+      if(secCom) secCom.style.display='block';
+      if(secInst) secInst.style.display='none';
+    } else if(rol==='institucion' || rol==='institución' || rol==='club'){
+      if(secCom) secCom.style.display='none';
+      if(secInst) secInst.style.display='block';
+    } else {
+      // usuario comun
+      if(secCom) secCom.style.display='none';
+      if(secInst) secInst.style.display='none';
+    }
+  }catch(e){ console.warn(e); }
 }
 document.addEventListener('DOMContentLoaded', filtrarPanelPorRol);
 
