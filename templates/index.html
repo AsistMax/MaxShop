@@ -60,7 +60,7 @@
 
 <div class="modal" id="modal-notif"><div class="modal-box"><h3>Notificaciones - Firebase</h3><div id="notif-lista"><p style="font-size:13px;color:var(--muted)">Conectando a Firebase...</p></div><button class="btn btn-white" style="margin-top:14px" onclick="closeModal('modal-notif')">Cerrar</button></div></div>
 
-<div class="modal" id="modal-perfil"><div class="modal-box large"><h3>Mi perfil - Firebase</h3><div id="perfil-logueado" class="hidden"><p>Usuario: <span id="perfil-nombre">-</span><br>Email: <span id="perfil-email">-</span><br>Saldo: <span id="perfil-saldo">0 C$B</span><br>DNI: <span id="perfil-dni">-</span></p><button class="btn btn-white" onclick="cerrarSesion()">Cerrar sesión</button></div><div id="perfil-invitado"><p style="font-size:13px;color:var(--muted)">Debes iniciar sesión para ver tu perfil sincronizado PC/celular</p><button class="btn btn-dark" onclick="closeModal('modal-perfil');irInicio();openModal('modal-ingresar')">Ir a INICIO - Iniciar sesión</button></div><button class="btn btn-white" style="margin-top:14px" onclick="closeModal('modal-perfil')">Cerrar</button></div></div>
+<div class="modal" id="modal-perfil"><div class="modal-box large"><h3>Mi perfil - Firebase</h3><div id="perfil-logueado" class="hidden"><p>Usuario: <span id="perfil-nombre">-</span><br>Email: <span id="perfil-email">-</span><br>Alias: <b id="perfil-alias" style="color:var(--primary)">-</b> <button class="btn btn-white" style="width:auto;display:inline-block;padding:2px 8px;font-size:10px;margin-left:4px" onclick="abrirEditarAlias()">✏️ Cambiar</button><br><div id="editar-alias-box" class="hidden" style="background:#f6f5ff;border:1px solid var(--border);border-radius:12px;padding:10px;margin-top:8px"><label class="label" style="margin-top:0">Nuevo alias simple para recordar</label><input class="input" id="nuevo-alias-input" placeholder="ej: maxdiaz, max.catamarca, felipe.shop" style="font-size:13px"><small style="color:var(--muted);font-size:10px;display:block;margin-top:4px">4-20 letras, sin espacios. Se guardará como .maxshop si no lo ponés. Ej: maxdiaz → maxdiaz.maxshop</small><div id="alias-disponibilidad" style="font-size:11px;margin-top:6px"></div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-dark" style="padding:8px;font-size:12px" onclick="guardarNuevoAlias()">Guardar alias simple</button><button class="btn btn-white" style="padding:8px;font-size:12px" onclick="document.getElementById('editar-alias-box').classList.add('hidden')">Cancelar</button></div></div>CVU MaxShop: <code id="perfil-cvu" style="font-size:11px;background:#f6f5ff;padding:2px 6px;border-radius:6px">-</code> <small style="font-size:10px;color:var(--muted)">(no se puede cambiar)</small><br>Saldo: <span id="perfil-saldo">0 C$B</span><br>DNI: <span id="perfil-dni">-</span></p><button class="btn btn-white" onclick="cerrarSesion()">Cerrar sesión</button></div><div id="perfil-invitado"><p style="font-size:13px;color:var(--muted)">Debes iniciar sesión para ver tu perfil sincronizado PC/celular</p><button class="btn btn-dark" onclick="closeModal('modal-perfil');irInicio();openModal('modal-ingresar')">Ir a INICIO - Iniciar sesión</button></div><button class="btn btn-white" style="margin-top:14px" onclick="closeModal('modal-perfil')">Cerrar</button></div></div>
 
 <div class="modal" id="modal-gestion"><div class="modal-box large"><h3>Gestión - Firebase</h3><div id="gestion-logueado"><div style="display:flex;flex-direction:column;gap:10px;margin-top:16px"><button class="btn btn-white" style="padding:16px;font-weight:900" onclick="abrirGestionRol('usuarios')">USUARIOS (Firestore)</button><button class="btn btn-white" style="padding:16px;font-weight:900" onclick="abrirGestionRol('comercios')">COMERCIOS (43 rubros + Storage)</button><button class="btn btn-white" style="padding:16px;font-weight:900" onclick="abrirGestionRol('instituciones')">INSTITUCIONES</button><button class="btn btn-dark" style="padding:16px;font-weight:900" onclick="abrirGestionRol('adm')">ADM - Firebase Admin</button></div></div><div id="gestion-invitado" class="hidden"><p style="font-size:13px;color:var(--muted);text-align:center;margin-top:16px">Debes iniciar sesión para usar gestión por rol sincronizada</p></div><button class="btn btn-white" style="margin-top:16px" onclick="closeModal('modal-gestion')">Cerrar</button></div></div>
 
@@ -101,7 +101,7 @@
 <div class="modal" id="modal-tarjetas"><div class="modal-box large"><h3>Tarjetas - Firebase</h3><div id="lista-tarjetas-guardadas"></div><div style="border:1px solid var(--border);border-radius:16px;padding:14px;margin-top:12px;background:#fafaff"><input class="input" id="tarj-num" placeholder="4111 1111 1111 1111"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px"><input class="input" id="tarj-nombre" placeholder="Nombre titular"><input class="input" id="tarj-dni" placeholder="DNI"></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px"><input class="input" id="tarj-venc" placeholder="MM/AA"><input class="input" id="tarj-cvv" placeholder="CVV"><input class="input" id="tarj-tipo-input" placeholder="Visa" readonly></div><button class="btn btn-dark" style="margin-top:10px" onclick="agregarTarjeta()">Adherir tarjeta Firebase</button><p id="tarj-msg" style="font-size:12px;margin-top:8px"></p></div><button class="btn btn-white" style="margin-top:10px" onclick="closeModal('modal-tarjetas')">Cerrar</button></div></div>
 
 <div class="modal" id="modal-historial"><div class="modal-box"><h3>Historial - Firebase</h3><div id="historial-lista-real"></div><button class="btn btn-white" style="margin-top:10px" onclick="closeModal('modal-historial')">Cerrar</button></div></div>
-<div class="modal" id="modal-transferir"><div class="modal-box"><h3>Transferir C$B - Firebase</h3><div style="background:#f6f5ff;border-radius:12px;padding:10px;margin-top:10px"><small>Saldo transferible Firestore</small><h2 id="saldo-transferible">0 C$B</h2></div><input class="input" id="trans-destino" placeholder="Email destinatario"><input class="input" id="trans-monto-input" type="number" value="500"><button class="btn btn-primary" style="margin-top:12px" onclick="transferirCSB()">Transferir en Firebase</button><div id="trans-resultado" class="hidden"></div><button class="btn btn-white" style="margin-top:8px" onclick="closeModal('modal-transferir')">Cerrar</button></div></div>
+<div class="modal" id="modal-transferir"><div class="modal-box"><h3>Transferir C$B - Alias / CVU interno</h3><div style="background:#f6f5ff;border-radius:12px;padding:10px;margin-top:10px"><small>Saldo transferible Firestore</small><h2 id="saldo-transferible">0 C$B</h2></div><div style="background:#fff;border:1px dashed var(--border);border-radius:12px;padding:10px;margin-top:10px;font-size:11px"><b>Tu Alias:</b> <span id="mi-alias">-</span> <button class="btn btn-white" style="width:auto;display:inline-block;padding:4px 8px;font-size:10px;margin-left:6px" onclick="copiarAlias()">Copiar</button><br><b>Tu CVU MaxShop:</b> <span id="mi-cvu" style="font-family:monospace">-</span></div><input class="input" id="trans-destino" placeholder="Alias, CVU interno MaxShop o Email" oninput="buscarAliasCVU()"><div id="trans-destino-preview" style="margin-top:8px;font-size:12px;color:var(--muted)"></div><input class="input" id="trans-monto-input" type="number" value="500" style="margin-top:8px"><button class="btn btn-primary" style="margin-top:12px" onclick="transferirCSB()">Transferir con Alias/CVU</button><div id="trans-resultado" class="hidden"></div><button class="btn btn-white" style="margin-top:8px" onclick="closeModal('modal-transferir')">Cerrar</button></div></div>
 <div class="modal" id="modal-movimientos"><div class="modal-box"><h3>Movimientos - Firebase</h3><div id="movimientos-lista-real"></div><button class="btn btn-white" onclick="closeModal('modal-movimientos')">Cerrar</button></div></div>
 <div class="modal" id="modal-ingresar"><div class="modal-box"><h3>Ingresar - Firebase Auth</h3><input class="input" id="login-email" placeholder="Email"><input class="input" id="login-pass" type="password" placeholder="Contraseña" style="margin-top:8px"><button class="btn btn-dark" style="margin-top:12px" onclick="hacerLogin()">Ingresar con Firebase</button><p id="login-msg" style="font-size:12px"></p><button class="btn btn-white" style="margin-top:8px" onclick="closeModal('modal-ingresar')">Cerrar</button></div></div>
 <div class="modal" id="modal-registrarse"><div class="modal-box"><h3>Crear cuenta - Firebase</h3><input class="input" id="reg-nombre" placeholder="Nombre completo"><input class="input" id="reg-dni" placeholder="DNI" style="margin-top:6px"><input class="input" id="reg-tel" placeholder="Teléfono" style="margin-top:6px"><input class="input" id="reg-email" placeholder="Email" style="margin-top:6px"><input class="input" id="reg-pass" type="password" placeholder="Contraseña" style="margin-top:6px"><label style="display:flex;gap:8px;margin-top:12px;font-size:12px;font-weight:700"><input type="checkbox" id="chk-tyc-user" required> Acepto T&C ✅</label><button class="btn btn-primary" style="margin-top:12px" onclick="if(!document.getElementById('chk-tyc-user').checked){alert('Aceptá T&C');return;} hacerRegistro('usuario')">Registrarme 10k C$B Firebase</button><button class="btn btn-white" style="margin-top:8px" onclick="closeModal('modal-registrarse')">Cerrar</button></div></div>
@@ -132,10 +132,31 @@ function openModal(id){document.getElementById(id)?.classList.add('open');} func
 function irInicio(){window.scrollTo({top:0,behavior:'smooth'});}
 function getSesionActual(){return currentUser || safeParse('maxshop_sesion',null);}
 function guardarSesion(d){localStorage.setItem('maxshop_sesion',JSON.stringify(d)); sesion=d; actualizarUI();}
+function generarAlias(nombre,email){
+  const base = (nombre||email.split('@')[0]||'usuario').toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g,'').slice(0,12);
+  const rnd = Math.floor(100 + Math.random()*900);
+  return base+'.'+rnd+'.maxshop';
+}
+function generarCVU(){
+  // CVU interno MaxShop 22 digitos: 000000 + timestamp + random - no es bancario real, es interno
+  const pref='00000031'; // MaxShop ID interno
+  const ts = Date.now().toString().slice(-10);
+  const rnd = Math.floor(100000 + Math.random()*900000).toString();
+  let cvu = (pref+ts+rnd).slice(0,22); return cvu;
+}
 function actualizarUI(){
   const s=getSesionActual(); const inv=document.getElementById('auth-invitado'); const log=document.getElementById('auth-logueado');
   if(!s){document.getElementById('saldoCB').innerText='0 C$B'; document.getElementById('saldo-sub').innerText='Registrate en INICIO y ganá 10.000 C$B de bienvenida (7 días) - Firebase'; document.getElementById('estado-cuenta').innerHTML='<span style="width:6px;height:6px;border-radius:50%;background:#fff;display:inline-block;box-shadow:0 0 0 3px rgba(255,255,255,.25)"></span>Invitado'; if(inv) inv.classList.remove('hidden'); if(log) log.classList.add('hidden'); return;}
-  const total=(s.saldoBienvenida||0)+(s.saldoGanado||0); document.getElementById('saldoCB').innerText=total.toLocaleString()+' C$B'; document.getElementById('saldo-sub').innerText='Tenés '+total.toLocaleString()+' C$B - Firebase'; document.getElementById('estado-cuenta').innerText='● Verificado Firebase'; if(inv) inv.classList.add('hidden'); if(log){log.classList.remove('hidden'); document.getElementById('auth-nombre').innerText='Hola, '+(s.nombre||'Usuario')+' • Firebase';}
+  const total=(s.saldoBienvenida||0)+(s.saldoGanado||0); document.getElementById('saldoCB').innerText=total.toLocaleString()+' C$B';
+  // Mostrar alias/cvu en wallet si existe
+  try{
+    const aliasEl=document.getElementById('mi-alias'); const cvuEl=document.getElementById('mi-cvu');
+    if(aliasEl) aliasEl.innerText=s.alias||'-';
+    if(cvuEl) cvuEl.innerText=s.cvu||'-';
+    // Perfil también
+    const perfilAlias=document.getElementById('perfil-alias'); if(perfilAlias) perfilAlias.innerText=s.alias||'-';
+    const perfilCvu=document.getElementById('perfil-cvu'); if(perfilCvu) perfilCvu.innerText=s.cvu||'-';
+  }catch(e){} document.getElementById('saldo-sub').innerText='Tenés '+total.toLocaleString()+' C$B - Firebase'; document.getElementById('estado-cuenta').innerText='● Verificado Firebase'; if(inv) inv.classList.add('hidden'); if(log){log.classList.remove('hidden'); document.getElementById('auth-nombre').innerText='Hola, '+(s.nombre||'Usuario')+' • Firebase';}
 }
 function abrirPerfil(){const ses=getSesionActual(); openModal('modal-perfil'); const log=document.getElementById('perfil-logueado'); const inv=document.getElementById('perfil-invitado'); if(ses){ if(log) log.classList.remove('hidden'); if(inv) inv.classList.add('hidden'); document.getElementById('perfil-nombre').innerText=ses.nombre||'Usuario'; document.getElementById('perfil-email').innerText=ses.email||'-'; document.getElementById('perfil-saldo').innerText=((ses.saldoBienvenida||0)+(ses.saldoGanado||0)).toLocaleString()+' C$B'; document.getElementById('perfil-dni').innerText=ses.dni||'-';} else { if(log) log.classList.add('hidden'); if(inv) inv.classList.remove('hidden');}}
 function abrirGestion(){const ses=getSesionActual(); openModal('modal-gestion'); const log=document.getElementById('gestion-logueado'); const inv=document.getElementById('gestion-invitado'); if(ses){ if(log) log.classList.remove('hidden'); if(inv) inv.classList.add('hidden');} else { if(log) log.classList.add('hidden'); if(inv) inv.classList.remove('hidden');}}
@@ -195,15 +216,106 @@ async function cargarTarjetas(){
   }catch(e){document.getElementById('lista-tarjetas-guardadas').innerHTML='<small>Sin tarjetas</small>';}
 }
 function cargarMovimientos(){cargarHistorial();}
-function abrirTransferir(){const ses=getSesionActual(); if(!ses){openModal('modal-registrarse'); return;} openModal('modal-transferir'); document.getElementById('saldo-transferible').innerText=(ses.saldoGanado||0)+' C$B Firebase';}
-async function transferirCSB(){
-  const ses=getSesionActual(); const m=parseInt(document.getElementById('trans-monto-input').value||'0'); const dest=document.getElementById('trans-destino').value.trim().toLowerCase();
-  if((ses.saldoGanado||0)<m){alert('Saldo insuficiente Firebase'); return;}
+function abrirTransferir(){const ses=getSesionActual(); if(!ses){openModal('modal-registrarse'); return;} openModal('modal-transferir'); document.getElementById('saldo-transferible').innerText=(ses.saldoGanado||0)+' C$B Firebase'; try{document.getElementById('mi-alias').innerText=ses.alias||'-'; document.getElementById('mi-cvu').innerText=ses.cvu||'-';}catch(e){}}
+function copiarAlias(){const ses=getSesionActual(); if(!ses) return; const txt=(ses.alias||'')+' | CVU: '+(ses.cvu||''); navigator.clipboard.writeText(txt).then(()=>alert('Alias/CVU copiado: '+txt));}
+
+function abrirEditarAlias(){
+  const box=document.getElementById('editar-alias-box');
+  if(box){ box.classList.remove('hidden'); document.getElementById('nuevo-alias-input').focus(); }
+}
+function normalizarAlias(input){
+  let a=(input||'').trim().toLowerCase();
+  a=a.normalize('NFD').replace(/[^a-z0-9._-]/g,'');
+  a=a.replace(/\.+/g,'.').replace(/_+/g,'_').replace(/-+/g,'-');
+  if(a.length<3) return a;
+  if(!a.includes('.maxshop')){
+    // Si no termina en .maxshop, agregarlo si no tiene punto final raro
+    if(a.endsWith('.')) a=a.slice(0,-1);
+    // Si ya tiene 2 partes, mantener, si no, agregar .maxshop
+    if(!a.endsWith('.maxshop')) a=a+'.maxshop';
+  }
+  return a;
+}
+async function verificarAliasDisponible(aliasNorm){
+  const disp=document.getElementById('alias-disponibilidad');
+  if(!aliasNorm || aliasNorm.length<4){ if(disp) disp.innerHTML=''; return false; }
+  if(!/^[a-z0-9._-]{4,30}\.maxshop$/.test(aliasNorm)){ if(disp) disp.innerHTML='<span style="color:#b42318">Formato inválido. Usa 4-20 letras/números, ej: maxdiaz.maxshop</span>'; return false; }
   try{
-    await db.collection('transferencias').add({origen:ses.email, destino:dest, monto:m, fecha:new Date().toISOString(), timestamp:firebase.firestore.FieldValue.serverTimestamp()});
+    const ses=getSesionActual();
+    if(ses && ses.alias===aliasNorm){ if(disp) disp.innerHTML='<span style="color:#0a7a28">✅ Es tu alias actual</span>'; return true; }
+    const snap=await db.collection('usuarios').where('alias','==',aliasNorm).limit(1).get();
+    if(snap.empty){ if(disp) disp.innerHTML='<span style="color:#0a7a28">✅ Disponible: '+aliasNorm+'</span>'; return true; }
+    else { if(disp) disp.innerHTML='<span style="color:#b42318">❌ Ya existe: '+aliasNorm+' - probá otro</span>'; return false; }
+  }catch(e){ if(disp) disp.innerHTML='<small>Error verificando: '+e.message+'</small>'; return false; }
+}
+async function guardarNuevoAlias(){
+  const ses=getSesionActual(); if(!ses){ alert('Iniciá sesión'); return; }
+  let input=document.getElementById('nuevo-alias-input').value.trim();
+  if(!input){ alert('Escribí un alias simple'); return; }
+  let aliasNorm=normalizarAlias(input);
+  // Validar simple 4-20 sin .maxshop para mostrar
+  const disp=document.getElementById('alias-disponibilidad');
+  const ok=await verificarAliasDisponible(aliasNorm);
+  if(!ok){ alert('Alias no disponible, elegí otro más simple'); return; }
+  try{
+    await db.collection('usuarios').doc(ses.email).update({alias:aliasNorm, alias_simple:input.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20), alias_actualizado: new Date().toISOString()});
+    ses.alias=aliasNorm;
+    localStorage.setItem('maxshop_sesion', JSON.stringify(ses));
+    try{ currentUser=ses; }catch(e){}
+    actualizarUI();
+    if(disp) disp.innerHTML='<span style="color:#0a7a28">✅ Guardado: '+aliasNorm+'</span>';
+    document.getElementById('perfil-alias').innerText=aliasNorm;
+    setTimeout(()=>document.getElementById('editar-alias-box').classList.add('hidden'), 800);
+    alert('✅ Alias cambiado a: '+aliasNorm+' - Ahora podés recordarlo fácil y te transfieren con solo ese alias');
+  }catch(e){ alert('Error guardando alias: '+e.message); }
+}
+// Live check while typing
+
+async function buscarAliasCVU(){
+  const q=(document.getElementById('trans-destino')?.value||'').trim().toLowerCase();
+  const preview=document.getElementById('trans-destino-preview');
+  if(!q || q.length<3){ if(preview) preview.innerHTML=''; return; }
+  try{
+    let found=null;
+    // Buscar por email exacto
+    let snap=await db.collection('usuarios').where('email','==',q).limit(1).get();
+    if(!snap.empty) found=snap.docs[0].data();
+    // Buscar por alias
+    if(!found){ snap=await db.collection('usuarios').where('alias','==',q).limit(1).get(); if(!snap.empty) found=snap.docs[0].data(); }
+    // Buscar por cvu
+    if(!found){ snap=await db.collection('usuarios').where('cvu','==',q).limit(1).get(); if(!snap.empty) found=snap.docs[0].data(); }
+    // Buscar alias contiene
+    if(!found && q.includes('.maxshop')){
+      snap=await db.collection('usuarios').where('alias','>=',q).where('alias','<=',q+'\uf8ff').limit(1).get();
+      if(!snap.empty) found=snap.docs[0].data();
+    }
+    if(found){
+      if(preview) preview.innerHTML='<div style="background:#eafff2;border:1px solid #b6f5c8;border-radius:10px;padding:8px"><b>✅ '+ (found.nombre||'Usuario') +'</b><br><small>'+found.email+'<br>Alias: '+found.alias+'<br>CVU: '+found.cvu+'</small></div>';
+    } else {
+      if(preview) preview.innerHTML='<small style="color:#b42318">No encontrado por alias/cvu/email - verificá</small>';
+    }
+  }catch(e){ if(preview) preview.innerHTML='<small>Error buscando: '+e.message+'</small>'; }
+}
+
+async function transferirCSB(){
+  const ses=getSesionActual(); const m=parseInt(document.getElementById('trans-monto-input').value||'0'); let destInput=document.getElementById('trans-destino').value.trim().toLowerCase();
+  if((ses.saldoGanado||0)<m || m<1){alert('Saldo insuficiente Firebase o monto inválido'); return;}
+  try{
+    // Resolver destino por alias/cvu/email
+    let destUser=null; let destEmail=destInput;
+    let snap=await db.collection('usuarios').where('email','==',destInput).limit(1).get();
+    if(!snap.empty){ destUser=snap.docs[0].data(); destEmail=destUser.email; }
+    else { snap=await db.collection('usuarios').where('alias','==',destInput).limit(1).get(); if(!snap.empty){ destUser=snap.docs[0].data(); destEmail=destUser.email; } }
+    if(!destUser){ snap=await db.collection('usuarios').where('cvu','==',destInput).limit(1).get(); if(!snap.empty){ destUser=snap.docs[0].data(); destEmail=destUser.email; } }
+    if(!destUser){ alert('No encontré usuario por alias/cvu/email: '+destInput); return; }
+    if(destEmail===ses.email){ alert('No podés transferirte a vos mismo'); return; }
+    await db.collection('transferencias').add({origen:ses.email, origen_alias:ses.alias||'', origen_cvu:ses.cvu||'', destino:destEmail, destino_alias:destUser.alias||'', destino_cvu:destUser.cvu||'', monto:m, fecha:new Date().toISOString(), timestamp:firebase.firestore.FieldValue.serverTimestamp()});
+    // Descontar origen
     const userRef = db.collection('usuarios').doc(ses.email); const doc=await userRef.get(); const data=doc.data(); await userRef.update({saldoGanado:(data.saldoGanado||0)-m, saldo:(data.saldoBienvenida||0)+(data.saldoGanado||0)-m});
+    // Acreditar destino
+    const destRef = db.collection('usuarios').doc(destEmail); const destDoc=await destRef.get(); if(destDoc.exists){ const dData=destDoc.data(); await destRef.update({saldoGanado:(dData.saldoGanado||0)+m, saldo:(dData.saldoBienvenida||0)+(dData.saldoGanado||0)+m}); }
     ses.saldoGanado-=m; guardarSesion(ses);
-    document.getElementById('trans-resultado').classList.remove('hidden'); document.getElementById('trans-resultado').innerHTML='<div style="background:#eafff2;padding:12px;border-radius:12px">✅ Transferiste '+m+' C$B a '+dest+' • Firebase</div>';
+    document.getElementById('trans-resultado').classList.remove('hidden'); document.getElementById('trans-resultado').innerHTML='<div style="background:#eafff2;padding:12px;border-radius:12px">✅ Transferiste '+m+' C$B a '+(destUser.nombre||destEmail)+' ('+destUser.alias+')<br><small>CVU: '+destUser.cvu+' • Firebase</small></div>';
   }catch(e){alert('Error Firebase: '+e.message);}
 }
 async function agregarTarjeta(){
@@ -238,7 +350,9 @@ async function hacerRegistro(tipo){
       if(logoFile){const ref=storage.ref('logos/'+email+'_300x300_'+Date.now()); await ref.put(logoFile); logoUrl=await ref.getDownloadURL();}
       if(bannerFile){const ref=storage.ref('banners/'+email+'_800x400_'+Date.now()); await ref.put(bannerFile); bannerUrl=await ref.getDownloadURL();}
     }
-    const nuevo={nombre,email,saldo:10000,saldoBienvenida:10000,saldoGanado:0,rol:tipo,dni,telefono:document.getElementById(tipo==='usuario'?'reg-tel':(tipo==='comercio'?'com-tel':'inst-tel'))?.value||'', rubro:document.getElementById('com-rubro')?.value||'', promo:document.getElementById('com-promo')?.value||'10', logo_url:logoUrl, banner_url:bannerUrl, fecha: new Date().toISOString(), timestamp: firebase.firestore.FieldValue.serverTimestamp()};
+    const aliasGen=generarAlias(nombre,email);
+    const cvuGen=generarCVU().slice(0,22);
+    const nuevo={nombre,email,saldo:10000,saldoBienvenida:10000,saldoGanado:0,rol:tipo,dni,telefono:document.getElementById(tipo==='usuario'?'reg-tel':(tipo==='comercio'?'com-tel':'inst-tel'))?.value||'', rubro:document.getElementById('com-rubro')?.value||'', promo:document.getElementById('com-promo')?.value||'10', logo_url:logoUrl, banner_url:bannerUrl, alias:aliasGen, cvu:cvuGen, fecha: new Date().toISOString(), timestamp: firebase.firestore.FieldValue.serverTimestamp()};
     await auth.createUserWithEmailAndPassword(email, pass).catch(()=>{});
     await db.collection('usuarios').doc(email).set(nuevo);
     if(tipo==='comercio'){await db.collection('comercios').add(nuevo);}
@@ -296,6 +410,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   setTimeout(()=>crearMapaReal(-28.4696,-65.7857),900);
   cargarComerciosFirebase();
   // Auth state
+  document.getElementById('nuevo-alias-input')?.addEventListener('input', async (e)=>{ const norm=normalizarAlias(e.target.value); await verificarAliasDisponible(norm); });
   auth.onAuthStateChanged(async (user)=>{
     if(user){try{const doc=await db.collection('usuarios').doc(user.email).get(); if(doc.exists){currentUser=doc.data(); localStorage.setItem('maxshop_sesion',JSON.stringify(currentUser)); actualizarUI();}}catch(e){}}
   });
