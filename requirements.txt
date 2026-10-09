@@ -8,3 +8,5 @@ Pillow
 python-multipart
 mercadopago
 firebase-admin
+python-dotenv
+jinja2
