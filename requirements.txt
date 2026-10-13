@@ -4,7 +4,7 @@ supabase
 python-jose
 PyJWT
 qrcode[pil]
-Pillow
+pillow
 python-multipart
 mercadopago
 firebase-admin
