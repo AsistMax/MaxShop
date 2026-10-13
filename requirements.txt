@@ -10,5 +10,5 @@ mercadopago
 firebase-admin
 python-dotenv
 jinja2
-Flask
+flask
 flask-cors
