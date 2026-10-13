@@ -2,7 +2,7 @@ fastapi
 uvicorn
 supabase
 python-jose
-PyJWT
+pyjwt
 qrcode[pil]
 pillow
 python-multipart
@@ -10,5 +10,4 @@ mercadopago
 firebase-admin
 python-dotenv
 jinja2
-flask
-flask-cors
+python-dotenv
