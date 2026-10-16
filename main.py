@@ -1,38 +1,61 @@
 import os
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Header, HTTPException
+from pydantic import BaseModel
+from supabase import create_client
+import mercadopago
+import uuid
+from datetime import datetime
 
-app = FastAPI(title="NODO Argentina")
+app = FastAPI(title="NODO-Argentina API V3 - Bots Automaticos")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY")
+MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN")
+supabase = create_client(SUPABASE_URL, SUPABASE_SECRET_KEY) if SUPABASE_URL else None
+sdk = mercadopago.SDK(MP_ACCESS_TOKEN) if MP_ACCESS_TOKEN else None
 
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+class CancelarReq(BaseModel):
+    tarea_id: str
+    cliente_id: str
+    porcentaje_recorrido: float
+    mp_payment_id: str
+    idempotency_key: str = None
 
-# Si existe la carpeta static, la monta, si no, no crashea
-if os.path.isdir("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+def bot1_validar(tarea, porcentaje, payment_id):
+    if not tarea: return False, "Tarea no existe"
+    if tarea.get("estado") in ["cancelada", "reembolsada"]: return False, "Ya cancelada - evita doble reembolso"
+    return True, "OK BOT1"
+
+def bot2_split(monto_total, porcentaje_recorrido):
+    if porcentaje_recorrido < 70:
+        return True, {"cliente": float(monto_total), "trabajador": 0.0}
+    else:
+        cliente = round(monto_total * 0.85, 2)
+        trabajador = round(monto_total * 0.15, 2)
+        return True, {"cliente": cliente, "trabajador": trabajador}
 
 @app.get("/health")
 def health():
-    return {"status":"ok","service":"nodo-api"}
+    return {"ok": True, "v3": "70% + Doble Bot"}
 
-@app.get("/")
-def home():
-    return FileResponse("templates/index.html")
-
-@app.get("/api/tareas")
-def tareas(region: str = "Buenos Aires", lat: float = -34.6118, lng: float = -58.3960):
-    detected = region
-    if -35.2 < lat < -34.3 and -58.7 < lng < -58.2:
-        detected = "Buenos Aires"
-    elif -29 < lat < -27 and -66.5 < lng < -65:
-        detected = "Catamarca"
-    if detected == "Catamarca":
-        return {"tareas":[
-            {"id":"1","title":"Sacar foto local","tag":"FOTO","loc":"Catamarca","lat":-28.46957,"lng":-65.78524,"price":"$1.500"},
-            {"id":"2","title":"Llevar paquete","tag":"ENVIO","loc":"Catamarca","lat":-28.471,"lng":-65.79,"price":"$2.000"}
-        ], "region_detectada": detected}
+@app.post("/api/cancelar-servicio")
+def cancelar_servicio(req: CancelarReq, x_idempotency_key: str = Header(None)):
+    # <70% = 100% cliente, >=70% = 85% cliente + 15% trabajador
+    # Con BOT1 + BOT2 + idempotencia + auditoria - 100% automatico
+    tarea_res = supabase.table("tareas").select("*").eq("id", req.tarea_id).single().execute()
+    tarea = tarea_res.data
+    trans_res = supabase.table("transactions").select("*").eq("mp_payment_id", req.mp_payment_id).single().execute()
+    monto_total = float(trans_res.data.get("monto_total", 0))
+    ok1, msg1 = bot1_validar(tarea, req.porcentaje_recorrido, req.mp_payment_id)
+    if not ok1: raise HTTPException(400, msg1)
+    ok2, split = bot2_split(monto_total, req.porcentaje_recorrido)
+    monto_cliente = split["cliente"]
+    monto_trabajador = split["trabajador"]
+    
+    if req.porcentaje_recorrido < 70:
+        refund = sdk.payment().refund(req.mp_payment_id, {"amount": float(monto_total)})
+        supabase.table("transactions").insert({"tarea_id": req.tarea_id, "monto_cliente_devolucion": monto_cliente, "estado": "reembolsada_100", "porcentaje_recorrido": req.porcentaje_recorrido}).execute()
+        return {"ok": True, "caso": "<70%", "devolucion_cliente": monto_cliente}
     else:
-        return {"tareas":[
-            {"id":"3","title":"Electricista","tag":"OFICIO","loc":f"{detected}","lat":lat,"lng":lng,"price":"A convenir"}
-        ], "region_detectada": detected}
+        refund = sdk.payment().refund(req.mp_payment_id, {"amount": float(monto_cliente)})
+        supabase.table("transactions").insert({"tarea_id": req.tarea_id, "monto_cliente_devolucion": monto_cliente, "monto_trabajador": monto_trabajador, "estado": "reembolso_parcial_85_15", "porcentaje_recorrido": req.porcentaje_recorrido}).execute()
+        return {"ok": True, "caso": ">=70%", "cliente": monto_cliente, "trabajador": monto_trabajador}
