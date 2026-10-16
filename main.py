@@ -41,6 +41,10 @@ class PagarQRReq(BaseModel):
     monto: float = 0
     usuario_id: str = "anon"
 
+@app.get("/health")
+def health_check():
+    return {"status": "OK"}
+    
 @app.get("/", response_class=HTMLResponse)
 def home():
     return """
