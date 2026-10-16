@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NODO Mapa Calles Real - Catamarca</title>
+<title>NODO Mapa Real - Catamarca</title>
 <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet"/>
 <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
-<style>body{margin:0}#map{width:100vw;height:100vh}</style>
+<style>html,body{margin:0;padding:0;height:100%}#map{width:100vw;height:100vh}</style>
 </head>
 <body>
 <div id="map"></div>
@@ -14,23 +14,21 @@
 const map = new maplibregl.Map({
  container:'map',
  style:'https://demotiles.maplibre.org/style.json',
- center:[-65.82413,-28.46957],
+ center:[-65.824,-28.469],
  zoom:14
 });
 map.addControl(new maplibregl.NavigationControl());
-async function cargarRuta(){
- const id = new URLSearchParams(window.location.search).get('envio') || 'TEST123';
+async function cargar(){
+ const id = new URLSearchParams(location.search).get('envio') || 'TEST123';
  try{
   const r = await fetch(`/tracking/ruta/${id}`);
   const d = await r.json();
-  const pts = d.puntos || [];
-  pts.forEach(p=>{
-   if(p.lat && p.lng) new maplibregl.Marker({color:'#00FF00'}).setLngLat([p.lng,p.lat]).addTo(map);
+  (d.puntos||[]).forEach(p=>{
+   if(p.lat && p.lng) new maplibregl.Marker({color:'#00FF88'}).setLngLat([p.lng,p.lat]).addTo(map);
   });
-  if(pts.length>0) map.flyTo({center:[pts[pts.length-1].lng, pts[pts.length-1].lat], zoom:16});
- }catch(e){console.log('sin puntos aun')}
+ }catch(e){}
 }
-map.on('load', cargarRuta);
+map.on('load',cargar);
 </script>
 </body>
 </html>
