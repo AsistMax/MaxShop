@@ -16,6 +16,10 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABAS
 
 app = FastAPI(title="NODO Argentina API - V3.5 Final")
 
+@app.get("/health")
+def health():
+    return {"status": "OK"}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,9 +28,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- APP ANCLADA REAL (tu index.html) ---
-# Pegá aquí el contenido EXACTO que me pasaste como archivo app.html
-# Por tamaño, lo cargamos desde archivo en el repo
 APP_HTML_PATH = "app.html"
 
 @app.get("/", response_class=HTMLResponse)
