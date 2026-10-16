@@ -188,6 +188,45 @@ def pagar_servicio_uber(req: PagarServicioReq):
 @app.post("/api/pagar-qr")
 def pagar_qr(req: PagarQRReq):
     return {"ok": True, "descuento": "20%", "csb_usado": req.csb_a_usar}
+    
+import io, base64, qrcode
+from fastapi.responses import HTMLResponse
+
+@app.post("/api/generar-qr-unico-comercio")
+def generar_qr_unico(comercio_id: str):
+    qr_codigo = f"NODO-{comercio_id[:8].upper()}-{str(uuid.uuid4())[:8]}"
+    qr_data = f"https://maxshop-api.onrender.com/qr/{comercio_id}?code={qr_codigo}"
+    qr = qrcode.QRCode(box_size=10, border=4)
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    img_base64 = f"data:image/png;base64,{img_str}"
+    try:
+        supabase.table("comercios").update({
+            "qr_codigo_unico": qr_codigo,
+            "qr_data": qr_data,
+            "qr_imagen_base64": img_base64
+        }).eq("id", comercio_id).execute()
+    except: pass
+    return {"ok": True, "qr_codigo": qr_codigo, "qr_data": qr_data, "qr_imagen_base64": img_base64}
+
+@app.get("/qr/{comercio_id}", response_class=HTMLResponse)
+def qr_page(comercio_id: str, code: str = None):
+    return HTMLResponse(f"<h1>NODO+ Comercio {comercio_id}</h1><p>QR {code}</p><a href='/scanner'>Escanear otro</a>")
+
+@app.get("/scanner", response_class=HTMLResponse)
+def scanner():
+    return HTMLResponse("""
+    <script src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'></script>
+    <div id='reader'></div>
+    <script>
+    function onScanSuccess(t){ window.location.href=t; }
+    new Html5QrcodeScanner('reader',{fps:10,qrbox:250}).render(onScanSuccess);
+    </script>
+    """)
 
 @app.post("/api/comprar-csb")
 def comprar_csb(req: ComprarCSBReq):
