@@ -10,3 +10,4 @@ mercadopago
 firebase-admin
 python-dotenv
 jinja2
+uvicorn[standard]
