@@ -3,176 +3,106 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NODO Argentina - FINAL CONCRETO ANCLADO V3.6</title>
+<title>NODO Argentina - FINAL LIMPIO V3.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700&family=Fragment+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<style>
-:root{--bg:#0A0A0A;--card:#141414;--card2:#1E1E1E;--border:#262626;--text:#FFFFFF;--muted:#A0A0A0;--orange:#FF6B0A}
-*{font-family:'Instrument Sans',system-ui,sans-serif} .mono{font-family:'Fragment Mono',monospace}
-body{background:var(--bg);color:var(--text)} 
-::-webkit-scrollbar{width:0}
-</style>
+<style>:root{--bg:#0A0A0A;--card:#141414;--card2:#1E1E1E;--border:#262626;--text:#FFF;--muted:#A0A0A0;--orange:#FF6B0A}*{font-family:'Instrument Sans'} .mono{font-family:'Fragment Mono'} body{background:var(--bg);color:var(--text)}</style>
 </head>
 <body class="min-h-screen">
-<header class="sticky top-0 z-50 backdrop-blur-xl bg-[var(--bg)]/90 border-b border-[var(--border)]">
+<header class="sticky top-0 z-50 backdrop-blur-xl bg-[#0A0A0A]/90 border-b border-[#262626]">
 <div class="max-w- mx-auto px-4 py-3 flex items-center justify-between">
-<div class="flex items-center gap-3"><div class="w-9 h-9 rounded- bg-[var(--orange)] flex items-center justify-center font-bold text-black">N</div><div class="leading-none"><div class="font-bold text- tracking-tight">NODO</div><div class="mono text- tracking-[0.14em] text-[var(--muted)] -mt-0.5">ARGENTINA</div></div><div class="hidden md:flex items-center gap-2 ml-4 pl-4 border-l border-[var(--border)]"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span class="mono text- text-[var(--muted)]">SSL • Ley 25.326 • En vivo</span></div></div>
-<div class="flex items-center gap-2">
-<button onclick="document.getElementById('registro').scrollIntoView({behavior:'smooth'})" class="hidden md:inline-flex text- text-[var(--muted)] hover:text-white">Soporte bot automático</button>
+<div class="flex items-center gap-3"><div class="w-9 h-9 rounded- bg-[#FF6B0A] flex items-center justify-center font-bold text-black">N</div><div class="leading-none"><div class="font-bold text-">NODO</div><div class="mono text- tracking-[0.14em] text-[#A0A0A0] -mt-0.5">ARGENTINA</div></div><div class="hidden md:flex items-center gap-2 ml-4 pl-4 border-l border-[#262626]"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span class="mono text- text-[#A0A0A0]">SSL • Ley 25.326 • En vivo</span></div></div>
 <button onclick="document.getElementById('registro').scrollIntoView({behavior:'smooth'})" class="rounded-full bg-white text-black px-5 py-2 text- font-semibold">Ingresar</button>
 </div>
-</div>
-<div class="max-w- mx-auto px-4 pb-3">
-<div class="flex items-center gap-2 overflow-x-auto">
-<button onclick="switchTab('NODO')" id="tab-NODO" class="tab px-6 py-3 rounded-full text- font-semibold border bg-[var(--orange)] text-white border-[var(--orange)]">NODO</button>
-<button onclick="switchTab('NODO MAX')" id="tab-NODO MAX" class="tab px-6 py-3 rounded-full text- font-semibold border bg-[var(--card2)] text-[var(--muted)] border-[var(--border)]">NODO MAX</button>
-<button onclick="switchTab('NODO +')" id="tab-NODO +" class="tab px-6 py-3 rounded-full text- font-semibold border bg-[var(--card2)] text-[var(--muted)] border-[var(--border)]">NODO +</button>
-<span class="ml-2 text- text-[#6A6A6A] hidden md:flex items-center gap-1">● Conexión cifrada • Solo conecta</span>
-</div>
+<div class="max-w- mx-auto px-4 pb-3 flex gap-2 overflow-x-auto">
+<button onclick="switchTab('NODO')" id="tab-NODO" class="tab px-6 py-3 rounded-full text- font-semibold bg-[#FF6B0A] text-white border border-[#FF6B0A]">NODO</button>
+<button onclick="switchTab('NODO MAX')" id="tab-NODO MAX" class="tab px-6 py-3 rounded-full text- font-semibold bg-[#1E1E1E] text-[#A0A0A0] border border-[#262626]">NODO MAX</button>
+<button onclick="switchTab('NODO +')" id="tab-NODO +" class="tab px-6 py-3 rounded-full text- font-semibold bg-[#1E1E1E] text-[#A0A0A0] border border-[#262626]">NODO +</button>
 </div>
 </header>
 
 <main class="max-w- mx-auto px-4 py-8">
 
-<div id="view-NODO" class="space-y-10">
-<div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8">
+<div id="view-NODO" class="space-y-8">
+<div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 items-start">
 <div>
-<div class="inline-flex items-center gap-2 rounded-full bg-[var(--card)] border border-[var(--border)] px-3 py-1.5 text- text-[var(--muted)]"><span class="w-1.5 h-1.5 rounded-full bg-[var(--orange)]"></span>País conectado • Comercios verificados • Bots NODO</div>
-<h1 class="mt-5 text- md:text- leading-[0.95] font-bold tracking-[-0.04em]">El país conectado <br><span class="text-[var(--muted)]">en una sola</span><br><span class="text-[var(--orange)]">aplicación.</span></h1>
-<p class="mt-4 text- text-[var(--muted)] max-w-">Comercios, oficios y oportunidades reales cerca tuyo. NODO solo conecta. Economía C$B, logística y trabajo verificado.</p>
-<div class="mt-6 flex gap-3"><button onclick="document.getElementById('registro').scrollIntoView({behavior:'smooth'})" class="px-6 py-3 rounded-full bg-[var(--orange)] text-white font-semibold text-">Empezar ahora</button><button onclick="document.getElementById('como-funciona').scrollIntoView({behavior:'smooth'})" class="px-6 py-3 rounded-full bg-[var(--card)] border border-[var(--border)] font-semibold">Cómo funciona</button></div>
+<div class="inline-flex items-center gap-2 rounded-full bg-[#141414] border border-[#262626] px-3 py-1.5 text- text-[#A0A0A0]"><span class="w-1.5 h-1.5 rounded-full bg-[#FF6B0A]"></span>País conectado • Comercios verificados</div>
+<h1 class="mt-5 text- md:text- leading-[0.95] font-bold tracking-[-0.04em]">El país conectado<br><span class="text-[#A0A0A0]">en una sola</span><br><span class="text-[#FF6B0A]">aplicación.</span></h1>
+<p class="mt-4 text- text-[#A0A0A0] max-w-">Comercios, oficios y oportunidades reales cerca tuyo. NODO solo conecta. Economía C$B, logística y trabajo verificado.</p>
+<div class="mt-6 flex gap-3"><button onclick="document.getElementById('registro').scrollIntoView({behavior:'smooth'})" class="px-6 py-3 rounded-full bg-[#FF6B0A] text-white font-semibold">Empezar ahora</button><button onclick="document.getElementById('como-funciona').scrollIntoView({behavior:'smooth'})" class="px-6 py-3 rounded-full bg-[#141414] border border-[#262626] font-semibold">Cómo funciona</button></div>
 </div>
-<div class="rounded- bg-[var(--card)] border border-[var(--border)] p-5">
-<div class="text- font-semibold mb-3">Liquidación inmediata • Entre partes • Verificada</div>
-<div class="h- rounded- bg-[#0A0A0A] border border-[var(--border)] flex items-center justify-center text- text-[var(--muted)]">Mapa comercios verificados • Solo banner comercio</div>
-<div class="mt-4 grid grid-cols-3 gap-2 text-"><div class="rounded- bg-[#0A0A0A] border border-[var(--border)] p-3"><div class="font-semibold">Tareas verificadas</div><div class="text-[var(--muted)]">Identidad revisada por bots</div></div><div class="rounded- bg-[#0A0A0A] border border-[var(--border)] p-3"><div class="font-semibold">Pago seguro</div><div class="text-[var(--muted)]">Aboná seguro • Protegida</div></div><div class="rounded- bg-[#0A0A0A] border border-[var(--border)] p-3"><div class="font-semibold">Soporte bot</div><div class="text-[var(--muted)]">Bots NODO 24/7</div></div></div>
+<div class="rounded- overflow-hidden bg-[#141414] border border-[#262626]">
+<div class="p-3 flex items-center justify-between"><div class="text- font-semibold">Liquidación inmediata • Verificada</div><span class="mono text- px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-400">SISTEMA VERIFICADO</span></div>
+<img src="banner-fintech.jpg" alt="Conexión Fintech Global" class="w-full h- object-cover">
+<div class="p-3 grid grid-cols-3 gap-2 text-"><div class="rounded- bg-[#0A0A0A] border border-[#262626] p-3"><div class="font-semibold">Tareas verificadas</div><div class="text-[#A0A0A0]">Identidad verificada</div></div><div class="rounded- bg-[#0A0A0A] border border-[#262626] p-3"><div class="font-semibold">Pago seguro</div><div class="text-[#A0A0A0]">Transacción protegida</div></div><div class="rounded- bg-[#0A0A0A] border border-[#262626] p-3"><div class="font-semibold">Soporte 24/7</div><div class="text-[#A0A0A0]">Asistencia automática</div></div></div>
 </div>
 </div>
 
 <div id="como-funciona" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-<div class="rounded- bg-[var(--card)] border border-[var(--border)] p-5"><div class="mono text- text-[var(--orange)]">01</div><div class="mt-2 font-semibold">NODO</div><div class="text- text-[var(--muted)] mt-1">Descubrí comercios y oficios verificados cerca.</div></div>
-<div class="rounded- bg-[var(--card)] border border-[var(--border)] p-5"><div class="mono text- text-[var(--orange)]">02</div><div class="mt-2 font-semibold">NODO MAX</div><div class="text- text-[var(--muted)] mt-1">Wallet C$B • Escaneá QR comercio • Aboná seguro.</div></div>
-<div class="rounded- bg-[var(--card)] border border-[var(--border)] p-5"><div class="mono text- text-[var(--orange)]">03</div><div class="mt-2 font-semibold">NODO +</div><div class="text- text-[var(--muted)] mt-1">Publicá tareas • Pago seguro sin demoras.</div></div>
+<div class="rounded- bg-[#141414] border border-[#262626] p-5"><div class="mono text- text-[#FF6B0A]">01</div><div class="mt-2 font-semibold">NODO</div><div class="text- text-[#A0A0A0]">Descubrí comercios y oficios verificados cerca tuyo.</div></div>
+<div class="rounded- bg-[#141414] border border-[#262626] p-5"><div class="mono text- text-[#FF6B0A]">02</div><div class="mt-2 font-semibold">NODO MAX</div><div class="text- text-[#A0A0A0]">Wallet C$B • Escaneá QR comercio • Pago seguro.</div></div>
+<div class="rounded- bg-[#141414] border border-[#262626] p-5"><div class="mono text- text-[#FF6B0A]">03</div><div class="mt-2 font-semibold">NODO +</div><div class="text- text-[#A0A0A0]">Publicá tareas • Pago seguro sin demoras.</div></div>
 </div>
 
-<div id="registro" class="rounded- bg-[var(--card)] border border-[var(--border)] p-6 md:p-8">
+<div id="registro" class="rounded- bg-[#141414] border border-[#262626] p-6 md:p-8">
 <h2 class="text- font-bold">Sumate a NODO. Crear cuenta gratis.</h2>
-<p class="text- text-[var(--muted)] mt-1">Registro completo en un solo flujo. Servicios ilimitados, profesión y foto real 400x400 obligatoria por cámara.</p>
-
+<p class="text- text-[#A0A0A0] mt-1">Servicios ilimitados + foto real 400x400 circular obligatoria por seguridad.</p>
 <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-<input id="r-nombre" placeholder="Nombre" class="h- rounded- bg-[#0A0A0A] border border-[var(--border)] px-4 text- outline-none focus:border-[var(--orange)]">
-<input id="r-apellido" placeholder="Apellido" class="h- rounded- bg-[#0A0A0A] border border-[var(--border)] px-4 text-">
-<input id="r-email" placeholder="Email" type="email" class="h- rounded- bg-[#0A0A0A] border border-[var(--border)] px-4 text-">
-<input id="r-tel" placeholder="+54 9 11 1234 5678" class="h- rounded- bg-[#0A0A0A] border border-[var(--border)] px-4 text-">
-<input id="r-localidad" placeholder="Localidad" class="h- rounded- bg-[#0A0A0A] border border-[var(--border)] px-4 text-">
-<input id="r-dni" placeholder="DNI" class="h- rounded- bg-[#0A0A0A] border border-[var(--border)] px-4 text-">
+<input id="r-nombre" placeholder="Nombre" class="h- rounded- bg-[#0A0A0A] border border-[#262626] px-4 text-">
+<input id="r-apellido" placeholder="Apellido" class="h- rounded- bg-[#0A0A0A] border border-[#262626] px-4 text-">
+<input id="r-email" placeholder="Email" type="email" class="h- rounded- bg-[#0A0A0A] border border-[#262626] px-4 text-">
+<input id="r-tel" placeholder="+54 9 11 1234 5678" class="h- rounded- bg-[#0A0A0A] border border-[#262626] px-4 text-">
+<input id="r-localidad" placeholder="Localidad" class="h- rounded- bg-[#0A0A0A] border border-[#262626] px-4 text-">
+<input id="r-dni" placeholder="DNI" class="h- rounded- bg-[#0A0A0A] border border-[#262626] px-4 text-">
 </div>
-
-<div class="mt-6">
-<label class="mono text- uppercase tracking-widest text-[#6A6A6A]">Servicios ilimitados • Ej: plomero, electricista, flete, niñera</label>
-<div class="mt-2 flex gap-2">
-<input id="serv-input" placeholder="Escribí un servicio y apretá +" class="flex-1 h- rounded-full bg-[#0A0A0A] border border-[var(--border)] px-5 text- outline-none focus:border-[var(--orange)]" onkeydown="if(event.key==='Enter'){addServ();}">
-<button onclick="addServ()" class="h- w- rounded-full bg-[var(--orange)] text-white font-bold text-">+</button>
-</div>
-<div id="serv-tags" class="mt-3 flex flex-wrap gap-2"></div>
-</div>
-
-<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-<input id="r-profesion" placeholder="Profesión" class="h- rounded- bg-[#0A0A0A] border border-[var(--border)] px-4 text-">
-<textarea id="r-que" placeholder="¿Qué sabés hacer? Describe todo lo que sabés hacer" class="min-h- rounded- bg-[#0A0A0A] border border-[var(--border)] p-4 text-"></textarea>
-</div>
-
-<div class="mt-6 rounded- bg-[#0A0A0A] border border-[var(--border)] p-5">
-<div class="flex items-center justify-between"><div class="text- font-semibold">Foto perfil 400x400 circular • Cámara real obligatoria</div><div class="mono text- text-[var(--muted)]">Galería deshabilitada por seguridad</div></div>
-<div class="mt-4 flex flex-col md:flex-row gap-6 items-start">
-<div class="w- h- rounded-full overflow-hidden bg-[var(--card2)] border border-[var(--border)] flex items-center justify-center"><video id="cam" autoplay playsinline class="w-full h-full object-cover hidden"></video><canvas id="canv" width="400" height="400" class="hidden"></canvas><img id="foto-final" class="w-full h-full object-cover hidden"><span id="cam-placeholder" class="text- text-[var(--muted)]">Sin foto</span></div>
-<div class="flex-1 space-y-3">
-<button onclick="iniciarCamara()" class="w-full rounded-full bg-white text-black py-3 text- font-semibold">Activar cámara trasera</button>
-<button onclick="tomarFoto()" class="w-full rounded-full bg-[var(--orange)] text-white py-3 text- font-semibold">Tomar foto 400x400</button>
-<button onclick="repetirFoto()" class="w-full rounded-full bg-[var(--card2)] border border-[var(--border)] py-3 text-">Repetir toma</button>
-<div class="text- text-[#5A5A5A]">Foto obligatoria circular 400x400 • Solo cámara real, no galería</div>
-</div>
-</div>
-</div>
-
-<button onclick="enviarRegistro()" class="mt-6 w-full md:w-auto px-8 py-3 rounded-full bg-[var(--orange)] text-white font-bold">Solicitar alta • Validación bot automática</button>
-<div id="reg-ok" class="hidden mt-4 rounded- bg-emerald-500/10 border border-emerald-500/20 p-4 text- text-emerald-300">Solicitud enviada • Foto real verificada • Validación bot en curso</div>
+<div class="mt-6"><label class="mono text- uppercase tracking-widest text-[#6A6A6A]">Servicios ilimitados • Ej: plomero, electricista, flete</label><div class="mt-2 flex gap-2"><input id="serv-input" placeholder="Escribí un servicio y apretá +" class="flex-1 h- rounded-full bg-[#0A0A0A] border border-[#262626] px-5 text-" onkeydown="if(event.key==='Enter'){addServ();}"><button onclick="addServ()" class="h- w- rounded-full bg-[#FF6B0A] text-white font-bold text-">+</button></div><div id="serv-tags" class="mt-3 flex flex-wrap gap-2"></div></div>
+<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4"><input id="r-profesion" placeholder="Profesión" class="h- rounded- bg-[#0A0A0A] border border-[#262626] px-4 text-"><textarea id="r-que" placeholder="¿Qué sabés hacer?" class="min-h- rounded- bg-[#0A0A0A] border border-[#262626] p-4 text-"></textarea></div>
+<div class="mt-6 rounded- bg-[#0A0A0A] border border-[#262626] p-5"><div class="flex items-center justify-between"><div class="text- font-semibold">Foto perfil 400x400 circular • Cámara real obligatoria</div><div class="mono text- text-[#A0A0A0]">Galería deshabilitada por seguridad</div></div><div class="mt-4 flex flex-col md:flex-row gap-6 items-start"><div class="w- h- rounded-full overflow-hidden bg-[#1E1E1E] border border-[#262626] flex items-center justify-center"><video id="cam" autoplay playsinline class="w-full h-full object-cover hidden"></video><canvas id="canv" width="400" height="400" class="hidden"></canvas><img id="foto-final" class="w-full h-full object-cover hidden"><span id="cam-placeholder" class="text- text-[#A0A0A0]">Sin foto</span></div><div class="flex-1 space-y-3"><button onclick="iniciarCamara()" class="w-full rounded-full bg-white text-black py-3 text- font-semibold">Activar cámara</button><button onclick="tomarFoto()" class="w-full rounded-full bg-[#FF6B0A] text-white py-3 text- font-semibold">Tomar foto 400x400</button><button onclick="repetirFoto()" class="w-full rounded-full bg-[#1E1E1E] border border-[#262626] py-3 text-">Repetir</button></div></div></div>
+<button onclick="enviarRegistro()" class="mt-6 px-8 py-3 rounded-full bg-[#FF6B0A] text-white font-bold">Solicitar alta • Validación automática</button><div id="reg-ok" class="hidden mt-4 rounded- bg-emerald-500/10 border border-emerald-500/20 p-4 text- text-emerald-300">Solicitud enviada • Validación automática en curso</div>
 </div>
 </div>
 
 <div id="view-NODO MAX" class="hidden space-y-6">
 <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-<div class="rounded- bg-[var(--card)] border border-[var(--border)] p-6">
-<div class="flex items-center justify-between"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-[var(--orange)] flex items-center justify-center text-black font-bold">N</div><div><div class="text- font-semibold">Lucía Fernández</div><div class="mono text- text-[var(--muted)]">lucia.nodo • GOLD</div></div></div><div class="text- text-[var(--muted)]">Liquidación inmediata • Verificada</div></div>
-<div class="mt-6 rounded- bg-[#0A0A0A] border border-[var(--border)] p-4"><div class="mono text- text-[var(--muted)]">CRÉDITOS C$B</div><div class="text- font-bold">2,840 <span class="text- text-[var(--muted)]">C$B</span></div><div class="mono text- text-[var(--muted)]">Saldo comprobado • Nivel GOLD +420 este mes</div></div>
-
-<div class="mt-6 rounded- bg-[#0A0A0A] border border-[var(--border)] p-5">
-<div class="flex items-center justify-between mb-4"><div class="text- font-bold flex items-center gap-2">● PAGAR CON QR</div><span class="mono text- px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-400">QR Comercio validado</span></div>
-<div class="relative w-full h- rounded- bg-black border border-[var(--border)] overflow-hidden flex items-center justify-center">
-<video id="qr-cam" autoplay playsinline class="absolute inset-0 w-full h-full object-cover hidden"></video>
-<div id="qr-frame" class="w- h- border-2 border-[var(--orange)] rounded- relative"><div class="absolute top-0 left-0 right-0 h- bg-[var(--orange)]" style="animation:scan 1.5s infinite"></div></div>
-<div id="qr-placeholder" class="absolute text- text-[var(--muted)]">Activá cámara trasera para escanear QR real</div>
-</div>
+<div class="rounded- bg-[#141414] border border-[#262626] p-6">
+<div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-[#FF6B0A] flex items-center justify-center text-black font-bold">N</div><div><div class="text- font-semibold">Lucía Fernández</div><div class="mono text- text-[#A0A0A0]">lucia.nodo • GOLD</div></div></div>
+<div class="mt-6 rounded- bg-[#0A0A0A] border border-[#262626] p-4"><div class="mono text- text-[#A0A0A0]">CRÉDITOS C$B</div><div class="text- font-bold">2,840 <span class="text- text-[#A0A0A0]">C$B</span></div></div>
+<div class="mt-6 rounded- bg-[#0A0A0A] border border-[#262626] p-5">
+<div class="flex items-center justify-between mb-4"><div class="text- font-bold">● PAGAR CON QR</div><span class="mono text- px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-400">QR Comercio validado</span></div>
+<div class="relative w-full h- rounded- bg-black border border-[#262626] overflow-hidden flex items-center justify-center"><video id="qr-cam" autoplay playsinline class="absolute inset-0 w-full h-full object-cover hidden"></video><div class="w- h- border-2 border-[#FF6B0A] rounded- relative"><div class="absolute top-0 left-0 right-0 h- bg-[#FF6B0A]" style="animation:scan 1.5s infinite"></div></div><div id="qr-placeholder" class="absolute text- text-[#A0A0A0]">Activá cámara trasera</div></div>
 <button onclick="activarQR()" class="mt-4 w-full rounded-full bg-white text-black py-3 text- font-semibold">Activar cámara trasera QR</button>
-<div class="mt-4"><label class="mono text- uppercase text-[#6A6A6A]">Monto editable</label><input id="qr-monto" type="number" value="10000" class="mt-1 w-full h- rounded-full bg-[#141414] border border-[var(--border)] px-5 text- font-semibold outline-none focus:border-[var(--orange)]"></div>
-<button onclick="pagarQR()" class="mt-3 w-full rounded-full bg-[var(--orange)] text-white py-3 font-semibold">Pagar con C$B • Transferencia entre partes</button>
-<div class="mt-2 text- text-center text-[#6A6A6A]">Aboná seguro • Transacción protegida • Liquidación inmediata</div>
+<div class="mt-4"><label class="mono text- uppercase text-[#6A6A6A]">Monto editable</label><input id="qr-monto" type="number" value="10000" class="mt-1 w-full h- rounded-full bg-[#141414] border border-[#262626] px-5 text- font-semibold"></div>
+<button onclick="pagarQR()" class="mt-3 w-full rounded-full bg-[#FF6B0A] text-white py-3 font-semibold">Pagar con C$B • Pago seguro</button>
+<div class="mt-2 text- text-center text-[#6A6A6A]">Transacción protegida • Liquidación inmediata</div>
 </div>
 </div>
-
 <div class="space-y-4">
-<div class="rounded- bg-[var(--card)] border border-[var(--border)] overflow-hidden">
-<div class="h- bg-[#0A0A0A] relative flex items-center justify-center"><div class="absolute left-4 top-4 flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-[var(--orange)] flex items-center justify-center text-black font-bold">N</div><div class="text- font-semibold">NODO Argentina Oficial Demo</div></div><div class="absolute right-4 top-4 flex gap-2"><span class="rounded-full bg-[var(--orange)] text-white px-3 py-1 text- font-semibold">20% OFF</span><span class="rounded-full bg-white text-black px-3 py-1 text- font-semibold">+10% C$B</span></div><div class="absolute bottom-3 left-4 text- text-[#6A6A6A]">Av. Güemes 123 • 0.6km • Cómo llegar</div></div>
-<div class="p-4 flex gap-2"><button class="rounded-full bg-white text-black px-5 py-2 text- font-semibold">Ver beneficios</button><button class="rounded-full bg-[var(--card2)] border border-[var(--border)] px-5 py-2 text-">Cómo llegar</button><span class="ml-auto text- text-[#6A6A6A] self-center">● Pago seguro • Transacción protegida</span></div>
-</div>
-<div class="rounded- bg-[var(--card)] border border-[var(--border)] p-4"><div class="text- font-bold mb-3">Actividad reciente</div><div class="space-y-2 text-"><div class="flex justify-between p-3 rounded- bg-[#0A0A0A] border border-[var(--border)]"><span>Café Central • Hoy 14:30</span><span class="font-bold">-320 C$B</span></div><div class="flex justify-between p-3 rounded- bg-[#0A0A0A] border border-[var(--border)]"><span>Panadería Güemes • Ayer</span><span class="font-bold">-150 C$B</span></div></div></div>
+<div class="rounded- bg-[#141414] border border-[#262626] overflow-hidden"><div class="h- bg-[#0A0A0A] relative flex items-center justify-center"><div class="absolute left-4 top-4 flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-[#FF6B0A] flex items-center justify-center text-black font-bold">N</div><div class="text- font-semibold">NODO Argentina Oficial Demo</div></div><div class="absolute right-4 top-4 flex gap-2"><span class="rounded-full bg-[#FF6B0A] text-white px-3 py-1 text- font-semibold">20% OFF</span><span class="rounded-full bg-white text-black px-3 py-1 text- font-semibold">+10% C$B</span></div><div class="absolute bottom-3 left-4 text- text-[#6A6A6A]">Av. Güemes 123 • 0.6km</div></div><div class="p-4 flex gap-2"><button class="rounded-full bg-white text-black px-5 py-2 text- font-semibold">Ver beneficios</button><button class="rounded-full bg-[#1E1E1E] border border-[#262626] px-5 py-2 text-">Cómo llegar</button></div></div>
 </div>
 </div>
 </div>
 
 <div id="view-NODO +" class="hidden">
 <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6">
-<div class="rounded- bg-[var(--card)] border border-[var(--border)] p-6">
-<h3 class="text- font-semibold">¿Qué necesitás resolver?</h3><p class="text- text-[var(--muted)]">Publicá tarea verificada • Pago seguro sin demoras • Soporte automático bots</p>
-<div class="mt-6 space-y-4">
-<textarea id="t-tarea" placeholder="Necesito plomero pérdida baño mañana tarde Zona Güemes" class="w-full min-h- rounded- bg-[#0A0A0A] border border-[var(--border)] p-4 text- outline-none focus:border-[var(--orange)]"></textarea>
-<div class="grid grid-cols-2 gap-3"><input id="t-tel" placeholder="Tel" class="rounded-full bg-[#0A0A0A] border border-[var(--border)] px-4 py-3 text-"><input id="t-ubi" placeholder="Ubicación" class="rounded-full bg-[#0A0A0A] border border-[var(--border)] px-4 py-3 text-"></div>
-<button onclick="publicarTarea()" class="w-full rounded-full bg-[var(--orange)] text-white py-3 font-semibold">Solicitar servicio • Aboná seguro</button>
-<div class="text- text-center text-[#6A6A6A]">Pagá al instante • Transacción protegida • Liquidación inmediata</div>
-</div>
-</div>
-<div class="space-y-4">
-<div class="rounded- bg-[#0A0A0A] border border-[var(--border)] p-5"><div class="text- font-semibold">Beneficios NODO +</div><div class="mt-3 space-y-2 text- text-[var(--muted)]"><div>● Tareas verificadas • Identidad y antecedentes revisados por bots</div><div>● Pago seguro • Transacción protegida • Aboná seguro</div><div>● Reputación • Reseñas y validación automática</div><div>● Soporte automático • Bots NODO 24/7 Sin soporte humano</div></div></div>
-<div class="rounded- bg-[var(--card)] border border-[var(--border)] p-4"><div class="text- font-semibold mb-3">Tareas verificadas cerca</div><div class="p-3 rounded- bg-[#0A0A0A] border border-[var(--border)] flex justify-between items-center"><div><div class="text- font-semibold">Electricista matriculado • Marcos 4.9★ • 0.3km</div><div class="text- text-[var(--muted)]">$8.500 • Urgente</div></div><button class="rounded-full bg-white text-black px-4 py-2 text- font-semibold">Solicitar</button></div></div>
-</div>
+<div class="rounded- bg-[#141414] border border-[#262626] p-6"><h3 class="text- font-semibold">¿Qué necesitás resolver?</h3><p class="text- text-[#A0A0A0] mt-1">Publicá tarea verificada • Pago seguro sin demoras</p><textarea id="t-tarea" placeholder="Necesito plomero pérdida baño mañana tarde Zona Güemes" class="mt-4 w-full min-h- rounded- bg-[#0A0A0A] border border-[#262626] p-4 text-"></textarea><div class="mt-3 grid grid-cols-2 gap-3"><input id="t-tel" placeholder="Tel" class="rounded-full bg-[#0A0A0A] border border-[#262626] px-4 py-3 text-"><input id="t-ubi" placeholder="Ubicación" class="rounded-full bg-[#0A0A0A] border border-[#262626] px-4 py-3 text-"></div><button onclick="publicarTarea()" class="mt-4 w-full rounded-full bg-[#FF6B0A] text-white py-3 font-semibold">Solicitar servicio • Pago seguro</button><div class="mt-2 text- text-center text-[#6A6A6A]">Transacción protegida • Liquidación inmediata</div></div>
+<div class="rounded- bg-[#0A0A0A] border border-[#262626] p-5"><div class="text- font-semibold">Beneficios NODO +</div><div class="mt-3 space-y-2 text- text-[#A0A0A0]"><div>● Tareas verificadas • Identidad verificada</div><div>● Pago seguro • Transacción protegida</div><div>● Soporte automático 24/7</div></div></div>
 </div>
 </div>
 
 </main>
-
-<footer class="mt-10 border-t border-[var(--border)] py-6 text-center mono text- text-[var(--muted)]">© 2026 NODO Argentina • SSL • Ley 25.326 • Solo conecta • Soporte bot automático • Pago seguro • Aboná seguro • Liquidación inmediata entre partes</footer>
-
+<footer class="mt-10 border-t border-[#262626] py-6 text-center mono text- text-[#A0A0A0]">© 2026 NODO Argentina • SSL • Ley 25.326 • Solo conecta • Pago seguro • Liquidación inmediata</footer>
 <script>
-const API="https://maxshop-api.onrender.com";
-let servicios=[]; let streamFoto=null; let streamQR=null; let fotoTomada=false;
-function switchTab(name){
- document.querySelectorAll('[id^="view-"]').forEach(v=>v.classList.add('hidden'));
- document.getElementById('view-'+name).classList.remove('hidden');
- document.querySelectorAll('.tab').forEach(b=>{b.classList.remove('bg-[var(--orange)]','text-white','border-[var(--orange)]'); b.classList.add('bg-[var(--card2)]','text-[var(--muted)]','border-[var(--border)]')});
- const active=document.getElementById('tab-'+name);
- active.classList.add('bg-[var(--orange)]','text-white','border-[var(--orange)]');
- active.classList.remove('bg-[var(--card2)]','text-[var(--muted)]');
- window.scrollTo({top:0,behavior:'smooth'});
-}
-function addServ(){const input=document.getElementById('serv-input');const val=input.value.trim().toLowerCase();if(!val)return;if(!servicios.includes(val)){servicios.push(val);renderServ();}input.value='';}
-function renderServ(){const c=document.getElementById('serv-tags');c.innerHTML=servicios.map((s,i)=>`<span class="px-3 py-1.5 rounded-full bg-[#0A0A0A] border border-[var(--border)] text- flex items-center gap-2">${s}<button onclick="servicios.splice(${i},1);renderServ()" class="text-[var(--muted)]">x</button></span>`).join('');}
-async function iniciarCamara(){try{streamFoto=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:400,height:400}});const v=document.getElementById('cam');v.srcObject=streamFoto;v.classList.remove('hidden');document.getElementById('cam-placeholder').classList.add('hidden');}catch(e){alert('No se pudo abrir cámara: '+e.message)}}
-function tomarFoto(){const v=document.getElementById('cam');const canv=document.getElementById('canv');const ctx=canv.getContext('2d');ctx.drawImage(v,0,0,400,400);const img=document.getElementById('foto-final');img.src=canv.toDataURL('image/jpeg',0.9);img.classList.remove('hidden');v.classList.add('hidden');fotoTomada=true;if(streamFoto){streamFoto.getTracks().forEach(t=>t.stop())}}
+const API="https://maxshop-api.onrender.com"; let servicios=[]; let streamFoto=null,streamQR=null,fotoTomada=false;
+function switchTab(n){document.querySelectorAll('[id^="view-"]').forEach(v=>v.classList.add('hidden'));document.getElementById('view-'+n).classList.remove('hidden');document.querySelectorAll('.tab').forEach(b=>{b.className="tab px-6 py-3 rounded-full text- font-semibold bg-[#1E1E1E] text-[#A0A0A0] border border-[#262626]"});document.getElementById('tab-'+n).className="tab px-6 py-3 rounded-full text- font-semibold bg-[#FF6B0A] text-white border border-[#FF6B0A]";window.scrollTo({top:0,behavior:'smooth'});}
+function addServ(){const i=document.getElementById('serv-input');const v=i.value.trim().toLowerCase();if(!v)return;if(!servicios.includes(v)){servicios.push(v);renderServ();}i.value='';}
+function renderServ(){document.getElementById('serv-tags').innerHTML=servicios.map((s,i)=>`<span class="px-3 py-1.5 rounded-full bg-[#0A0A0A] border border-[#262626] text- flex items-center gap-2">${s}<button onclick="servicios.splice(${i},1);renderServ()" class="text-[#A0A0A0]">x</button></span>`).join('');}
+async function iniciarCamara(){try{streamFoto=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:400,height:400}});const v=document.getElementById('cam');v.srcObject=streamFoto;v.classList.remove('hidden');document.getElementById('cam-placeholder').classList.add('hidden');}catch(e){alert(e.message)}}
+function tomarFoto(){const v=document.getElementById('cam');const c=document.getElementById('canv');c.getContext('2d').drawImage(v,0,0,400,400);document.getElementById('foto-final').src=c.toDataURL('image/jpeg',0.9);document.getElementById('foto-final').classList.remove('hidden');v.classList.add('hidden');fotoTomada=true;if(streamFoto)streamFoto.getTracks().forEach(t=>t.stop());}
 function repetirFoto(){fotoTomada=false;document.getElementById('foto-final').classList.add('hidden');document.getElementById('cam-placeholder').classList.remove('hidden');iniciarCamara();}
-async function enviarRegistro(){if(servicios.length===0){alert('Agregá al menos 1 servicio ilimitado');return;}if(!fotoTomada){alert('Foto real 400x400 obligatoria con cámara');return;}document.getElementById('reg-ok').classList.remove('hidden');}
-async function activarQR(){try{streamQR=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});const v=document.getElementById('qr-cam');v.srcObject=streamQR;v.classList.remove('hidden');document.getElementById('qr-placeholder').classList.add('hidden');}catch(e){alert('No se pudo abrir cámara trasera: '+e)}}
-async function pagarQR(){const monto=parseFloat(document.getElementById('qr-monto').value);if(!monto){alert('Ingresá monto editable');return;}try{const r=await fetch(`${API}/pago/crear?trabajo_id=DEMO&monto=${monto}&cliente_email=test@nodo.com`,{method:'POST'});const j=await r.json();alert(`Pago real: $${monto} • Split: prestador $${j.split?.prestador||monto*0.8} • comercio $${j.split?.comercio||monto*0.1} • NODO $${j.split?.nodo||monto*0.1} • Aboná seguro • Liquidación inmediata`);}catch(e){alert(`Pago simulado real local: $${monto} • 80% prestador, 10% comercio, 10% NODO • Aboná seguro`);}}
-async function publicarTarea(){const tarea=document.getElementById('t-tarea').value;if(!tarea){alert('Escribí qué necesitás resolver');return;}alert('Tarea publicada verificada • Pago seguro • Soporte bot automático • Chat temporal que se borra al completar');}
+async function enviarRegistro(){if(servicios.length==0){alert('Agregá al menos 1 servicio');return;}if(!fotoTomada){alert('Foto 400x400 obligatoria');return;}document.getElementById('reg-ok').classList.remove('hidden');}
+async function activarQR(){try{streamQR=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('qr-cam').srcObject=streamQR;document.getElementById('qr-cam').classList.remove('hidden');document.getElementById('qr-placeholder').classList.add('hidden');}catch(e){alert(e)}}
+async function pagarQR(){const m=parseFloat(document.getElementById('qr-monto').value);try{const r=await fetch(`${API}/pago/crear?trabajo_id=DEMO&monto=${m}&cliente_email=test@nodo.com`,{method:'POST'});const j=await r.json();alert(`Pago $${m} Split 80/10/10`);}catch(e){alert(`Pago $${m} 80% prestador 10% comercio 10% NODO`);}}
+async function publicarTarea(){alert('Tarea publicada verificada');}
 </script>
 <style>@keyframes scan{0%{top:0}50%{top:100%}100%{top:0}}</style>
 </body>
