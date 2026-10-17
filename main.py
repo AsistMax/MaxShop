@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import os
 
@@ -10,42 +10,37 @@ try:
 except:
     HAS_TRACKING = False
 
-app = FastAPI(title="NODO V3.6 FINAL FIX STARLETTE", version="3.6.0")
+app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 templates = Jinja2Templates(directory="templates")
 
-def get_supabase_status():
-    url = os.getenv("SUPABASE_URL")
-    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SECRET_KEY")
-    return bool(url and key)
-
 def render(name, request):
-    # Fix universal para Starlette vieja y nueva
     tmpl = templates.get_template(name)
     return HTMLResponse(tmpl.render({"request": request}))
 
 @app.get("/health")
 def health():
-    return {"status":"OK","nodo":"Live V3.6 FINAL FIX","tracking":HAS_TRACKING,"supabase":get_supabase_status(),"mp":bool(os.getenv("MP_ACCESS_TOKEN"))}
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SECRET_KEY")
+    return {"status":"OK","supabase":bool(os.getenv("SUPABASE_URL") and key)}
 
 @app.get("/")
 def root():
-    return {"status":"OK","url":"https://maxshop-api.onrender.com"}
+    return RedirectResponse(url="/app")
 
 @app.get("/app", response_class=HTMLResponse)
 async def app_view(request: Request):
     return render("index.html", request)
 
 @app.get("/mapa-calles-real", response_class=HTMLResponse)
-async def mapa_calles_real(request: Request):
+async def mapa(request: Request):
     return render("mapa-calles-real.html", request)
 
 @app.get("/cadete", response_class=HTMLResponse)
-async def cadete_view(request: Request):
+async def cadete(request: Request):
     return render("cadete.html", request)
 
 @app.get("/qr/{qr_id}", response_class=HTMLResponse)
-async def qr_redirect(request: Request, qr_id: str):
+async def qr(request: Request, qr_id: str):
     return render("index.html", request)
 
 if HAS_TRACKING:
